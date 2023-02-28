@@ -1,7 +1,9 @@
-🥝的博客源码，目前已经开源啦！！！暂定名为**hexo-theme-Fomalhaut**，原作者网站:www.fomal.cc
+🥝的博客源码，目前已经开源啦！！！暂定名为**hexo-theme-Fomalhaut**，原作者网站：www.fomal.cc
+
+
 ![](./cover.jpg)
 
-食用方法🍡🍡🍡：
+**食用方法**🍡🍡🍡：
 
 1. 安装 NodeJs、Hexo、Git、注册并连接Github，此部分可参考[Hexo博客搭建基础教程(一)](https://www.fomal.cc/posts/e593433d.html)。
   PS：相当于链接教程的第1-7步，第8步就不要做了，不然会清空源码的！！！
