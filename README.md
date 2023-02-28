@@ -1,5 +1,5 @@
 🥝的博客源码，目前已经开源啦！！！暂定名为**Fomalhaut**
-![](https://tuchuang.voooe.cn/images/2023/02/28/1677592090312.webp)
+![](https://tuchuang.voooe.cn/images/2023/02/28/cover.jpg)
 
 食用方法🍡🍡🍡：
 
