@@ -1,0 +1,40 @@
+if theme.aside.card_friend_link.enable
+  .card-widget.card-friend-link
+    .item-headline
+      a.faa-parent.animated-hover
+        svg.faa-tada.icon(style="height:25px;width:25px;fill:currentColor;position:relative;top:5px" aria-hidden="true")
+          use(xlink:href='#icon-tongxunlu')
+      span(style="font-weight:bold")= _p('aside.card_friend_link')
+      //- i(style="position:relative;padding-left:8px;display:inline-block;vertical-align:middle;")
+      //-   svg.icon(style="height:23px;width:23px;fill:currentColor;position:relative;top:3px;animation: ccc 12s linear infinite;")
+      //-     use(xlink:href='#icon-shezhi')
+    .card-friend-link-container
+      if site.data.link
+        each i in site.data.link
+          if i.class_name
+            details.card-friend-class-name
+              summary.card-friend-class-desc(title=i.class_desc)
+                sapn!=i.class_name
+                span.online-friend-number
+                sapn!=i.link_list.length
+              each item in i.link_list
+                if !(item.offline)
+                  a.card-friend-item.online-friend-link(href=url_for(item.link)  title=item.name target="_blank")
+                    img.no-lightbox.card-friend-avatar(src=url_for(item.avatar) onerror=`this.onerror=null;this.src='` + url_for(theme.error_img.flink) + `'` alt=item.name )
+                    .card-friend-details
+                      .card-friend-name= item.name
+                      .card-friend-descr(title=item.descr)= item.descr
+              each item in i.link_list
+                if item.offline
+                  a.card-friend-item.offline-friend-link(href=url_for(item.link)  title=item.name target="_blank")
+                    img.no-lightbox.card-friend-avatar(src=url_for(item.avatar) onerror=`this.onerror=null;this.src='` + url_for(theme.error_img.flink) + `'` alt=item.name )
+                    .card-friend-details
+                      .card-friend-name= item.name
+                      .card-friend-descr(title=item.descr)= item.descr
+    .ja-pjax
+      script.
+        var addressbook = document.getElementsByClassName("card-friend-class-name");
+        for (var i=0; i<addressbook.length; i++){
+          var online = addressbook[i].getElementsByClassName("online-friend-link").length;
+          addressbook[i].getElementsByClassName("online-friend-number")[0].innerHTML = "  "+online+"/";
+        }

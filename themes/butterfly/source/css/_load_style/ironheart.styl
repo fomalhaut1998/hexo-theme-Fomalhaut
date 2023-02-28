@@ -1,0 +1,105 @@
+.loading-bg
+  position fixed
+  z-index 1000
+  width 50%
+  height 100%
+  background var(--preloader-bg)
+#loading-box
+  .loading-left-bg
+    @extend .loading-bg
+    left 0
+  .loading-right-bg
+    @extend .loading-bg
+    right 0
+  &.loaded
+    z-index -1000
+    .loading-left-bg
+      transition all 1.0s
+      transform translate(-100%, 0)
+    .loading-right-bg
+      transition all 1.0s
+      transform translate(100%, 0)
+#loading-box
+  position fixed
+  z-index 1000
+  display -webkit-box
+  display flex
+  -webkit-box-align center
+  align-items center
+  -webkit-box-pack center
+  justify-content center
+  -webkit-box-orient vertical
+  -webkit-box-direction normal
+  flex-direction column
+  flex-wrap wrap
+  width 100vw
+  height 100vh
+  overflow hidden
+
+  &.loaded
+    .iron-container
+      display none
+
+  .iron-circle
+    border-radius 50%
+
+  .iron-center
+    position absolute
+    top 50%
+    left 50%
+    transform translate(-50%, -50%)
+
+  .iron-container
+    z-index 1001
+    position relative
+    width 300px
+    height 300px
+    border 1px solid rgb(18, 20, 20)
+    background-color #384c50
+    box-shadow 0 0 32px 8px rgb(18, 20, 20), 0 0 4px 1px rgb(18, 20, 20) inset
+    .iron-box1
+      width 238px
+      height 238px
+      background-color rgb(22, 26, 27)
+      box-shadow 0 0 4px 1px #52fefe
+    .iron-box2
+      width 220px
+      height 220px
+      background-color #fff
+      box-shadow 0 0 5px 1px #52fefe, 0 0 5px 4px #52fefe inset
+    .iron-box3
+      width 180px
+      height 180px
+      background-color #073c4b
+      box-shadow 0 0 5px 4px #52fefe, 0 0 6px 2px #52fefe inset
+    .iron-box4
+      width 120px
+      height 120px
+      border 1px solid #52fefe
+      background-color #fff
+      box-shadow 0 0 2px 1px #52fefe, 0 0 10px 5px #52fefe inset
+    .iron-box5
+      width 70px
+      height 70px
+      border 5px solid #1b4e5f
+      box-shadow 0 0 7px 5px #52fefe, 0 0 10px 10px #52fefe inset
+    .iron-box6
+      position relative
+      width 100%
+      height 100%
+      animation ironrotate 3s linear infinite
+      .iron-coil
+        position absolute
+        width 30px
+        height 20px
+        top calc(50% - 110px)
+        left calc(50% - 15px)
+        background-color #073c4b
+        box-shadow 0 0 5px #52fefe inset
+        transform rotate(calc(var(--i) * 45deg))
+        transform-origin center 110px
+@keyframes ironrotate
+	0%
+		transform rotate(0)
+	100%
+		transform rotate(360deg)

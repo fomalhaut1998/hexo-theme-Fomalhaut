@@ -1,0 +1,90 @@
+- var htmlClassHideAside = theme.aside.enable && theme.aside.hide ? 'hide-aside' : ''
+- page.aside = is_archive() ? theme.aside.display.archive: is_category() ? theme.aside.display.category : is_tag() ? theme.aside.display.tag : page.aside
+- var hideAside = !theme.aside.enable || page.aside === false ? 'hide-aside' : ''
+//- - var pageType = is_post() ? 'post' : 'page'
+- var pageType = is_home() ? 'page home' : is_post() ? 'post' : 'page'
+
+doctype html
+html(lang=config.language data-theme=theme.display_mode class=htmlClassHideAside)
+  
+  head
+    include ./head.pug
+    //- 灯笼
+    if(theme.lantern.enable)
+      include ./lantern.pug
+  body
+    //- if theme.preloader
+    if theme.preloader.enable
+      !=partial('includes/loading/loading', {}, {cache: true})
+
+    - var DefaultBg = page.defaultbg ? page.defaultbg : theme.background.default
+    - var DDMBg = theme.background.darkmode ? theme.background.darkmode : DefaultBg
+    - var DarkmodeBg = page.darkmodebg ? page.darkmodebg : DDMBg
+    if theme.background
+      //- #web_bg
+      if page.background
+        #web_bg(style=`background:`+ page.background + `;background-attachment: local;background-position: center;background-size: cover;background-repeat: no-repeat;`)
+      else
+        #web_bg
+
+        if page.defaultbg || page.darkmodebg
+          style.
+            #web_bg{
+              background: #{DefaultBg} !important;
+              background-attachment: local!important;
+              background-position: center!important;
+              background-size: cover!important;
+              background-repeat: no-repeat!important;
+            }
+            [data-theme="dark"]
+              #web_bg{
+                background: #{DarkmodeBg} !important;
+                background-attachment: local!important;
+                background-position: center!important;
+                background-size: cover!important;
+                background-repeat: no-repeat!important;
+              }      
+
+    !=partial('includes/sidebar', {}, {cache: true})
+
+    if page.type !== '404'
+      #body-wrap(class=pageType)
+        include ./header/index.pug
+
+        main#content-inner.layout(class=hideAside)
+          if body
+            div!= body
+          else
+            block content
+            if theme.aside.enable && page.aside !== false
+              include widget/index.pug
+
+        - var footerBg = theme.footer_bg
+        
+        //- if (footerBg)
+        //-   if (footerBg === true)
+        //-     - var footer_bg = bg_img
+        //-   else
+        //-     - var footer_bg = theme.footer_bg.indexOf('/') !== -1 ? `background-image: url('${url_for(footerBg)}')` : `background: ${footerBg}`
+        //- else
+        //-   - var footer_bg = ''
+        if !is_post()
+          if (footerBg === true)
+            - var footer_bg = 'background-color: transparent;'
+          else
+            - var footer_bg = 'background-color: transparent;'
+        else
+          - var footer_bg = 'background-color: transparent;'
+
+
+
+        footer#footer(style=footer_bg)
+          !=partial('includes/footer', {}, {cache: true})
+
+    else
+      include ./404.pug
+
+    include ./rightside.pug
+    !=partial('includes/third-party/search/index', {}, {cache: true})
+    !=partial('includes/rightmenu',{}, {cache:true})
+    include ./additional-js.pug

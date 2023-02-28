@@ -1,0 +1,440 @@
+.loading-bg
+  position fixed
+  z-index 1000
+  width 50%
+  height 100%
+  background var(--preloader-bg)
+#loading-box
+  .loading-left-bg
+    @extend .loading-bg
+    left 0
+  .loading-right-bg
+    @extend .loading-bg
+    right 0
+  &.loaded
+    z-index -1000
+    .loading-left-bg
+      transition all 1.0s
+      transform translate(-100%, 0)
+    .loading-right-bg
+      transition all 1.0s
+      transform translate(100%, 0)
+
+#loading-box
+  position fixed
+  z-index 1000
+  display -webkit-box
+  display flex
+  -webkit-box-align center
+  align-items center
+  -webkit-box-pack center
+  justify-content center
+  -webkit-box-orient vertical
+  -webkit-box-direction normal
+  flex-direction column
+  flex-wrap wrap
+  width 100vw
+  height 100vh
+  overflow hidden
+  &.loaded
+    .scarecrow
+      display none
+  .scarecrow
+    z-index 1001
+    position relative
+    animation hop 0.2s ease-in alternate infinite
+
+  .scarecrow__hat
+    position relative
+    border-top-left-radius 5px
+    border-top-right-radius 5px
+    border-top 45px solid #515559
+    border-left 1px solid transparent
+    border-right 1px solid transparent
+    width 55px
+    margin 0 auto -3px
+    z-index 1
+    &:before
+      content ""
+      position absolute
+      top -87px
+      right -23px
+      background-color #515559
+      width 9px
+      height 55px
+      border-radius 100%
+      transform rotate(50deg)
+    &:after
+      content ""
+      position absolute
+      top 12px
+      left -15px
+      background-color #515559
+      width 85px
+      height 10px
+      border-radius 40% 40% 70% 70%
+
+  .scarecrow__ribbon
+    width 55px
+    height 12px
+    background-color #d996b5
+    margin 0 auto
+
+  .scarecrow__head
+    position relative
+    background-color #f2f2f2
+    width 70px
+    height 55px
+    margin 0 auto
+    border-radius 50%
+    display flex
+    justify-content space-around
+    flex-flow row wrap
+
+  .scarecrow__eye
+    width 6px
+    height 6px
+    background-color #000
+    border-radius 50%
+    margin 20px 5px 0
+
+  .scarecrow__mouth
+    width 45px
+    height 15px
+    background-color #fff
+    border-radius 50%
+
+  .scarecrow__pipe
+    position absolute
+    top 40px
+    left 60px
+    width 40px
+    height 2px
+    background-color #8c8070
+    &:before
+      content ""
+      position absolute
+      width 9px
+      height 17px
+      background-color #8c8070
+      border-radius 3px
+      left 40px
+      top -7px
+
+  .scarecrow__body
+    position relative
+    width 250px
+    z-index 1
+
+  .scarecrow__coat
+    position absolute
+    top 15px
+    left 0
+    right 0
+    margin-left auto
+    margin-right auto
+    border-top 100px solid #515559
+    border-left 5px solid transparent
+    border-right 5px solid transparent
+    width 75px
+
+  .scarecrow__bow
+    position absolute
+    top 20px
+    left 0
+    right 0
+    margin-left auto
+    margin-right auto
+    background-color #3a485d
+    width 10px
+    height 10px
+    z-index 3
+    border-radius 2px
+    &:before
+      content ""
+      position absolute
+      top -10px
+      left -25px
+      width 0
+      height 10px
+      border-top 10px solid transparent
+      border-left 25px solid #5a6b8c
+      border-bottom 10px solid transparent
+      border-radius 8px
+    &:after
+      content ""
+      position absolute
+      top -10px
+      right -25px
+      width 0
+      height 10px
+      border-top 10px solid transparent
+      border-right 25px solid #5a6b8c
+      border-bottom 10px solid transparent
+      border-radius 8px
+
+  .scarecrow__shirt
+    position absolute
+    top 8px
+    left 0
+    right 0
+    margin-left auto
+    margin-right auto
+    width 30px
+    height 35px
+    z-index 2
+    &:before
+      content ""
+      position absolute
+      top 0
+      left -5px
+      height 100%
+      width 70%
+      background-color #dbb2c2
+      transform skew(1deg, 35deg)
+      border-bottom-left-radius 90px
+      border-top-left-radius 15px
+      border-bottom-right-radius 15px
+      border-top-right-radius 10px
+    &:after
+      content ""
+      position absolute
+      top 0
+      right -5px
+      height 100%
+      width 70%
+      background-color #dbb2c2
+      transform skew(-1deg, -35deg)
+      border-top-right-radius 15px
+      border-bottom-right-radius 90px
+      border-bottom-left-radius 15px
+      border-top-left-radius 10px
+
+  .scarecrow__waistcoat
+    position absolute
+    top 15px
+    left -1px
+    right 0
+    margin-left auto
+    margin-right auto
+    width 35px
+    height 50px
+    &:before
+      content ""
+      position absolute
+      top 0
+      left -4px
+      height 100%
+      width 65%
+      background-color #83a6bc
+      transform skew(0deg, 40deg)
+      border-bottom-left-radius 90px
+      border-top-left-radius 90px
+      border-bottom-right-radius 15px
+    &:after
+      content ""
+      position absolute
+      top 0
+      right -5px
+      height 100%
+      width 65%
+      background-color #83a6bc
+      transform skew(0deg, -40deg)
+      border-top-right-radius 90px
+      border-bottom-right-radius 90px
+      border-bottom-left-radius 15px
+
+  .scarecrow__coattails
+    position absolute
+    top 105px
+    left 0
+    right 0
+    margin-left auto
+    margin-right auto
+    width 75px
+    height 120px
+    z-index 1
+    &:before
+      content ""
+      position absolute
+      top 0
+      left 8px
+      height 100%
+      width 60%
+      background-color #515559
+      transform-origin top
+      transform skew(-25deg, 30deg) rotate(0deg)
+      border-bottom-left-radius 50px
+      border-bottom-right-radius 5px
+      animation coattails-left 0.2s ease-in alternate infinite
+    &:after
+      content ""
+      position absolute
+      top 0
+      right 8px
+      height 100%
+      width 60%
+      background-color #515559
+      transform-origin top
+      transform skew(25deg, -30deg) rotate(0deg)
+      border-bottom-right-radius 50px
+      border-bottom-left-radius 5px
+      animation coattails-right 0.2s ease-in alternate infinite
+
+  .scarecrow__pants
+    position absolute
+    top 115px
+    left 0
+    right 0
+    margin-left auto
+    margin-right auto
+    width 50px
+    height 150px
+    &:before
+      content ""
+      position absolute
+      top 0
+      left -8px
+      height 100%
+      width 60%
+      background-color #393c3e
+      transform rotate(0deg)
+      transform-origin top
+      animation pants 0.5s linear alternate infinite
+    &:after
+      content ""
+      position absolute
+      top 0
+      right -8px
+      height 100%
+      width 60%
+      background-color #393c3e
+      transform rotate(0deg)
+      transform-origin top
+      animation pants 0.3s linear alternate infinite
+
+  .scarecrow__sleeve
+    position absolute
+    top 15px
+    background-color #515559
+    width 80px
+    height 25px
+
+  .scarecrow__sleeve--l
+    left 10px
+    &:before
+      content ""
+      position absolute
+      top -3px
+      left -22px
+      width 0
+      height 25px
+      border-top 3px solid transparent
+      border-left 25px solid #515559
+      border-bottom 3px solid transparent
+      border-radius 3px
+
+  .scarecrow__sleeve--r
+    right 10px
+    &:before
+      content ""
+      position absolute
+      top -3px
+      right -22px
+      width 0
+      height 25px
+      border-top 3px solid transparent
+      border-right 25px solid #515559
+      border-bottom 3px solid transparent
+      border-radius 3px
+
+  .scarecrow__glove
+    position absolute
+    top 12px
+    width 0px
+    height 12px
+    &:before
+      content ""
+      position absolute
+      top -7px
+      border-radius 100%
+      background-color #f2f2f2
+      width 35px
+      height 15px
+
+  .scarecrow__glove--l
+    border-top 3px solid transparent
+    border-right 20px solid #f2f2f2
+    border-bottom 3px solid transparent
+    left -50px
+    &:before
+      transform-origin right
+      left -30px
+      transform rotate(0deg)
+      animation glove-l 0.2s linear alternate infinite
+
+  .scarecrow__glove--r
+    border-top 3px solid transparent
+    border-left 20px solid #f2f2f2
+    border-bottom 3px solid transparent
+    right -50px
+    &:before
+      transform-origin left
+      right -30px
+      transform rotate(0deg)
+      animation glove-r 0.2s linear alternate infinite
+
+  .scarecrow__arms
+    position absolute
+    left 50%
+    transform translate(-50%, -50%)
+    background-color #8c8070
+    width 350px
+    height 8px
+    border-radius 5px
+    margin 20px auto
+
+  .scarecrow__leg
+    position relative
+    background-color #8c8070
+    width 8px
+    height 380px
+    border-bottom-left-radius 5px
+    border-bottom-right-radius 5px
+    margin 0 auto
+
+@keyframes hop
+  0%
+    transform translateY(-10px)
+  100%
+    transform translateY(10px)
+
+@keyframes coattails-left
+  0%
+    transform skew(-25deg, 30deg) rotate(-3deg)
+  100%
+    transform skew(-25deg, 30deg) rotate(3deg)
+
+@keyframes coattails-right
+  0%
+    transform skew(25deg, -30deg) rotate(3deg)
+  100%
+    transform skew(25deg, -30deg) rotate(-3deg)
+
+@keyframes pants
+  0%
+    transform rotate(3deg)
+  100%
+    transform rotate(-3deg)
+
+@keyframes glove-l
+  0%
+    transform rotate(-50deg)
+  100%
+    transform rotate(-30deg)
+
+@keyframes glove-r
+  0%
+    transform rotate(50deg)
+  100%
+    transform rotate(30deg)

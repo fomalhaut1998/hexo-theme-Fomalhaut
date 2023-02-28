@@ -1,0 +1,20 @@
+#article-container
+  if top_img === false
+    h1.page-title= page.title
+  .flink
+    if site.data.link
+      each i in site.data.link
+        if i.class_name
+          h2!= i.class_name
+        if i.class_desc
+          .flink-desc!=i.class_desc
+        .flink-list
+          each item in i.link_list
+            a.flink-list-card(href=url_for(item.link) target='_blank' data-title=item.descr)
+              .wrapper.cover
+                - var siteshot = item.siteshot ? url_for(item.siteshot) : 'https://image.thum.io/get/width/400/crop/800/allowJPG/wait/20/noanimate/' + item.link
+                img.no-lightbox.cover.fadeIn(src=siteshot onerror=`this.onerror=null;this.src='` + url_for(theme.error_img.post_page) + `'` alt='' )    
+              .info
+                img.no-lightbox(src=url_for(item.avatar) onerror=`this.onerror=null;this.src='` + url_for(theme.error_img.flink) + `'` alt='' )
+                span.flink-sitename= item.name
+  != page.content

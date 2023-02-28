@@ -1,0 +1,274 @@
+//default color:
+:root
+  --recent-post-bgcolor: rgba(255, 255, 255, 0.9)  //默认背景
+  --article-content-bgcolor: #49b1f5 //描述版块背景
+  --recent-post-arrow: #ffffff //箭头配色
+  --recent-post-cover-shadow: #ffffff //封面遮罩层配色，建议和默认值的颜色相对应。
+  --recent-post-transition: all 0.5s cubic-bezier(0.59, 0.01, 0.48, 1.17)  //动画效果。不了解的不要改动
+[data-theme="dark"]
+  --recent-post-bgcolor: rgba(35,35,35,0.5)
+  --article-content-bgcolor: #99999a
+  --recent-post-arrow: #37e2dd
+  --recent-post-cover-shadow: #232323
+// 默认的首页卡片容器布局
+.recent-posts
+  padding 0 15px 0 15px
+  height fit-content
+  .recent-post-item
+    margin-bottom 15px
+    width 100%
+    background var(--recent-post-bgcolor)
+    overflow hidden
+    border-radius 15px
+    .recent-post-content
+      display flex
+      background var(--recent-post-bgcolor)
+      position relative
+      .recent-post-cover
+        display flex
+        background transparent
+      .recent-post-info
+        display flex
+        background transparent
+        flex-direction column
+        justify-content center
+        align-items center
+        .article-title
+          height 50%
+          display: flex
+          text-align: center
+          align-items: center
+          justify-content: flex-end
+          flex-direction: column
+          .article-title-link
+            color: var(--text-highlight-color)
+            transition: all .2s ease-in-out
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            &:hover
+              color: $text-hover
+        .recent-post-meta
+          height 50%
+          display: flex
+          text-align: center
+          align-items: center
+          justify-content: flex-start
+          flex-direction: column
+          .article-meta-wrap
+            color #969797
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            a
+              color: var(--text-highlight-color)
+              transition: all .2s ease-in-out
+              color #969797
+              &:hover
+                color: $text-hover
+      .article-content
+        display flex
+        text-align: center
+        flex-direction row
+        align-items center
+        justify-content center
+        .article-content-text
+          display -webkit-box
+          -webkit-box-orient vertical
+          text-overflow: ellipsis
+          overflow hidden
+          color #fff
+          text-shadow 1px 2px 3px #000
+          &::before
+            content "❝"
+            font-size 20px
+          &::after
+            content "❞"
+            font-size 20px
+    &.ads-wrap
+      display: block !important
+      height: auto !important
+// PC端滑动卡片样式
+@media screen and (min-width:1069px)
+  .recent-posts
+    padding 0 15px 0 15px
+    .recent-post-item
+      .recent-post-content
+        position relative
+        height 200px
+        width 100%
+        transition var(--recent-post-transition)
+        &:hover
+          .recent-post-cover-shadow
+            width 10.1%
+            transition var(--recent-post-transition)
+          .recent-post-cover
+            width 10%
+            transition var(--recent-post-transition)
+          .article-content
+            width calc(30% + 80px)
+            transition var(--recent-post-transition)
+            .article-content-text
+              opacity 1
+          .recent-post-arrow
+            transition var(--recent-post-transition)
+        .recent-post-cover-shadow
+          z-index: 1
+          transition var(--recent-post-transition)
+          position: absolute
+          height 200px
+          width 40%
+        .recent-post-cover
+          height 200px
+          width 40%
+          transition var(--recent-post-transition)
+          img
+            height 100%
+            width 100%
+            object-fit cover
+
+        .recent-post-info
+          height 200px
+          width calc(60% - 80px)
+          .article-title
+            margin: 0px 40px
+            font-size 24px
+            .article-title-link
+              -webkit-line-clamp: 2;
+          .recent-post-meta
+            margin: 0px 20px
+            .article-meta-wrap
+              font-size 12px
+              -webkit-line-clamp: 3;
+        .article-content
+          height 200px
+          width 90px
+          background var(--article-content-bgcolor)
+          transition var(--recent-post-transition)
+          .article-content-text
+            -webkit-line-clamp 4
+            transition: var(--recent-post-transition)
+            opacity 0
+        .recent-post-arrow
+          transition var(--recent-post-transition)
+          display block
+          position absolute
+          height 20px
+          width 8px
+          background var(--recent-post-arrow)
+        &.both,
+        &.right
+          .recent-post-cover-shadow
+            left 0
+            background linear-gradient(to left, var(--recent-post-cover-shadow), transparent)
+          .recent-post-cover
+            order: 1
+          .recent-post-info
+            order: 2
+          .article-content
+            order: 3
+            clip-path polygon(0 50%, 80px 0, 100% 0, 100% 100%, 80px 100%)
+            .article-content-text
+              margin 20px 40px 20px 80px
+          .recent-post-arrow
+            order: 4
+            left calc(100% - 80px)
+            top calc(50% - 10px)
+            clip-path polygon(0 10px, 8px 0, 8px 20px)
+          &:hover
+            .recent-post-arrow
+              left calc(100% - 40px)
+        &.left
+          .recent-post-cover-shadow
+            right 0
+            background linear-gradient(to right, var(--recent-post-cover-shadow), transparent)
+          .recent-post-cover
+            order: 4
+          .recent-post-info
+            order: 3
+          .article-content
+            order: 2
+            clip-path polygon(100% 50%,calc(100% - 80px) 100%,0 100%,0 0,calc(100% - 80px) 0)
+            .article-content-text
+              margin 20px 80px 20px 40px
+          .recent-post-arrow
+            order: 1
+            left 72px
+            top calc(50% - 10px)
+            clip-path polygon(0 0, 8px 10px, 0 20px)
+          &:hover
+            .recent-post-arrow
+              left 32px
+// 双栏布局卡片自适应适配
+@media screen and (min-width:572px) and (max-width:1068px)
+  .recent-posts
+    padding 0 15px 0 15px
+    display flex
+    flex-direction row
+    flex-wrap wrap
+    .recent-post-item
+      border-radius 15px
+      overflow hidden
+      width 47%
+      margin 0px 3% 20px 0px
+    nav#pagination
+      width: 100%
+// 手机端单栏布局自适应适配
+@media screen and (max-width:572px)
+  .recent-posts
+    padding 0 15px 0 15px
+    .recent-post-item
+      border-radius 15px
+      overflow hidden
+        
+// 手机端及双栏卡片样式
+@media screen and (max-width:1068px)
+  .recent-posts
+    .recent-post-item
+      .recent-post-content
+        flex-direction column
+        flex-wrap nowrap
+        align-items center
+        max-height 350px
+        height: auto 
+        width 100%
+        .recent-post-cover
+          width 100%
+          height 200px
+          clip-path polygon(0 130px,0 0,100% 0,100% 130px,50% 100%)
+          img
+            height 200px
+            width 100%
+            object-fit cover
+        .recent-post-info
+          height 150px
+          width 100%
+          padding 0px 25px 5px 25px
+          .article-title
+            margin: 0px 40px
+            font-size 18px
+            .article-title-link
+              -webkit-line-clamp: 2;
+          .recent-post-meta
+            margin: 0px 20px
+            .article-meta-wrap
+              font-size 12px
+              -webkit-line-clamp: 3;
+        .article-content
+          position absolute
+          height 200px
+          width 100%
+          background rgba(25,25,25,0.5)
+          clip-path polygon(0 130px,0 0,100% 0,100% 130px,50% 100%)
+          .article-content-text
+            -webkit-line-clamp 3
+            font-size 16px
+            margin 0px 25px 30px 25px
+        .recent-post-arrow
+          display block
+          background var(--article-content-bgcolor)
+          position absolute
+          height 10px
+          width 20px
+          clip-path polygon(0 0,100% 0,50% 100%)
+          top 20px

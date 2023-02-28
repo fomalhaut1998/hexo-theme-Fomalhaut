@@ -1,0 +1,81 @@
+- const { readmode, translate, darkmode, aside, chat_btn } = theme
+mixin rightsideItem(array)
+  each item in array
+    case item
+      when 'readmode'
+        if is_post() && readmode
+          button#readmode(type="button" title=_p('rightside.readmode_title'))
+            i.fas.fa-book-open
+      when 'translate'
+        if translate.enable
+          button#translateLink(type="button" title=_p('rightside.translate_title'))= translate.default
+      when 'darkmode'
+        if darkmode.enable && darkmode.button
+          //- button#darkmode(type="button" title=_p('rightside.night_mode_title'))
+          //-   i.fas.fa-adjust
+          a.icon-V.hidden(onclick='switchNightMode()',  title=_p('rightside.night_mode_title'))
+            svg(width='25', height='25', viewBox='0 0 1024 1024')
+              use#modeicon(xlink:href='#icon-moon')
+      when 'hideAside'
+        if aside.enable && aside.button && page.aside !== false
+          button#hide-aside-btn(type="button" title=_p('rightside.aside'))
+            i.fas.fa-arrows-alt-h
+      when 'toc'
+        if showToc
+          button#mobile-toc-button.close(type="button" title=_p("rightside.toc"))
+            i.fas.fa-list-ul
+      when 'chat'
+        if chat_btn
+          button#chat_btn(type="button" title=_p("rightside.chat"))
+            i.fas.fa-sms
+      when 'comment'
+        if commentsJsLoad
+          a#to_comment(href="#post-comment" title=_p("rightside.scroll_to_comment"))
+            i.fas.fa-comments
+      //- when 'bg'
+      //-   button(type="button" title='切换背景' onclick="toggleWinbox()")
+      //-     i.fa.fa-picture-o
+
+      when 'share'
+        button.share(type="button" title='分享链接' onclick="share()")
+          i.fas.fa-share-nodes
+
+      when 'mouse'
+        button.share(type="button" title='右键模式' onclick="changeMouseMode()")
+          i.fas.fa-mouse
+
+
+#rightside
+  - const { enable, hide, show } = theme.rightside_item_order
+  - const hideArray = enable ? hide && hide.split(',') : ['readmode','translate','darkmode','hideAside', 'mouse']
+  - const showArray = enable ? show && show.split(',') : ['toc','chat','share','comment']
+  //- - const showArray = enable ? show && show.split(',') : ['toc','chat','bg','comment']
+  
+  #rightside-config-hide
+    if hideArray
+      +rightsideItem(hideArray)
+  #rightside-config-show
+    if enable
+      if hide
+        button#rightside_config(type="button" title=_p("rightside.setting"))
+          i.fas.fa-cog.right_side
+    else
+      if is_post()
+        if (readmode || translate.enable || (darkmode.enable && darkmode.button))
+          button#rightside_config(type="button" title=_p("rightside.setting"))
+            i.fas.fa-cog.right_side
+      //- else if translate.enable || (darkmode.enable && darkmode.button)
+      else if hideArray
+        button#rightside_config(type="button" title=_p("rightside.setting"))
+          i.fas.fa-cog.right_side
+
+    if showArray
+      +rightsideItem(showArray)
+
+    button#go-up(type="button" title=_p("rightside.back_to_top"))
+      i.fas.fa-arrow-up
+      span#percent 0
+        span %
+
+    button#go-down(type="button" title="直达底部" onclick="btf.scrollToDest(document.body.scrollHeight, 500)")
+      i.fas.fa-arrow-down

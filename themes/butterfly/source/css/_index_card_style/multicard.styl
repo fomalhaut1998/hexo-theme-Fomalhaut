@@ -1,0 +1,171 @@
+// 默认的首页卡片容器布局
+.recent-posts
+  padding 0 5px 0 5px
+  height fit-content
+  .recent-post-item
+    margin-bottom 15px
+    overflow hidden
+    border-radius 15px
+    .recent-post-content
+      display flex
+      position relative
+      &:hover
+        .recent-post-cover
+          img
+            transition: all .6s ease-in-out
+            scale: 1.08
+        .article-content
+          .article-content-text
+            transition: all .6s ease-in-out
+            scale: 1.08
+      .recent-post-cover
+        display flex
+        background transparent
+      .recent-post-info
+        display flex
+        background transparent
+        flex-direction column
+        justify-content center
+        align-items center
+        .article-title
+          height 50%
+          display: flex
+          text-align: center
+          align-items: center
+          justify-content: flex-end
+          flex-direction: column
+          .article-title-link
+            color: var(--text-highlight-color)
+            transition: all .2s ease-in-out
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            &:hover
+              color: var(--theme-color)
+        .recent-post-meta
+          height 50%
+          display: flex
+          text-align: center
+          align-items: center
+          justify-content: flex-start
+          flex-direction: column
+          .article-meta-wrap
+            color #969797
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            a
+              color: var(--text-highlight-color)
+              transition: all .2s ease-in-out
+              color #969797
+              // &:hover
+              //   color: var(--theme-color)
+      .article-content
+        display flex
+        text-align: center
+        flex-direction row
+        align-items center
+        justify-content center
+        .article-content-text
+          display -webkit-box
+          -webkit-box-orient vertical
+          text-overflow: ellipsis
+          overflow hidden
+          color #fff
+          text-shadow 1px 2px 3px #000
+          // transition transform 0.6s;
+          // &:hover
+          //   transform: scale(1.1);
+    &.ads-wrap
+      display: block !important
+      height: auto !important
+  nav#pagination
+    width: 100%
+// 卡片单元布局样式
+.recent-posts
+  padding 0 5px 0 5px
+  display flex
+  flex-direction row
+  flex-wrap wrap
+  .recent-post-item
+    border-radius 15px
+    overflow hidden
+    .recent-post-content
+      flex-direction column
+      flex-wrap nowrap
+      align-items center
+      max-height 350px
+      height: auto
+      width 100%
+      .recent-post-cover
+        width 100%
+        height 200px
+        clip-path polygon(0 130px,0 0,100% 0,100% 130px,50% 100%)
+        img
+          height 200px
+          width 100%
+          object-fit cover
+      .recent-post-info
+        height 150px
+        width 100%
+        padding 0px 25px 5px 25px
+        .article-title
+          margin: 0px 40px
+          font-size 19px
+          .article-title-link
+            -webkit-line-clamp: 2;
+        .recent-post-meta
+          margin: 0px 20px
+          .article-meta-wrap
+            font-size 13px
+            -webkit-line-clamp: 3;
+      .article-content
+        position absolute
+        height 200px
+        width 100%
+        background rgba(25,25,25,0.4)
+        clip-path polygon(0 130px,0 0,100% 0,100% 130px,50% 100%)
+        .article-content-text
+          -webkit-line-clamp 3
+          font-size 16px
+          margin 0px 25px 30px 25px
+          &::before
+            content "「"
+            font-size 20px
+          &::after
+            content "」"
+            font-size 20px
+      .recent-post-arrow
+        display block
+        background var(--text-bg-hover)
+        position absolute
+        height 10px
+        width 20px
+        clip-path polygon(0 0,100% 0,50% 100%)
+// 三栏布局滑动卡片样式
+@media screen and (min-width:1069px)
+  .recent-posts
+    .recent-post-item
+      width 32.3%
+      margin 0px 1% 20px 0px
+      .recent-post-content
+        .recent-post-info
+          .article-title
+            margin: 0px 5px
+            .article-title-link
+              -webkit-line-clamp: 1;
+          .recent-post-meta
+            margin: 0px 5px
+            .article-meta-wrap
+              -webkit-line-clamp: 2;
+// 双栏布局卡片自适应适配
+@media screen and (min-width:572px) and (max-width:1068px)
+  .recent-posts
+    .recent-post-item
+      width 47%
+      margin 0px 3% 20px 0px
+// 单栏布局卡片自适应适配
+@media screen and (max-width:572px)
+  .recent-posts
+    .recent-post-item
+      width 100%

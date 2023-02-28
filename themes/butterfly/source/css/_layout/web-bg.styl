@@ -1,0 +1,24 @@
+$web-bg-night = hexo-config('background.darkmode') ? unquote(hexo-config('background.darkmode')) : $web-bg
+$mobile-bg-day = hexo-config('background.mobileday') ? unquote(hexo-config('background.mobileday')) : $web-bg
+$mobile-bg-night = hexo-config('background.mobilenight') ? unquote(hexo-config('background.mobilenight')) : $web-bg-night
+[data-theme="dark"]
+  #web_bg
+    background: $web-bg-night
+    background-attachment: local
+    background-position: center
+    background-size: cover
+    background-repeat: no-repeat
+@media screen and (max-width: 800px)
+  #web_bg
+    background: $mobile-bg-day
+    background-attachment: local !important
+    background-position: center !important
+    background-size: cover !important
+    background-repeat: no-repeat !important
+  [data-theme="dark"]
+    #web_bg
+      background: $mobile-bg-night
+      background-attachment: local !important
+      background-position: center !important
+      background-size: cover !important
+      background-repeat: no-repeat !important

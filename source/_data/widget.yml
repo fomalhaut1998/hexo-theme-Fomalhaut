@@ -1,0 +1,13 @@
+# top: 创建的 widget 会出现在非 sticky 区域（即所有页面都会显示)
+# bottom: 创建的 widget 会出现在 sticky 区域（除了文章页都会显示)
+# top:
+#   - class_name:
+#     id_name: newYear
+#     name:
+#     icon:
+#     order: 1
+#     html: '<div id="newYear-main"><div class="mask"></div>
+#       <p class="title"></p>
+#       <div class="newYear-time"></div>
+#       <p class="today" style="text-align: right;"></p>
+#       </div>'

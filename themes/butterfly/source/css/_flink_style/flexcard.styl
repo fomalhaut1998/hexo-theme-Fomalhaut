@@ -1,0 +1,116 @@
+#article-container img
+  margin 0 auto!important
+.flink-list
+  overflow auto
+  & > a
+    width calc(25% - 15px)
+    height 130px
+    position relative
+    display block
+    margin 15px 7px
+    float left
+    overflow hidden
+    border-radius 10px
+    transition all .3s ease 0s, transform .6s cubic-bezier(.6, .2, .1, 1) 0s
+    box-shadow 0 14px 38px rgba(0, 0, 0, .08), 0 3px 8px rgba(0, 0, 0, .06)
+    &:hover
+      .info
+        transform translateY(-100%)
+      .wrapper
+        img
+          transform scale(1.2)
+      &::before
+        position: fixed
+        width:inherit
+        margin:auto
+        left:0
+        right:0
+        top:10%
+        border-radius: 10px
+        text-align: center
+        z-index: 100
+        content: attr(data-title)
+        font-size: 20px
+        color: #fff
+        padding: 10px
+        background-color: rgba($theme-color,0.8)
+
+    .cover
+      width 100%
+      transition transform .5s ease-out
+    .wrapper
+      position relative
+      .fadeIn
+        animation coverIn .8s ease-out forwards
+      img
+        height 130px
+        pointer-events none
+    .info
+      display flex
+      flex-direction column
+      justify-content center
+      align-items center
+      width 100%
+      height 100%
+      overflow hidden
+      border-radius 3px
+      background-color hsla(0, 0%, 100%, .7)
+      transition transform .5s cubic-bezier(.6, .2, .1, 1) 0s
+      img
+        position relative
+        top 22px
+        width 66px
+        height 66px
+        border-radius 50%
+        box-shadow 0 0 10px rgba(0, 0, 0, .3)
+        z-index 1
+        text-align center
+        pointer-events none
+      span
+        padding 20px 10% 60px 10%
+        font-size 16px
+        width 100%
+        text-align center
+        box-shadow 0 0 10px rgba(0, 0, 0, .3)
+        background-color hsla(0, 0%, 100%, .7)
+        color var(--font-color)
+        white-space nowrap
+        overflow hidden
+        text-overflow ellipsis
+.flink-list>a .info,
+.flink-list>a .wrapper .cover
+  position absolute
+  top 0
+  left 0
+
+@media screen and (max-width:1024px)
+  .flink-list
+    & > a
+      width calc(33.33333% - 15px)
+
+@media screen and (max-width:600px)
+  .flink-list
+    & > a
+      width calc(50% - 15px)
+
+[data-theme=dark]
+  .flink-list a .info,
+  .flink-list a .info span
+    background-color rgba(0, 0, 0, .6)
+  .flink-list
+    & > a
+      &:hover
+        &:before
+          background-color: rgba(#121212,0.8);
+.justified-gallery > div > img,
+.justified-gallery > figure > img,
+.justified-gallery > a > a > img,
+.justified-gallery > div > a > img,
+.justified-gallery > figure > a > img,
+.justified-gallery > a > svg,
+.justified-gallery > div > svg,
+.justified-gallery > figure > svg,
+.justified-gallery > a > a > svg,
+.justified-gallery > div > a > svg,
+.justified-gallery > figure > a > svg
+  position static!important

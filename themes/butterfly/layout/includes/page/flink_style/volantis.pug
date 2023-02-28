@@ -1,0 +1,21 @@
+#article-container
+  if top_img === false
+    h1.page-title= page.title
+  .flink
+    if site.data.link
+      each i in site.data.link
+        if i.class_name
+          h2!= i.class_name
+        if i.class_desc
+          .flink-desc!="分类描述🎨：" + i.class_desc
+        .site-card-group
+          each item in i.link_list
+            a.site-card(target='_blank' rel='noopener' href=url_for(item.link))
+              .img
+                - var siteshot = item.siteshot ? url_for(item.siteshot) : 'https://image.thum.io/get/allowJPG/wait/20/width/600/crop/950/' + item.link
+                img.no-lightbox(src=siteshot onerror=`this.onerror=null;this.src='` + url_for(theme.error_img.post_page) + `'` alt='' )
+              .info
+                img.no-lightbox(src=url_for(item.avatar) onerror=`this.onerror=null;this.src='` + url_for(theme.error_img.flink) + `'` alt='' )
+                span.title= item.name
+                span.desc(title=item.descr)= item.descr
+  != page.content

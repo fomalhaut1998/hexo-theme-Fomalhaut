@@ -1,0 +1,190 @@
+.tip-button {
+  border: 0;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 600;
+  height: 2.6rem;
+  margin-bottom: -4rem;
+  outline: 0;
+  position: relative;
+  top: 0;
+  transform-origin: 0% 100%;
+  transition: transform 50ms ease-in-out;
+  width: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+.tip-button:active {
+  transform: rotate(4deg);
+}
+.tip-button.clicked {
+  animation: 150ms ease-in-out 1 shake;
+  pointer-events: none;
+}
+.tip-button.clicked .tip-button__text {
+  opacity: 0;
+  transition: opacity 100ms linear 200ms;
+}
+.tip-button.clicked::before {
+  height: 0.5rem;
+  width: 60%;
+  background: var(button-hover-color);
+}
+.tip-button.clicked .coin {
+  transition: margin-bottom 1s linear 200ms;
+  margin-bottom: 0;
+}
+.tip-button.shrink-landing::before {
+  transition: width 200ms ease-in;
+  width: 0;
+}
+.tip-button.coin-landed::after {
+  opacity: 1;
+  transform: scale(1);
+  transform-origin: 50% 100%;
+}
+.tip-button.coin-landed .coin-wrapper {
+  background: radial-gradient(circle at 35% 97%, rgba(3, 16, 50, 0.4) 0.04rem, transparent 0.04rem), radial-gradient(circle at 45% 92%, rgba(3, 16, 50, 0.4) 0.04rem, transparent 0.02rem), radial-gradient(circle at 55% 98%, rgba(3, 16, 50, 0.4) 0.04rem, transparent 0.04rem), radial-gradient(circle at 65% 96%, rgba(3, 16, 50, 0.4) 0.06rem, transparent 0.06rem);
+  background-position: center bottom;
+  background-size: 100%;
+  bottom: -1rem;
+  opacity: 0;
+  transform: scale(2) translateY(-10px);
+}
+.tip-button__text {
+  color: #fff;
+  margin-right: 1.8rem;
+  opacity: 1;
+  position: relative;
+  transition: opacity 100ms linear 500ms;
+  z-index: 3;
+}
+.tip-button::before {
+  border-radius: 0.25rem;
+  bottom: 0;
+  content: '';
+  display: block;
+  height: 100%;
+  left: 50%;
+  position: absolute;
+  transform: translateX(-50%);
+  transition: height 250ms ease-in-out 400ms, width 250ms ease-in-out 300ms;
+  width: 100%;
+  z-index: 2;
+}
+.tip-button::after {
+  bottom: -1rem;
+  color: white;
+  content: 'ヾ(≧O≦)〃嗷~'; /*点击后显示的内容*/
+  height: 110%;
+  left: 0;
+  opacity: 0;
+  position: absolute;
+  pointer-events: none;
+  text-align: center;
+  transform: scale(0);
+  transform-origin: 50% 20%;
+  transition: transform 200ms cubic-bezier(0, 0, 0.35, 1.43);
+  width: 100%;
+  z-index: 1;
+}
+
+.coin-wrapper {
+  background: none;
+  bottom: 0;
+  height: 18rem;
+  left: 0;
+  opacity: 1;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  transform: none;
+  transform-origin: 50% 100%;
+  transition: opacity 200ms linear 100ms, transform 300ms ease-out;
+  width: 100%;
+}
+
+.coin {
+  --front-y-multiplier: 0;
+  --back-y-multiplier: 0;
+  --coin-y-multiplier: 0;
+  --coin-x-multiplier: 0;
+  --coin-scale-multiplier: 0;
+  --coin-rotation-multiplier: 0;
+  --shine-opacity-multiplier: 0.4;
+  --shine-bg-multiplier: 50%;
+  bottom: calc(var(--coin-y-multiplier) * 1rem - 3.5rem);
+  height: 3.5rem;
+  margin-bottom: 3.05rem;
+  position: absolute;
+  right: calc(var(--coin-x-multiplier) * 34% + 16%);
+  transform: translateX(50%) scale(calc(0.4 + var(--coin-scale-multiplier))) rotate(calc(var(--coin-rotation-multiplier) * -1deg));
+  transition: opacity 100ms linear 200ms;
+  width: 3.5rem;
+  z-index: 3;
+}
+.coin__front, .coin__middle, .coin__back, .coin::before, .coin__front::after, .coin__back::after {
+  border-radius: 50%;
+  box-sizing: border-box;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  width: 100%;
+  z-index: 3;
+}
+.coin__front {
+  background: radial-gradient(circle at 50% 50%, transparent 50%, rgba(115, 124, 153, 0.4) 54%, #c2cadf 54%), linear-gradient(210deg, #8590b3 32%, transparent 32%), linear-gradient(150deg, #8590b3 32%, transparent 32%), linear-gradient(to right, #8590b3 22%, transparent 22%, transparent 78%, #8590b3 78%), linear-gradient(to bottom, #fcfaf9 44%, transparent 44%, transparent 65%, #fcfaf9 65%, #fcfaf9 71%, #8590b3 71%), linear-gradient(to right, transparent 28%, #fcfaf9 28%, #fcfaf9 34%, #8590b3 34%, #8590b3 40%, #fcfaf9 40%, #fcfaf9 47%, #8590b3 47%, #8590b3 53%, #fcfaf9 53%, #fcfaf9 60%, #8590b3 60%, #8590b3 66%, #fcfaf9 66%, #fcfaf9 72%, transparent 72%);
+  background-color: #8590b3;
+  background-size: 100% 100%;
+  transform: translateY(calc(var(--front-y-multiplier) * 0.3181818182rem / 2)) scaleY(var(--front-scale-multiplier));
+}
+.coin__front::after {
+  background: rgba(0, 0, 0, 0.2);
+  content: '';
+  opacity: var(--front-y-multiplier);
+}
+.coin__middle {
+  background: #737c99;
+  transform: translateY(calc(var(--middle-y-multiplier) * 0.3181818182rem / 2)) scaleY(var(--middle-scale-multiplier));
+}
+.coin__back {
+  background: radial-gradient(circle at 50% 50%, transparent 50%, rgba(115, 124, 153, 0.4) 54%, #c2cadf 54%), radial-gradient(circle at 50% 40%, #fcfaf9 23%, transparent 23%), radial-gradient(circle at 50% 100%, #fcfaf9 35%, transparent 35%);
+  background-color: #8590b3;
+  background-size: 100% 100%;
+  transform: translateY(calc(var(--back-y-multiplier) * 0.3181818182rem / 2)) scaleY(var(--back-scale-multiplier));
+}
+.coin__back::after {
+  background: rgba(0, 0, 0, 0.2);
+  content: '';
+  opacity: var(--back-y-multiplier);
+}
+.coin::before {
+  background: radial-gradient(circle at 25% 65%, transparent 50%, rgba(255, 255, 255, 0.9) 90%), linear-gradient(55deg, transparent calc(var(--shine-bg-multiplier) + 0%), #e9f4ff calc(var(--shine-bg-multiplier) + 0%), transparent calc(var(--shine-bg-multiplier) + 50%));
+  content: '';
+  opacity: var(--shine-opacity-multiplier);
+  transform: translateY(calc(var(--middle-y-multiplier) * 0.3181818182rem / -2)) scaleY(var(--middle-scale-multiplier)) rotate(calc(var(--coin-rotation-multiplier) * 1deg));
+  z-index: 10;
+}
+.coin::after {
+  background: #737c99;
+  content: '';
+  height: 0.3181818182rem;
+  left: 0;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+  z-index: 2;
+}
+
+@keyframes shake {
+  0% {
+    transform: rotate(4deg);
+  }
+  66% {
+    transform: rotate(-4deg);
+  }
+  100% {
+    transform: rotate();
+  }
+}

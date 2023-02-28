@@ -1,0 +1,71 @@
+if hexo-config('aside.card_friend_link.enable')
+  :root
+    --card-friend-class-desc-bgcolor: #e7e7e7
+    --card-friend-name-color: #000
+    --card-friend-item-hover: var(--text-bg-hover)
+    --card-friend-descr-color: #797979
+  [data-theme="dark"]
+    --card-friend-class-desc-bgcolor: #111111
+    --card-friend-name-color: #fff
+    --card-friend-item-hover: var(--text-bg-hover)
+    --card-friend-descr-color: #797979
+  #aside-content
+    .card-widget.card-friend-link
+      padding: 20px
+  .card-widget.card-friend-link
+    .card-friend-link-container
+      max-height 460px
+      overflow scroll
+      &::-webkit-scrollbar
+        display: none
+    summary.card-friend-class-desc
+      padding 0px 15px
+    details.card-friend-class-name[open]
+      summary.card-friend-class-desc
+        position: sticky;
+        top: 0px;
+        background: var(--card-friend-class-desc-bgcolor);
+        z-index: 1
+    a
+      &.card-friend-item
+        padding 0px 15px
+        height 60px
+        width auto
+        display flex
+        align-items center
+        flex-wrap nowrap
+        &:hover
+          background-color var(--card-friend-item-hover)
+          border-radius: 12px
+          transition: all 0.3s ease-in-out
+
+    img
+      &.card-friend-avatar
+        width 40px
+        height 40px
+        border-radius 50%
+        margin 10px 10px
+    .offline-friend-link
+      img
+        &.card-friend-avatar
+          filter: grayscale(100%)
+
+    .card-friend-details
+      width auto
+      height 60px
+      display flex
+      flex-wrap nowrap
+      flex-direction column
+      justify-content center
+      align-items flex-start
+
+    .card-friend-name
+      color var(--card-friend-name-color)
+
+    .card-friend-descr
+      font-size 12px
+      white-space nowrap
+      overflow hidden
+      text-overflow ellipsis
+      width 12em
+      color var(--card-friend-descr-color)

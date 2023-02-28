@@ -1,0 +1,530 @@
+#loading-box
+  position fixed
+  z-index 1000
+  width 100vw
+  height 100vh
+  overflow hidden
+  &.loaded
+    z-index -1000
+    .triangles-wrap
+      display none
+
+.triangles-wrap
+  position absolute
+  top 50%
+  left 50%
+  transform translate(-50%,-66.6666666666666666%)
+  -ms-transform translate(-50%,-66.6666666666666666%)
+  -webkit-transform translate(-50%,-66.6666666666666666%)
+  -webkit-animation animascale 2s linear alternate infinite
+  animation animascale 2s linear alternate both infinite
+
+
+
+.triangles-zero, .triangles-ein, .triangles-dvai, .triangles-trei, .triangles-feir, .triangles-fei, .triangles-sei, .triangles-seiz, .triangles-eiz
+  width 0px
+  height 0px
+  position absolute
+  top 50%
+  left 50%
+  transform translate(-50%,-66.6666666666666666%)
+  -ms-transform translate(-50%,-66.6666666666666666%)
+  -webkit-transform translate(-50%,-66.6666666666666666%)
+
+.triangles-zero
+  border-style solid
+  border-width 0 5px 8.7px 5px
+  border-color transparent transparent #1274b6 transparent
+  -webkit-animation anima 2s linear reverse both infinite 4s, animacolorzero 2s linear alternate both infinite
+  animation anima 2s linear reverse both infinite 4s, animacolorzero 2s linear alternate both infinite
+  -webkit-transform-origin top left
+
+.triangles-ein
+  border-style solid
+  border-width 0 10px 17.3px 10px
+  border-color transparent transparent #167bbf transparent
+  -webkit-animation anima 2s linear both infinite 4.2s, animacolorein 2s linear alternate both infinite
+  animation anima 2s linear both infinite 4.2s, animacolorein 2s linear alternate both infinite
+  -webkit-transform-origin top left
+
+.triangles-dvai
+  border-style solid
+  border-width 0 20px 34.6px 20px
+  border-color transparent transparent #1b82c8 transparent
+  -webkit-animation anima 2s linear reverse both infinite 4.4s, animacolordvai 2s linear alternate both infinite
+  animation anima 2s linear reverse both infinite 4.4s, animacolordvai 2s linear alternate both infinite
+  -webkit-transform-origin top left
+
+.triangles-trei
+  border-style solid
+  border-width 0 40px 69.3px 40px
+  border-color transparent transparent #228bd2 transparent
+  -webkit-animation anima 2s linear  both infinite 4.6s, animacolortrei 2s linear alternate both infinite
+  animation anima 2s linear  both infinite 4.6s, animacolortrei 2s linear alternate both infinite
+  -webkit-transform-origin top left
+
+.triangles-feir
+  border-style solid
+  border-width 0 80px 138.6px 80px
+  border-color transparent transparent #2992d9 transparent
+  -webkit-animation anima 2s linear reverse  both infinite 4.8s, animacolorfeir 2s linear alternate both infinite
+  animation anima 2s linear reverse  both infinite 4.8s, animacolorfeir 2s linear alternate both infinite
+  -webkit-transform-origin top left
+
+.triangles-fei
+  border-style solid
+  border-width 0 160px 277.1px 160px
+  border-color transparent transparent #3498db transparent
+  -webkit-animation anima 2s linear  both infinite 5s, animacolorfei 2s linear alternate both infinite
+  animation anima 2s linear  both infinite 5s, animacolorfei 2s linear alternate both infinite
+  -webkit-transform-origin top left
+
+.triangles-sei
+  border-style solid
+  border-width 0 320px 554.3px 320px
+  border-color transparent transparent #3f9edd transparent
+  -webkit-animation anima 2s linear reverse  both infinite 5.2s, animacolorsei 2s linear alternate both infinite
+  animation anima 2s linear reverse  both infinite 5.2s, animacolorsei 2s linear alternate both infinite
+  -webkit-transform-origin top left
+
+.triangles-seiz
+  border-style solid
+  border-width 0 640px 1108.5px 640px
+  border-color transparent transparent #48a2de transparent
+  -webkit-animation anima 2s linear  both infinite 5.4s, animacolorseiz 2s linear alternate both infinite
+  animation anima 2s linear  both infinite 5.4s, animacolorseiz 2s linear alternate both infinite
+  -webkit-transform-origin top left
+
+.triangles-eiz
+  border-style solid
+  border-width 0 1280px 2217.0px 1280px
+  border-color transparent transparent #59aae0 transparent
+  -webkit-animation anima 2s linear reverse  both infinite 5.6s, animacoloreiz 2s linear alternate both infinite
+  animation anima 2s linear reverse  both infinite 5.6s, animacoloreiz 2s linear alternate both infinite
+  -webkit-transform-origin top left
+
+
+@-webkit-keyframes anima
+  from
+    -webkit-transform: rotate(0deg) translate(-50%,-66.6666666666666666%)
+  to
+    -webkit-transform: rotate(360deg) translate(-50%,-66.6666666666666666%)
+
+
+@keyframes anima
+    from
+      transform rotate(0deg) translate(-50%,-66.6666666666666666%)
+    to
+      transform rotate(360deg) translate(-50%,-66.6666666666666666%)
+
+
+
+/*
+@-webkit-keyframes animacolorzero
+{
+0%{border-color: transparent transparent #602520 transparent;}
+16.6%{border-color: transparent transparent #672922 transparent;}
+33.3%{border-color: transparent transparent #6F2E25 transparent;}
+50%{border-color: transparent transparent #772F28 transparent;}
+66.6%{border-color: transparent transparent #82332B transparent;}
+83.3%{border-color: transparent transparent #8A372E transparent;}
+100%{border-color: transparent transparent #A14436 transparent;}
+}
+
+@keyframes animacolorzero
+{
+0%{border-color: transparent transparent #602520 transparent;}
+16.6%{border-color: transparent transparent #672922 transparent;}
+33.3%{border-color: transparent transparent #6F2E25 transparent;}
+50%{border-color: transparent transparent #772F28 transparent;}
+66.6%{border-color: transparent transparent #82332B transparent;}
+83.3%{border-color: transparent transparent #8A372E transparent;}
+100%{border-color: transparent transparent #A14436 transparent;}
+}
+
+
+@-webkit-keyframes animacolorein
+{
+0%{border-color: transparent transparent #672922 transparent;}
+16.6%{border-color: transparent transparent #6F2E25 transparent;}
+33.3%{border-color: transparent transparent #772F28 transparent;}
+50%{border-color: transparent transparent #82332B transparent;}
+66.6%{border-color: transparent transparent #8A372E transparent;}
+83.3%{border-color: transparent transparent #A14436 transparent;}
+100%{border-color: transparent transparent #602520 transparent;}
+}
+
+@keyframes animacolorein
+{
+0%{border-color: transparent transparent #672922 transparent;}
+16.6%{border-color: transparent transparent #6F2E25 transparent;}
+33.3%{border-color: transparent transparent #772F28 transparent;}
+50%{border-color: transparent transparent #82332B transparent;}
+66.6%{border-color: transparent transparent #8A372E transparent;}
+83.3%{border-color: transparent transparent #A14436 transparent;}
+100%{border-color: transparent transparent #602520 transparent;}
+}
+
+
+@-webkit-keyframes animacolordvai
+{
+0%{border-color: transparent transparent #6F2E25 transparent;}
+16.6%{border-color: transparent transparent #772F28 transparent;}
+33.3%{border-color: transparent transparent #82332B transparent;}
+50%{border-color: transparent transparent #8A372E transparent;}
+66.6%{border-color: transparent transparent #A14436 transparent;}
+83.3%{border-color: transparent transparent #602520 transparent;}
+100%{border-color: transparent transparent #672922 transparent;}
+}
+
+@keyframes animacolordvai
+{
+0%{border-color: transparent transparent #6F2E25 transparent;}
+16.6%{border-color: transparent transparent #772F28 transparent;}
+33.3%{border-color: transparent transparent #82332B transparent;}
+50%{border-color: transparent transparent #8A372E transparent;}
+66.6%{border-color: transparent transparent #A14436 transparent;}
+83.3%{border-color: transparent transparent #602520 transparent;}
+100%{border-color: transparent transparent #672922 transparent;}
+}
+
+
+@-webkit-keyframes animacolortrei
+{
+0%{border-color: transparent transparent #772F28 transparent;}
+16.6%{border-color: transparent transparent #82332B transparent;}
+33.3%{border-color: transparent transparent #8A372E transparent;}
+50%{border-color: transparent transparent #A14436 transparent;}
+66.6%{border-color: transparent transparent #602520 transparent;}
+83.3%{border-color: transparent transparent #672922 transparent;}
+100%{border-color: transparent transparent #6F2E25 transparent;}
+}
+
+@keyframes animacolortrei
+{
+0%{border-color: transparent transparent #772F28 transparent;}
+16.6%{border-color: transparent transparent #82332B transparent;}
+33.3%{border-color: transparent transparent #8A372E transparent;}
+50%{border-color: transparent transparent #A14436 transparent;}
+66.6%{border-color: transparent transparent #602520 transparent;}
+83.3%{border-color: transparent transparent #672922 transparent;}
+100%{border-color: transparent transparent #6F2E25 transparent;}
+}
+
+
+@-webkit-keyframes animacolorfeir
+{
+0%{border-color: transparent transparent #82332B transparent;}
+16.6%{border-color: transparent transparent #8A372E transparent;}
+33.3%{border-color: transparent transparent #A14436 transparent;}
+50%{border-color: transparent transparent #602520 transparent;}
+66.6%{border-color: transparent transparent #672922 transparent;}
+83.3%{border-color: transparent transparent #6F2E25 transparent;}
+100%{border-color: transparent transparent #772F28 transparent;}
+}
+
+@keyframes animacolorfeir
+{
+0%{border-color: transparent transparent #82332B transparent;}
+16.6%{border-color: transparent transparent #8A372E transparent;}
+33.3%{border-color: transparent transparent #A14436 transparent;}
+50%{border-color: transparent transparent #602520 transparent;}
+66.6%{border-color: transparent transparent #672922 transparent;}
+83.3%{border-color: transparent transparent #6F2E25 transparent;}
+100%{border-color: transparent transparent #772F28 transparent;}
+}
+
+
+
+@-webkit-keyframes animacolorfei
+{
+0%{border-color: transparent transparent #8A372E transparent;}
+16.6%{border-color: transparent transparent #A14436 transparent;}
+33.3%{border-color: transparent transparent #602520 transparent;}
+50%{border-color: transparent transparent #672922 transparent;}
+66.6%{border-color: transparent transparent #6F2E25 transparent;}
+83.3%{border-color: transparent transparent #772F28 transparent;}
+100%{border-color: transparent transparent #82332B transparent;}
+}
+
+@keyframes animacolorfei
+{
+0%{border-color: transparent transparent #8A372E transparent;}
+16.6%{border-color: transparent transparent #A14436 transparent;}
+33.3%{border-color: transparent transparent #602520 transparent;}
+50%{border-color: transparent transparent #672922 transparent;}
+66.6%{border-color: transparent transparent #6F2E25 transparent;}
+83.3%{border-color: transparent transparent #772F28 transparent;}
+100%{border-color: transparent transparent #82332B transparent;}
+}
+
+
+
+
+@-webkit-keyframes animacolorsei
+{
+0%{border-color: transparent transparent #A14436 transparent;}
+16.6%{border-color: transparent transparent #602520 transparent;}
+33.3%{border-color: transparent transparent #672922 transparent;}
+50%{border-color: transparent transparent #6F2E25 transparent;}
+66.6%{border-color: transparent transparent #772F28 transparent;}
+83.3%{border-color: transparent transparent #82332B transparent;}
+100%{border-color: transparent transparent #8A372E transparent;}
+}
+
+@keyframes animacolorsei
+{
+0%{border-color: transparent transparent #A14436 transparent;}
+16.6%{border-color: transparent transparent #602520 transparent;}
+33.3%{border-color: transparent transparent #672922 transparent;}
+50%{border-color: transparent transparent #6F2E25 transparent;}
+66.6%{border-color: transparent transparent #772F28 transparent;}
+83.3%{border-color: transparent transparent #82332B transparent;}
+100%{border-color: transparent transparent #8A372E transparent;}
+}*/
+
+@-webkit-keyframes animacolorzero
+{
+0%{border-color: transparent transparent #1274b6 transparent;}
+12.5%{border-color: transparent transparent #167bbf transparent;}
+25%{border-color: transparent transparent #1b82c8 transparent;}
+37.5%{border-color: transparent transparent #228bd2 transparent;}
+50%{border-color: transparent transparent #2992d9 transparent;}
+62.5%{border-color: transparent transparent #3498db transparent;}
+75%{border-color: transparent transparent #3f9edd transparent;}
+87.5%{border-color: transparent transparent #48a2de transparent;}
+100%{border-color: transparent transparent #59aae0 transparent;}
+}
+
+@keyframes animacolorzero
+{
+0%{border-color: transparent transparent #1274b6 transparent;}
+12.5%{border-color: transparent transparent #167bbf transparent;}
+25%{border-color: transparent transparent #1b82c8 transparent;}
+37.5%{border-color: transparent transparent #228bd2 transparent;}
+50%{border-color: transparent transparent #2992d9 transparent;}
+62.5%{border-color: transparent transparent #3498db transparent;}
+75%{border-color: transparent transparent #3f9edd transparent;}
+87.5%{border-color: transparent transparent #48a2de transparent;}
+100%{border-color: transparent transparent #59aae0 transparent;}
+}
+
+@-webkit-keyframes animacolorein
+{
+0%{border-color: transparent transparent #167bbf transparent;}
+12.5%{border-color: transparent transparent #1b82c8 transparent;}
+25%{border-color: transparent transparent #228bd2 transparent;}
+37.5%{border-color: transparent transparent #2992d9 transparent;}
+50%{border-color: transparent transparent #3498db transparent;}
+62.5%{border-color: transparent transparent #3f9edd transparent;}
+75%{border-color: transparent transparent #48a2de transparent;}
+87.5%{border-color: transparent transparent #59aae0 transparent;}
+100%{border-color: transparent transparent #1274b6 transparent;}
+}
+
+@keyframes animacolorein
+{
+0%{border-color: transparent transparent #167bbf transparent;}
+12.5%{border-color: transparent transparent #1b82c8 transparent;}
+25%{border-color: transparent transparent #228bd2 transparent;}
+37.5%{border-color: transparent transparent #2992d9 transparent;}
+50%{border-color: transparent transparent #3498db transparent;}
+62.5%{border-color: transparent transparent #3f9edd transparent;}
+75%{border-color: transparent transparent #48a2de transparent;}
+87.5%{border-color: transparent transparent #59aae0 transparent;}
+100%{border-color: transparent transparent #1274b6 transparent;}
+}
+
+@-webkit-keyframes animacolordvai
+{
+0%{border-color: transparent transparent #1b82c8 transparent;}
+12.5%{border-color: transparent transparent #228bd2 transparent;}
+25%{border-color: transparent transparent #2992d9 transparent;}
+37.5%{border-color: transparent transparent #3498db transparent;}
+50%{border-color: transparent transparent #3f9edd transparent;}
+62.5%{border-color: transparent transparent #48a2de transparent;}
+75%{border-color: transparent transparent #59aae0 transparent;}
+87.5%{border-color: transparent transparent #1274b6 transparent;}
+100%{border-color: transparent transparent #167bbf transparent;}
+}
+
+@keyframes animacolordvai
+{
+0%{border-color: transparent transparent #1b82c8 transparent;}
+12.5%{border-color: transparent transparent #228bd2 transparent;}
+25%{border-color: transparent transparent #2992d9 transparent;}
+37.5%{border-color: transparent transparent #3498db transparent;}
+50%{border-color: transparent transparent #3f9edd transparent;}
+62.5%{border-color: transparent transparent #48a2de transparent;}
+75%{border-color: transparent transparent #59aae0 transparent;}
+87.5%{border-color: transparent transparent #1274b6 transparent;}
+100%{border-color: transparent transparent #167bbf transparent;}
+}
+
+@-webkit-keyframes animacolortrei
+{
+0%{border-color: transparent transparent #228bd2 transparent;}
+12.5%{border-color: transparent transparent #2992d9 transparent;}
+25%{border-color: transparent transparent #3498db transparent;}
+37.5%{border-color: transparent transparent #3f9edd transparent;}
+50%{border-color: transparent transparent #48a2de transparent;}
+62.5%{border-color: transparent transparent #59aae0 transparent;}
+75%{border-color: transparent transparent #1274b6 transparent;}
+87.5%{border-color: transparent transparent #167bbf transparent;}
+100%{border-color: transparent transparent #1b82c8 transparent;}
+}
+
+@keyframes animacolortrei
+{
+0%{border-color: transparent transparent #228bd2 transparent;}
+12.5%{border-color: transparent transparent #2992d9 transparent;}
+25%{border-color: transparent transparent #3498db transparent;}
+37.5%{border-color: transparent transparent #3f9edd transparent;}
+50%{border-color: transparent transparent #48a2de transparent;}
+62.5%{border-color: transparent transparent #59aae0 transparent;}
+75%{border-color: transparent transparent #1274b6 transparent;}
+87.5%{border-color: transparent transparent #167bbf transparent;}
+100%{border-color: transparent transparent #1b82c8 transparent;}
+}
+
+@-webkit-keyframes animacolorfeir
+{
+0%{border-color: transparent transparent #2992d9 transparent;}
+12.5%{border-color: transparent transparent #3498db transparent;}
+25%{border-color: transparent transparent #3f9edd transparent;}
+37.5%{border-color: transparent transparent #48a2de transparent;}
+50%{border-color: transparent transparent #59aae0 transparent;}
+62.5%{border-color: transparent transparent #1274b6 transparent;}
+75%{border-color: transparent transparent #167bbf transparent;}
+87.5%{border-color: transparent transparent #1b82c8 transparent;}
+100%{border-color: transparent transparent #228bd2 transparent;}
+}
+
+@keyframes animacolorfeir
+{
+0%{border-color: transparent transparent #2992d9 transparent;}
+12.5%{border-color: transparent transparent #3498db transparent;}
+25%{border-color: transparent transparent #3f9edd transparent;}
+37.5%{border-color: transparent transparent #48a2de transparent;}
+50%{border-color: transparent transparent #59aae0 transparent;}
+62.5%{border-color: transparent transparent #1274b6 transparent;}
+75%{border-color: transparent transparent #167bbf transparent;}
+87.5%{border-color: transparent transparent #1b82c8 transparent;}
+100%{border-color: transparent transparent #228bd2 transparent;}
+}
+
+@-webkit-keyframes animacolorfei
+{
+0%{border-color: transparent transparent #3498db transparent;}
+12.5%{border-color: transparent transparent #3f9edd transparent;}
+25%{border-color: transparent transparent #48a2de transparent;}
+37.5%{border-color: transparent transparent #59aae0 transparent;}
+50%{border-color: transparent transparent #1274b6 transparent;}
+62.5%{border-color: transparent transparent #167bbf transparent;}
+75%{border-color: transparent transparent #1b82c8 transparent;}
+87.5%{border-color: transparent transparent #228bd2 transparent;}
+100%{border-color: transparent transparent #2992d9 transparent;}
+}
+
+@keyframes animacolorfei
+{
+0%{border-color: transparent transparent #3498db transparent;}
+12.5%{border-color: transparent transparent #3f9edd transparent;}
+25%{border-color: transparent transparent #48a2de transparent;}
+37.5%{border-color: transparent transparent #59aae0 transparent;}
+50%{border-color: transparent transparent #1274b6 transparent;}
+62.5%{border-color: transparent transparent #167bbf transparent;}
+75%{border-color: transparent transparent #1b82c8 transparent;}
+87.5%{border-color: transparent transparent #228bd2 transparent;}
+100%{border-color: transparent transparent #2992d9 transparent;}
+}
+
+@-webkit-keyframes animacolorsei
+{
+0%{border-color: transparent transparent #3f9edd transparent;}
+12.5%{border-color: transparent transparent #48a2de transparent;}
+25%{border-color: transparent transparent #59aae0 transparent;}
+37.5%{border-color: transparent transparent #1274b6 transparent;}
+50%{border-color: transparent transparent #167bbf transparent;}
+62.5%{border-color: transparent transparent #1b82c8 transparent;}
+75%{border-color: transparent transparent #228bd2 transparent;}
+87.5%{border-color: transparent transparent #2992d9 transparent;}
+100%{border-color: transparent transparent #3498db transparent;}
+}
+
+@keyframes animacolorsei
+{
+0%{border-color: transparent transparent #3f9edd transparent;}
+12.5%{border-color: transparent transparent #48a2de transparent;}
+25%{border-color: transparent transparent #59aae0 transparent;}
+37.5%{border-color: transparent transparent #1274b6 transparent;}
+50%{border-color: transparent transparent #167bbf transparent;}
+62.5%{border-color: transparent transparent #1b82c8 transparent;}
+75%{border-color: transparent transparent #228bd2 transparent;}
+87.5%{border-color: transparent transparent #2992d9 transparent;}
+100%{border-color: transparent transparent #3498db transparent;}
+}
+
+@-webkit-keyframes animacolorseiz
+{
+0%{border-color: transparent transparent #48a2de transparent;}
+12.5%{border-color: transparent transparent #59aae0 transparent;}
+25%{border-color: transparent transparent #1274b6 transparent;}
+37.5%{border-color: transparent transparent #167bbf transparent;}
+50%{border-color: transparent transparent #1b82c8 transparent;}
+62.5%{border-color: transparent transparent #228bd2 transparent;}
+75%{border-color: transparent transparent #2992d9 transparent;}
+87.5%{border-color: transparent transparent #3498db transparent;}
+100%{border-color: transparent transparent #3f9edd transparent;}
+}
+
+@keyframes animacolorseiz
+{
+0%{border-color: transparent transparent #48a2de transparent;}
+12.5%{border-color: transparent transparent #59aae0 transparent;}
+25%{border-color: transparent transparent #1274b6 transparent;}
+37.5%{border-color: transparent transparent #167bbf transparent;}
+50%{border-color: transparent transparent #1b82c8 transparent;}
+62.5%{border-color: transparent transparent #228bd2 transparent;}
+75%{border-color: transparent transparent #2992d9 transparent;}
+87.5%{border-color: transparent transparent #3498db transparent;}
+100%{border-color: transparent transparent #3f9edd transparent;}
+}
+
+@-webkit-keyframes animacoloreiz
+{
+0%{border-color: transparent transparent #59aae0 transparent;}
+12.5%{border-color: transparent transparent #1274b6 transparent;}
+25%{border-color: transparent transparent #167bbf transparent;}
+37.5%{border-color: transparent transparent #1b82c8 transparent;}
+50%{border-color: transparent transparent #228bd2 transparent;}
+62.5%{border-color: transparent transparent #2992d9 transparent;}
+75%{border-color: transparent transparent #3498db transparent;}
+87.5%{border-color: transparent transparent #3f9edd transparent;}
+100%{border-color: transparent transparent #48a2de transparent;}
+}
+
+@keyframes animacoloreiz
+{
+0%{border-color: transparent transparent #59aae0 transparent;}
+12.5%{border-color: transparent transparent #1274b6 transparent;}
+25%{border-color: transparent transparent #167bbf transparent;}
+37.5%{border-color: transparent transparent #1b82c8 transparent;}
+50%{border-color: transparent transparent #228bd2 transparent;}
+62.5%{border-color: transparent transparent #2992d9 transparent;}
+75%{border-color: transparent transparent #3498db transparent;}
+87.5%{border-color: transparent transparent #3f9edd transparent;}
+100%{border-color: transparent transparent #48a2de transparent;}
+}
+
+@-webkit-keyframes animascale
+{
+0%{-webkit-transform: scale(1);}
+100%{-webkit-transform: scale(1.2);}
+}
+
+@keyframes animascale
+{
+0%{-webkit-transform: scale(1);}
+100%{-webkit-transform: scale(1.2);}
+}

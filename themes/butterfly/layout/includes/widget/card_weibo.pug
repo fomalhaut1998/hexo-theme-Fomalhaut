@@ -1,0 +1,14 @@
+if theme.aside.card_weibo.enable
+  .card-widget.card-weibo
+    .card-content
+      .item-headline
+        //- i.fab.fa-weibo
+        a.faa-parent.animated-hover
+          svg.faa-tada.icon(style="height:25px;width:25px;fill:currentColor;position:relative;top:5px" aria-hidden="true")
+            use(xlink:href='#icon-weibo')
+        span(style="font-weight:bold")= _p('微博热搜')
+        //- i(style="position:relative;padding-left:8px;display:inline-block;vertical-align:middle;")
+        //-   svg.icon(style="height:23px;width:23px;fill:currentColor;position:relative;top:3px;animation: ccc 12s linear infinite;")
+        //-     use(xlink:href='#icon-shezhi')
+      #weibo-container(style="width: 100%; height: 150px;font-size: 95%;")
+  script(defer data-pjax src=url_for(theme.CDN.card_weibo))
