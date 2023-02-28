@@ -30,4 +30,6 @@
   hexo d
   ```
   
+- js的主体在`source/js/fomal.js`里面，都做了基本分块逻辑的标注，后期整合的，以xxx START和xxx END包裹
+- css主体在`themes\butterfly\source\css\_custom\custom.css`里，与Butterfly自带的样式编译为一个index.css
  注意：本项目开源了小站的绝大部分样式，但部分模块需自行更改为自己的密钥或信息，不会的请多看相关文档(Hexo主题文档、Butterfly主题文档、店长)和本站教程，若有问题请加Q群：691942826 验证：Github开源项目
