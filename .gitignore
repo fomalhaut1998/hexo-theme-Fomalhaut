@@ -8,3 +8,4 @@ public/
 .deploy_git*/
 .idea
 themes/butterfly/.git
+package-lock.json
