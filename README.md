@@ -1,4 +1,4 @@
-🥝的博客源码，目前已经开源啦！！！暂定名为**hexo-theme-Fomalhaut**，原作者网站：www.fomal.cc
+🥝的博客源码，目前已经开源啦！！！暂定名为**hexo-theme-Fomalhaut**，原作者网站：www.fomal.cc 
 
 
 ![](./cover.jpg)
