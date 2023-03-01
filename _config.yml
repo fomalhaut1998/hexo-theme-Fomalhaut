@@ -124,9 +124,9 @@ theme: butterfly
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
   - type: git
-    repository:  # 这个Github仓库用自动部署即可
+    repository:  # 这里写上你的Github地址
     branch: main
-  - type: baidu_url_submitter
+  # - type: baidu_url_submitter
   # - type: git
   #   #repo改为repo: git@域名:/var/repo/hexo.git
   #   repo: git@43.249.9.21:/var/repo/hexo.git
