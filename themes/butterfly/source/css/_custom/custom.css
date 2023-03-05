@@ -808,8 +808,8 @@ h6::before {
 /*3s为加载动画的时间，1为加载动画的次数，ease-in-out为动画效果*/
 #page-header,
 #web_bg {
-  -webkit-animation: imgblur 3s 1 ease-in-out;
-  animation: imgblur 3s 1 ease-in-out;
+  -webkit-animation: imgblur 1s 1 ease-in-out;
+  animation: imgblur 1s 1 ease-in-out;
 }
 @keyframes imgblur {
   0% {
@@ -1295,6 +1295,12 @@ input#pic-link {
   -moz-transition: none !important;
   -ms-transition: none !important;
   -o-transition: none !important;
+}
+
+@media screen and (mai-width: 768px) {
+  #nav {
+    padding: 0 28px;
+  }
 }
 
 /* 导航栏显示标题 */
@@ -2207,7 +2213,7 @@ span.card-clock-weather {
 /* 右边的按钮间距 */
 #meihua-button,
 #nightmode-button {
-  padding-left: 8px;
+  padding-left: 12px;
 }
 
 /* 搜索框样式 */
