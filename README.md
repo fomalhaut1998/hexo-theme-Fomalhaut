@@ -120,13 +120,133 @@
 
   
 
+- 加载页面时中间的头像在`custom.css`约1300行附近，直接搜索替换成你自己的头像即可
+
+  ```css
+  /* heo 加载动画头像 */
+  .loading-img {
+    background: url(https://lskypro.acozycotage.net/LightPicture/2022/12/60e5d4e39da7c077.webp)
+      no-repeat center center;
+    background-size: cover;
+  }
+  ```
+
+- 页脚时间由`fomal.js`控制，搜索以下代码，将网站诞生时间改为你自己的即可(示例：`2022-08-09`)
+
+  ```js
+  /* 页脚计时器 start */
+  var now = new Date();
+  function createtime() {
+    // 当前时间
+    now.setTime(now.getTime() + 1000);
+    var start = new Date("08/01/2022 00:00:00"); // 旅行者1号开始计算的时间
+    var dis = Math.trunc(23400000000 + ((now - start) / 1000) * 17); // 距离=秒数*速度 记住转换毫秒
+    var unit = (dis / 149600000).toFixed(6);  // 天文单位
+    // 网站诞生时间
+    var grt = new Date("08/09/2022 00:00:00");
+  ...
+    let currentTimeHtml = "";
+    (currentTimeHtml =
+      hnum < 18 && hnum >= 9
+        ? `<img class='boardsign' src='https://lskypro.acozycotage.net/Fomalhaut/badge/F小屋-科研摸鱼中.svg' title='什么时候能够实现财富自由呀~'><br> <div style="font-size:13px;font-weight:bold">本站居然运行了 ${dnum} 天 ${hnum} 小时 ${mnum} 分 ${snum} 秒 <i id="heartbeat" class='fas fa-heartbeat'></i> <br> 旅行者 1 号当前距离地球 ${dis} 千米，约为 ${unit} 个天文单位 🚀</div>`
+        : `<img class='boardsign' src='https://lskypro.acozycotage.net/Fomalhaut/badge/F小屋-下班休息啦.svg' title='下班了就该开开心心地玩耍~'><br> <div style="font-size:13px;font-weight:bold">本站居然运行了 ${dnum} 天 ${hnum} 小时 ${mnum} 分 ${snum} 秒 <i id="heartbeat" class='fas fa-heartbeat'></i> <br> 旅行者 1 号当前距离地球 ${dis} 千米，约为 ${unit} 个天文单位 🚀</div>`),
+      document.getElementById("workboard") &&
+      (document.getElementById("workboard").innerHTML = currentTimeHtml);
+  }
+  ...
+  
+  /*页脚计时器 end */
+  ```
+
+  
+
+- 控制台字符画，在`fomal.js`找到以下代码，并进行相应的替换，字符画可以到：[Text to ASCII Art Generator (TAAG)](https://patorjk.com/software/taag/#p=display&f=Graffiti&t=Type%20Something%20)生成
+
+  ```js
+  /* 控制台输出字符画 start */
+  var now1 = new Date();
+  
+  function createtime1() {
+    var grt = new Date("08/09/2022 00:00:00"); //此处修改你的建站时间或者网站上线时间
+    now1.setTime(now1.getTime() + 250);
+    var days = (now1 - grt) / 1000 / 60 / 60 / 24;
+    var dnum = Math.floor(days);
+  
+    var ascll = [
+      `欢迎来到Fomalhaut🥝の小家!`,
+      `Future is now 🍭🍭🍭`,
+      `
+          
+  ███████  ██████  ███    ███  █████  ██      ██   ██  █████  ██    ██ ████████ 
+  ██      ██    ██ ████  ████ ██   ██ ██      ██   ██ ██   ██ ██    ██    ██    
+  █████   ██    ██ ██ ████ ██ ███████ ██      ███████ ███████ ██    ██    ██    
+  ██      ██    ██ ██  ██  ██ ██   ██ ██      ██   ██ ██   ██ ██    ██    ██    
+  ██       ██████  ██      ██ ██   ██ ███████ ██   ██ ██   ██  ██████     ██   
+                                                
+  `,
+      "小站已经苟活",
+      dnum,
+      "天啦!",
+      "©2022 By Fomalhaut",
+    ];
+  
+    setTimeout(
+      console.log.bind(
+        console,
+        `\n%c${ascll[0]} %c ${ascll[1]} %c ${ascll[2]} %c${ascll[3]}%c ${ascll[4]}%c ${ascll[5]}\n\n%c ${ascll[6]}\n`,
+        "color:#39c5bb",
+        "",
+        "color:#39c5bb",
+        "color:#39c5bb",
+        "",
+        "color:#39c5bb",
+        ""
+      )
+    );
+  }
+  
+  createtime1();
+  
+  function createtime2() {
+    var ascll2 = [`NCC2-036`, `调用前置摄像头拍照成功，识别为「大聪明」`, `Photo captured: `, ` 🤪 `];
+  
+    setTimeout(
+      console.log.bind(
+        console,
+        `%c ${ascll2[0]} %c ${ascll2[1]} %c \n${ascll2[2]} %c\n${ascll2[3]}`,
+        "color:white; background-color:#10bcc0",
+        "",
+        "",
+        'background:url("https://unpkg.zhimg.com/anzhiyu-assets@latest/image/common/tinggge.gif") no-repeat;font-size:450%'
+      )
+    );
+  
+    setTimeout(console.log.bind(console, "%c WELCOME %c 欢迎光临，大聪明", "color:white; background-color:#23c682", ""));
+  
+    setTimeout(
+      console.warn.bind(
+        console,
+        "%c ⚡ Powered by Fomalhaut🥝 %c 你正在访问Fomalhaut🥝の小家",
+        "color:white; background-color:#f0ad4e",
+        ""
+      )
+    );
+  
+    setTimeout(console.log.bind(console, "%c W23-12 %c 系统监测到你已打开控制台", "color:white; background-color:#4f90d9", ""));
+    setTimeout(
+      console.warn.bind(console, "%c S013-782 %c 你现在正处于监控中", "color:white; background-color:#d9534f", "")
+    );
+  }
+  createtime2();
+  ...
+  /* 控制台输出字符画 end */
+  ```
+
+  
+
 - 网站图标为根目录的`favicon.ico`，替换为你自己的图标即可
-
 - 欢迎信息地理位置显示，这个需要配置自己的key，类似的还有bibi的配置、朋友圈等配置均需要参考相关文档改成自己的API
-
 - 个人信息卡片的图标和菜单栏等图标，参考[博客魔改教程总结(二)](https://www.fomal.cc/posts/5389e93f.html)中的第4-7项
-
 - 其余配置项基本与Butterfly兼容，参考[Butterfly官方文档](https://butterfly.js.org/)即可
-
 - 遇到问题请多看相关文档(Hexo主题文档、Butterfly主题文档、店长的教程)和本站教程，若有其他疑问请加Q群：`691942826` 验证回答：`🥝开源项目`
 
