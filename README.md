@@ -242,11 +242,171 @@
   /* 控制台输出字符画 end */
   ```
 
+
+- 加载头像见`themes\butterfly\source\css\_custom\custom.css`下的：
+
+  ```css
+  .loading-img {
+    background: url(https://lskypro.acozycotage.net/LightPicture/2022/12/60e5d4e39da7c077.webp)
+      no-repeat center center;
+    background-size: cover;
+  }
+  ```
+
+- 文章打赏彩蛋，见主题配置文件：`_config.butterfly.yml`
+
+  ```yml
+  # Sponsor/reward
+  reward:
+    enable: true
+    coinAudio: https://npm.elemecdn.com/akilar-candyassets@1.0.36/audio/aowu.m4a
+    QR_code:
+      - img: https://tuchuang.voooe.cn/images/2023/01/04/2.webp
+        link:
+        text: 微信
+      - img: https://tuchuang.voooe.cn/images/2023/01/04/20f8e49805975b8f8.webp
+        link:
+        text: 支付宝
+  ```
+
+- 哔哔页面样式部分：见`source\personal\bb\index.md`：
+
+  ```markdown
+  ---
+  title: 唠叨
+  date: 2022-09-08 23:08:13
+  comments: false
+  ---
   
+  <style>
+  /* 哔哔页面 */
+  #bibi button {
+    color: #fff;
+    border: 0;
+    margin: 20px auto;
+    border-radius: 0.3125rem;
+    display: block;
+    padding: 0 1rem;
+    height: 40px;
+    font-weight: 500;
+    text-align: center;
+    transition: all 0.5s ease-out;
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 1000% 1000%;
+    animation: Gradient 60s linear infinite;
+    outline: 0;
+  }
+  
+  #bibi .bb-info {
+    font-weight: 700;
+    font-size: 22px;
+  }
+  
+  #bibi .bb-card {
+    padding: 15px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #a5a5a5ee;
+    margin-top: 20px;
+    transition: all 0.25s;
+    user-select: none;
+    width: calc(48% - 7px);
+    margin: 10px;
+  }
+  
+  @media screen and (max-width: 800px) {
+    #bibi .bb-card {
+    width: 100%;
+    }
+  }
+  
+  #bibi .bb-card:hover {
+    box-shadow: 0 5px 10px 8px #07111b29;
+    transform: translateY(-3px);
+  }
+  
+  #bibi .card-header {
+    display: flex;
+    align-items: center;
+  }
+  
+  #bibi .card-header .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-right: 10px;
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  
+  #bibi .card-header svg {
+    height: 20px;
+    width: 20px;
+    margin-left: 5px;
+  }
+  
+  #bibi .card-header .card-time {
+    font-size: 12px;
+    text-shadow: #d9d9d9 0 0 1px, #fffffb 0 0 1px, #fffffb 0 0 2px;
+    margin-left: 10px;
+  }
+  
+  #bibi .card-content {
+    padding: 10px 0;
+    white-space: pre-wrap;
+  }
+  
+  #bibi .card-footer {
+    display: flex;
+    padding-bottom: 10px;
+  }
+  
+  #bibi .card-footer .card-label {
+    border-radius: 5px;
+    padding: 0 5px;
+    font-weight: 550;
+    border-radius: 5px;
+    box-shadow: inset 0 -1px 0 rgb(27 31 35 / 12%);
+    font-size: 14px;
+    user-select: none;
+    margin-right: 10px;
+  }
+  
+  div#bb_loading img{
+    border-radius: 15px;
+  }
+  
+  #bb-main {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+  
+  </style>
+  
+  <script src="/js/bibi.js"></script>
+  
+  <div id="bibi">
+  <div class="bb-info"></div><div id="bb-main"></div>
+  </div>
+  
+  ```
+
+- 哔哔的API请见`source\js\bibi.js`，部署教程：[哔哔部署](https://www.fomal.cc/posts/d1927166.html#%E5%93%94%E5%93%94%E9%83%A8%E7%BD%B2)
+
+- 欢迎信息地理位置显示，这个需要配置自己的 key，类似的还有 bibi 的配置、朋友圈等配置均需要参考相关文档改成自己的API
 
 - 网站图标为根目录的`favicon.ico`，替换为你自己的图标即可
-- 欢迎信息地理位置显示，这个需要配置自己的key，类似的还有bibi的配置、朋友圈等配置均需要参考相关文档改成自己的API
 - 个人信息卡片的图标和菜单栏等图标，参考[博客魔改教程总结(二)](https://www.fomal.cc/posts/5389e93f.html)中的第4-7项
 - 其余配置项基本与Butterfly兼容，参考[Butterfly官方文档](https://butterfly.js.org/)即可
 - 遇到问题请多看相关文档(Hexo主题文档、Butterfly主题文档、店长的教程)和本站教程，若有其他疑问请加Q群：`691942826` 验证回答：`🥝开源项目`
+
+
+
+### 项目星标概况
+
+[![Star History Chart](https://api.star-history.com/svg?repos=fomalhaut1998/hexo-theme-Fomalhaut&type=Timeline)](https://star-history.com/#fomalhaut1998/hexo-theme-Fomalhaut&Timeline)
+
+
 
