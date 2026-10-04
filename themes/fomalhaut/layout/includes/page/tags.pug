@@ -1,0 +1,9 @@
+script(src='https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js')
+
+#tag-echarts(style="height:360px")
+  !=tag_ranking_bar({type:'tag',id:'tag-echarts',topNum:10,title:'Top 10 标签统计图📌',color:theme.theme_color.main,yAxisName:'文章篇数',seriesName:'标签统计'})
+
+br
+
+.tag-cloud-list.is-center
+  !=cloudTags({source: site.tags, minfontsize: 1.2, maxfontsize: 2.1, limit: 0, unit: 'em'})

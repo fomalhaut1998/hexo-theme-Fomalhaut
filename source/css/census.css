@@ -1,0 +1,382 @@
+/* ======================================================================
+ * 网站统计页 /site/census/ 专属样式
+ * ----------------------------------------------------------------------
+ * 1) 只由 source/site/census/index.md 通过 <link> 引入，其它页面不加载；
+ *    原来那大段写死在 markdown 里的 <style> 已挪到这里（顺带解决它被 Hexo
+ *    当成页面摘要写进 <meta name="description"> 的问题）。
+ * 2) 配色全部从主题色 --theme-color 派生，深色模式只覆盖变量、规则本体一套；
+ *    每个自定义属性第一行是「不支持 color-mix() 的老浏览器」的回退值。
+ * 3) 回滚：删除本文件并还原 bak/20261004-census-redesign/ 下的两个备份即可。
+ * ====================================================================== */
+
+.census {
+  --census-accent: var(--theme-color, #39c5bb);
+
+  --census-line: rgba(57, 197, 187, 0.16);
+  --census-line: color-mix(in srgb, var(--census-accent) 16%, transparent);
+  --census-line-strong: rgba(57, 197, 187, 0.34);
+  --census-line-strong: color-mix(in srgb, var(--census-accent) 34%, transparent);
+
+  --census-soft: rgba(57, 197, 187, 0.07);
+  --census-soft: color-mix(in srgb, var(--census-accent) 7%, transparent);
+  --census-soft-2: rgba(57, 197, 187, 0.14);
+  --census-soft-2: color-mix(in srgb, var(--census-accent) 14%, transparent);
+
+  --census-glow: rgba(57, 197, 187, 0.20);
+  --census-glow: color-mix(in srgb, var(--census-accent) 20%, transparent);
+
+  --census-bg: var(--card-bg, #fff);
+  --census-text: var(--font-color, #1f1f1f);
+  --census-muted: rgba(31, 31, 31, 0.52);
+  --census-muted: color-mix(in srgb, var(--font-color, #1f1f1f) 55%, transparent);
+
+  --census-shadow: 0 1px 2px rgba(7, 17, 27, 0.04), 0 10px 26px -16px rgba(7, 17, 27, 0.30);
+  --census-shadow-hover: 0 2px 6px rgba(7, 17, 27, 0.06), 0 18px 34px -16px rgba(7, 17, 27, 0.36);
+
+  color: var(--census-text);
+}
+
+[data-theme="dark"] .census {
+  --census-line: color-mix(in srgb, var(--census-accent) 26%, transparent);
+  --census-line-strong: color-mix(in srgb, var(--census-accent) 48%, transparent);
+  --census-soft: color-mix(in srgb, var(--census-accent) 11%, transparent);
+  --census-soft-2: color-mix(in srgb, var(--census-accent) 20%, transparent);
+  --census-muted: rgba(255, 255, 255, 0.50);
+  --census-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 26px -16px rgba(0, 0, 0, 0.90);
+  --census-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.40), 0 18px 34px -16px rgba(0, 0, 0, 1);
+}
+
+/* ---------------------------------------------------------------- 分节 */
+
+.census-sec {
+  margin: 0 0 34px;
+}
+
+.census-sec:last-child {
+  margin-bottom: 0;
+}
+
+.census-sec__head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 0 0 13px;
+}
+
+.census-sec__icon {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+  border-radius: 11px;
+  background: var(--census-soft-2);
+  border: 1px solid var(--census-line);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+[data-theme="dark"] .census-sec__icon {
+  box-shadow: none;
+}
+
+.census-sec__text {
+  min-width: 0;
+}
+
+.census-sec__title {
+  font-size: 1.02rem;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  color: var(--census-text);
+}
+
+.census-sec__desc {
+  margin-top: 1px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--census-muted);
+}
+
+/* 右侧延伸的细线，把标题「钉」在版面上 */
+.census-sec__head::after {
+  content: "";
+  order: 2;
+  flex: 1 1 auto;
+  height: 1px;
+  min-width: 16px;
+  background: linear-gradient(90deg, var(--census-line-strong), transparent);
+}
+
+.census-sec__link {
+  order: 3;
+  flex: 0 0 auto;
+  font-size: 12px;
+  line-height: 1;
+  padding: 6px 11px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--census-accent);
+  background: var(--census-soft);
+  border: 1px solid var(--census-line);
+  transition: background 0.22s ease, border-color 0.22s ease, transform 0.22s ease;
+}
+
+.census-sec__link i {
+  font-style: normal;
+  margin-left: 3px;
+  opacity: 0.8;
+}
+
+.census-sec__link:hover {
+  background: var(--census-soft-2);
+  border-color: var(--census-line-strong);
+  transform: translateY(-1px);
+}
+
+/* 「实时」小圆点 */
+.census-live {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 5px;
+  border-radius: 50%;
+  vertical-align: 1px;
+  background: var(--census-accent);
+  animation: census-live 2.2s ease-out infinite;
+}
+
+@keyframes census-live {
+  0% { box-shadow: 0 0 0 0 var(--census-glow); }
+  70% { box-shadow: 0 0 0 7px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+/* ------------------------------------------------------- KPI / #statistic */
+
+/* 干掉旧版那块青绿渐变底：现在每张 KPI 自己是一张卡片 */
+#statistic {
+  width: 100%;
+  padding: 0;
+  font-size: inherit;
+  border-radius: 0;
+  color: inherit;
+  background: none;
+}
+
+[data-theme="dark"] .census #statistic {
+  background: none;
+}
+
+#statistic .content {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.census-kpi {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "icon label"
+    "num  num";
+  align-items: center;
+  column-gap: 6px;
+  row-gap: 3px;
+  padding: 14px 15px 15px;
+  border-radius: 14px;
+  background: var(--census-bg);
+  border: 1px solid var(--census-line);
+  box-shadow: var(--census-shadow);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  animation: census-rise 0.5s cubic-bezier(0.22, 0.85, 0.3, 1) both;
+}
+
+.census-kpi:nth-child(1) { animation-delay: 0s; }
+.census-kpi:nth-child(2) { animation-delay: 0.05s; }
+.census-kpi:nth-child(3) { animation-delay: 0.10s; }
+.census-kpi:nth-child(4) { animation-delay: 0.15s; }
+.census-kpi:nth-child(5) { animation-delay: 0.20s; }
+.census-kpi:nth-child(6) { animation-delay: 0.25s; }
+
+/* 右上角一团柔光 */
+.census-kpi::after {
+  content: "";
+  position: absolute;
+  top: -36px;
+  right: -36px;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, var(--census-glow), transparent 68%);
+  opacity: 0.7;
+  transition: opacity 0.25s ease;
+}
+
+.census-kpi:hover {
+  transform: translateY(-3px);
+  border-color: var(--census-line-strong);
+  box-shadow: var(--census-shadow-hover);
+}
+
+.census-kpi:hover::after {
+  opacity: 1;
+}
+
+.census-kpi__icon {
+  grid-area: icon;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.census-kpi__label {
+  grid-area: label;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--census-muted);
+}
+
+.census-kpi__num {
+  grid-area: num;
+  display: block;
+  margin-top: 5px;
+  font-size: clamp(1.32rem, 3.4vw, 1.72rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  color: var(--census-text);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  transition: color 0.25s ease;
+}
+
+.census-kpi:hover .census-kpi__num {
+  color: var(--census-accent);
+}
+
+/* 还没拿到数据 / 拿不到数据时的样子 */
+#statistic[data-state="loading"] .census-kpi__num {
+  color: var(--census-muted);
+  animation: census-pulse 1.4s ease-in-out infinite;
+}
+
+#statistic[data-state="error"] .census-kpi {
+  opacity: 0.62;
+}
+
+#statistic[data-state="error"] .census-kpi__num {
+  color: var(--census-muted);
+}
+
+/* ------------------------------------------------------------- 图表卡片 */
+
+.census-card {
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: var(--census-bg);
+  border: 1px solid var(--census-line);
+  box-shadow: var(--census-shadow);
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.census-card:hover {
+  border-color: var(--census-line-strong);
+  box-shadow: var(--census-shadow-hover);
+}
+
+/* 贡献日历可能比容器宽，允许横向滚动而不是撑破卡片 */
+.census-card--git {
+  padding: 8px 12px 4px;
+  overflow-x: auto;
+}
+
+.census-chart {
+  width: 100%;
+}
+
+.census-chart--map { height: 560px; }
+.census-chart--trends { height: 320px; }
+.census-chart--sources { height: 400px; }
+
+/* 图表加载失败时的占位（DOM 由 census.js 的 showChartFallback 生成） */
+.census-fallback {
+  border-radius: 12px;
+  background: var(--census-soft);
+  border: 1px dashed var(--census-line);
+}
+
+/* ------------------------------------------------------------- 页脚说明 */
+
+.census-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin-top: 24px;
+  padding-top: 14px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--census-muted);
+  border-top: 1px dashed var(--census-line);
+}
+
+.census-note a {
+  color: var(--census-accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--census-line-strong);
+}
+
+.census-note a:hover {
+  opacity: 0.78;
+}
+
+/* --------------------------------------------------------------- 动画 */
+
+@keyframes census-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes census-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* --------------------------------------------------------------- 响应式 */
+
+@media (max-width: 768px) {
+  .census-sec { margin-bottom: 26px; }
+  .census-sec__title { font-size: 0.97rem; }
+  .census-sec__head { gap: 9px; }
+  .census-sec__icon { width: 30px; height: 30px; font-size: 14px; border-radius: 9px; }
+
+  #statistic .content {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .census-kpi { padding: 12px 13px 13px; }
+
+  .census-card { padding: 8px 10px; }
+  .census-chart--map { height: 420px; }
+  .census-chart--trends { height: 280px; }
+  .census-chart--sources { height: 360px; }
+}
+
+@media (max-width: 420px) {
+  .census-kpi__num { font-size: 1.2rem; }
+  .census-sec__link { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .census-kpi { animation: none; }
+  .census-live { animation: none; }
+  #statistic[data-state="loading"] .census-kpi__num { animation: none; }
+}

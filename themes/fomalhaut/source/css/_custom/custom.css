@@ -1,0 +1,4103 @@
+/* ============================================================================
+ * themes/fomalhaut/source/css/_custom/custom.css
+ * —— Fomalhaut 主题的「站点自定义样式」总表（主题样式之后的最后一道覆盖层）
+ * ----------------------------------------------------------------------------
+ * 【它是怎么生效的】
+ *   themes/fomalhaut/source/css/index.styl 用 `@import '_custom/custom.css'` 把它内联进
+ *   public/css/index.css（站点只请求一个 CSS，没有单独请求）。所以：
+ *   · 改完必须重新 hexo generate 才看得到（只改这里不重新生成 = 白改）；
+ *   · 它排在主题各 *.styl 之后 → 同特异性下这里的规则赢，多数情况不需要 !important。
+ * ----------------------------------------------------------------------------
+ * 【改这里的约定】
+ *   1. 能用 _config.fomalhaut.yml 的开关解决的，优先走配置；配置里抽出来的注入样式
+ *      统一放 source/css/site-inject.css —— 本文件只放「对主题样式的覆盖」。
+ *   2. 新增一节：用「块注释 + 小节标题（用途）」起头，并在下面的目录里补一行。
+ *   3. !important 全文 246 处：只在压不过主题内联样式 / Element UI / 运行时 JS 写入时用。
+ *   4. 明暗两套用 [data-theme="light"] / [data-theme="dark"] 前缀；几何写一份，颜色写两份。
+ *   5. 手机端适配就近写 @media，**不要**为了整齐挪到文件末尾：
+ *      同名同权重的规则后写的赢，搬动 = 改变层叠结果（真会改坏东西）。
+ *   6. 行号只作导航用，编辑后必然漂移 → 用 Ctrl+F 搜标题或选择器定位。
+ * ----------------------------------------------------------------------------
+ * 【分节目录】（括号里是所在行号）
+ *   154  全局色板：--theme-color 及派生色、代码块底色 —— 换主题色的源头就在这里
+ *   194  滚动条（三套并存：@supports 标准属性 / ::-webkit-scrollbar 桌面 / #mscrollbar 手机自绘）
+ *   293  @font-face 字体引入（正文 7 款 + 代码块 4 款）：family 名同时是美化面板按钮 onclick 传的值，改名要三处一起改
+ *   421  滚动时顶栏显示的标题 #page-name 居中
+ *   487  首页文章卡片 / 页面底色 / 明暗遮罩 / 目录 / 超链接 / 代码框 / 鼠标样式……主题默认样式的第一轮覆盖（本文件最大的一段）
+ *   666  Twikoo 评论区（输入框高度 / 表情面板 / 气泡 / 夜间配色）
+ *   891  h1~h6 标题前的风车图标：速度 / 颜色 / hover 反向
+ *   979  B 站 iframe 16:9 自适应、图片模糊渐显 imgblur、背景滤镜
+ *   1139  标题增强、全局宽度、侧栏宽度、平板适配
+ *   1297  美化设置面板 .winbox / 背景图墙 .bgbox（与 source/js/modules/settings.js 强耦合）
+ *   1427  侧栏个人卡片背景图（浅色 springBg.png / 深色 aurora.webp）
+ *   1481  APlayer 播放器美化（圆角 / 浅色底 / 主题色滚动条 / 歌词遮罩）
+ *   1679  音乐页：歌单来源 / 简介 / 热评
+ *   1771  设置面板里「背景图片链接」输入框的 placeholder
+ *   1811  HEO 加载动画头像
+ *   1823  顶栏常驻与导航栏标题
+ *   1917  主题色选择器与主题色适配覆盖区
+ *   2218  设置面板的开关按钮 / 数字框 / 帧率显示
+ *   2332  侧边栏按钮 #rightside、翻页、标签圆角
+ *   2471  顶部胶囊加载条 .pace（animation: gradient）
+ *   2530  右键菜单 #rightMenu
+ *   2589  页脚心跳 / 星空 / 雪花 / 小猫咪
+ *   2781  版权、二级菜单圆角、搜索框、公告栏、关于页、欢迎信息、霓虹灯
+ *   2892  自定义页脚 #ft（站点统计 / 友链 / 格言 / 广告位占位）
+ *   3055  手机侧栏、代码行号、右侧栏宽度、齿轮箭头圆角、作者状态
+ *   3174  页脚波浪动画 .main-hero-waves-area
+ *   3253  图片圆角与边框、twikoo 聚焦、友链描述、目录、diff
+ *   3348  夜间友链字色、信息卡彩带、霓虹灯发光字 keyframes、按钮、分割线、必应壁纸、转圈颜色
+ *   3640  侧栏显隐 / 侧栏位置（CSS 变量驱动，配合美化面板）
+ *   3669  置顶文章角标 post-sticky-badge（含 prefers-reduced-motion 降级）
+ *   3756  侧栏个人信息卡片改版：玻璃拟态 + 马克笔名字（2026-02-16）
+ *   3937  美化面板：手机端排布 .opt/.bgp/.colorRow/.picbtn + 恢复默认设置与切换背景按钮主题色化 + 面板打开时 #rightside 让位
+ * ----------------------------------------------------------------------------
+ * 【媒体查询索引】@media 共 26 条（按出现顺序；括号里是断点与它管的东西）
+ *   259  max-width: 768px              html / #mscrollbar：手机端隐藏系统滚动条，改用自绘条
+ *   428  max-width: 768px              center#name-container：顶栏标题居中
+ *   659  max-width: 500px              #cursor：小屏鼠标跟随
+ *   714  max-width: 768px              Twikoo 表情（Menhera 系列）大小
+ *   842  min-width: 1024px             Twikoo 评论卡片宽度与头像
+ *   1038  max-width: 900px              .aside-content 侧栏宽度
+ *   1098  max-width: 1200px             .site-card 友链卡
+ *   1103  max-width: 900px              .site-card 友链卡
+ *   1108  max-width: 600px              .site-card 友链卡
+ *   1133  max-width: 1000px             .gallery-group 相册分组
+ *   1375  max-width: 768px              .pimgbox / .imgbox / .box / .bgbox 图墙
+ *   1852  min-width: 600px              #nav 顶栏
+ *   2418  min-width: 600px              .blog-slider 轮播
+ *   2654  max-width: 768px              #universe 星空
+ *   2682  max-width: 768px              #snow 雪花
+ *   2747  max-width: 768px              .neko / #myscoll 小猫咪与滚动条
+ *   2758  min-width: 768px              卡片内 fancybox / video 宽度
+ *   2767  max-width: 768px              卡片内 fancybox / video 宽度
+ *   2831  max-width: 600px              .magnet_item 磁力链接
+ *   3019  max-width: 768px              页脚 #ft 分栏 / 广告位
+ *   3033  max-width: 576px              页脚 t-top 顶部条
+ *   3066  min-width: 900px              #aside-content 侧栏宽度（宽屏）
+ *   3242  max-width: 768px              （裸语法）页脚波浪 .waves-svg
+ *   3654  min-width: 1069px             .recent-post-item 卡片宽度
+ *   3748  prefers-reduced-motion: reduce（裸语法）关闭置顶角标流光动画
+ *   4020  max-width: 768px              美化面板：开关行 / 滤镜参数 / 主题色圈 / 字体按钮（手机端重排）
+ * ----------------------------------------------------------------------------
+ * 【动画索引】@keyframes 共 19 个（含 -webkit- 前缀版）
+ *   466  sub_menus                       主题 _global/function.styl 同名动画的覆盖版：把 translateX(-50%) 写进关键帧，居中不被动画吃掉
+ *   870  -webkit-keyframes tk-extras-fadeInTwikoo 评论「设备信息」淡入（.tk-content:hover + .tk-extras）
+ *   880  tk-extras-fadeIn                同上（无前缀版）
+ *   902  -webkit-keyframes ccc           风车旋转（h1::before ~ h6::before）
+ *   912  ccc                             同上（无前缀版）
+ *   1003  imgblur                         首页头图 / 背景从模糊到清晰（#page-header, #web_bg）
+ *   1012  -webkit-keyframes imgblur       同上，内容是 -webkit-filter 版（Chrome 会忽略它，留给老 Safari）
+ *   1225  owoIn                           评论区表情面板弹入（#owo-big）
+ *   1447  huxi_light                      浅色主题下头像呼吸灯（[data-theme="light"] .avatar-img）
+ *   1458  huxi_dark                       深色主题下头像呼吸灯
+ *   2518  gradient                        顶部胶囊加载条 .pace .pace-progress
+ *   2595  -webkit-keyframes iconAnimate   页脚心跳 #heartbeat
+ *   2616  iconAnimate                     同上（无前缀版）
+ *   3089  ddd                             首页卡片右下角箭头 .recent-post-arrow
+ *   3233  move-forever                    页脚波浪 .parallax > use
+ *   3382  light_15px                      霓虹灯发光字（15px 档）——注意：全项目已找不到 animation 引用它的地方，目前是「备着」状态
+ *   3415  light_10px                      霓虹灯发光字（10px 档），同上
+ *   3448  light_5px                       霓虹灯发光字（5px 档），同上
+ *   3731  post-sticky-shine               置顶角标流光
+ * ----------------------------------------------------------------------------
+ * 【字体索引】@font-face 共 6 个，全部为开源可商用字体（OFL），源码统一走 cdn.jsdelivr.net 的 @fontsource/*
+ *   常规字体 3 款：LXGW（霞鹜文楷，默认）· SourceHanSerif（思源宋体）· LXGWNeoXiHei（霞鹜新晰黑）
+ *   代码字体 3 款：JetBrainsMono · FiraCode · SourceCodePro
+ *   想换成自己的字体：改本文件末尾「字体引入」一节的 src 即可，family 名保持不变最省事。
+ * ----------------------------------------------------------------------------
+ * 【已知问题 / 坑】（P3 盘点确认的现状；本次只清理死代码，没有改行为）
+ *   1. 同一个选择器被拆散在多处 —— 改之前先 Ctrl+F 全找一遍，找到第一个不算数：
+ *        · .el-textarea__inner（@594 背景图 / @3363 圆角）
+ *        · [data-theme="dark"] .tk-master .tk-content（@654 边框 / @682 底色文字）
+ *        · [data-theme="dark"] #aside-content > .card-widget.card-info（@1282 背景图 / @3739 阴影）
+ *        · #card-info-btn（@1319 主题色底 / @3712 玻璃按钮，后者覆盖）
+ *        · #card-info-btn:hover（@1324 / @3724）
+ *        · #post .tag_share .post-meta__tags（@1995 边框 / @3380 圆角）
+ *        · .settings input[type="checkbox"]（@2067 主体 / @2102 只写了 transition）
+ *        · .settings input[type="checkbox"]:before（@2084 / @2105）
+ *        · .settings input[type="checkbox"]:checked（@2094 / @2108，border-color 只在前者）
+ *        · .settings input[type="checkbox"]:checked:before（@2098 / @2111）
+ *        · [data-theme="dark"] .magnet_link_context（@2684 底色 / @2688 圆角）
+ *   2. .settings input[type="checkbox"] 的 `transition: border background-color box-shadow;`
+ *      漏了时长，浏览器当无效声明丢弃（想生效要写 `transition: .2s`）；
+ *      `.settings .content input[type="number"]` 有一模一样的毛病。
+ *   3. `.pace { border: 1px #e3e8f7; }` 少了线型，border-style 默认 none → 等于没边框。
+ *   4. .settings / .winbox 相关样式与 source/js/modules/settings.js 一一对应：
+ *      改类名、改面板结构时，CSS 与 JS 必须一起改。
+ *   5. 侧栏 #rightside 的按钮尺寸（1196 的 38×38）与侧栏位移（2336 的
+ *      translateX(-58px)）跟侧栏宽度布局强耦合，改宽度时两处一起看。
+ *   6. 浅浅色主题下不少霓虹灯动画被 `animation: none !important` 关掉（见 3348 一节），
+ *      所以 light_*px 关键帧在浅色下不会跑，这是有意的。
+ * ----------------------------------------------------------------------------
+ * 【本次整理记录】2026-10-03 屎山重构 P3：4124 行 → 3935 行
+ *   · 删除 4 段整块死代码（各留「已清理」墓碑注释，Ctrl+F 搜「已清理」可跳过去）：
+ *     TianliGPT 整段 189 行（功能已下线）、侧栏卡片动态渐变 50 行（含写在注释里的
+ *     Gradient keyframes）、孤儿 @keyframes Gradient（无任何 animation 引用）、
+ *     .article-sort-item:before 的 `order:` 笔误块。
+ *   · 删除 42 条 -moz-/-ms-/-o- 前缀声明 + 3 条 IE filter + 1 条 -webkit-pointer-events
+ *     + 4 个 @-moz-/@-o-keyframes 块（Firefox 16+ / Opera 15+ 起都支持无前缀）。
+ *     保留 -webkit-*（浏览器至今仍当别名识别），也保留 -webkit-backdrop-filter 与
+ *     -moz-osx-font-smoothing（前者 Safari 要、后者 Firefox-macOS 要）。
+ *   · 本次没有移动、改写任何一条规则，只做了「删死代码 + 加这份索引」。
+ *   · 回滚：把 bak/2026-10-03-屎山重构/before/themes/fomalhaut/source/css/_custom/custom.css
+ *     复制回原位即可。
+ * ========================================================================== */
+/* root伪类指定全局颜色 */
+/* root伪类指定全局颜色 */
+:root {
+  --blue-custom: #5ea6e5;
+  --loading-color: rgba(207, 246, 247, 0.92);
+  --border-color: #c9c9c9;
+  --color-red: rgb(239, 90, 90);
+  --color-orange: rgb(228, 149, 66);
+  --color-yellow: rgb(194, 205, 90);
+  --color-purple: rgb(205, 90, 195);
+  --color-purepurple: rgb(147, 90, 205);
+  --color-blue: rgb(102, 204, 255);
+  --color-green: rgb(57, 197, 187);
+  --color-puregreen: rgb(90, 205, 130);
+  --color-gray: rgb(150, 150, 150);
+  --color-pink: rgb(237, 112, 155);
+  --color-black: rgb(45, 45, 45);
+  --color-darkblue: rgb(97, 100, 159);
+  --color-heoblue: rgb(66, 90, 239);
+  --btn-bg: var(--theme-color) !important;
+  --scrollbar-color: var(--theme-color) !important;
+  --border-style: 1px solid rgba(169, 169, 169, 0.7);
+  /* 代码框行数背景色 */
+  --hlnumber-bg: #282c34;
+  /* 代码框顶部背景色 */
+  --hltools-bg: #1c1c1c;
+  /* 代码框背景色 */
+  --hl-bg: #282c34;
+}
+
+/* Chrome/Edge 121+ 支持了标准属性 scrollbar-color / scrollbar-width，
+   一旦它们不是 auto（本主题在 _global/index.styl 里为 Firefox 设了 thin + 主题色），
+   浏览器就会完全忽略 ::-webkit-scrollbar 伪元素样式 —— 下面的斜条纹也就不会出现。
+   所以只在支持 ::-webkit-scrollbar 的浏览器里把标准属性退回 auto，让伪元素样式重新生效；
+   Firefox 不认识 selector(::-webkit-scrollbar)，会跳过这段，继续用标准双色滚动条。 */
+@supports selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-color: auto !important;
+    scrollbar-width: auto !important;
+  }
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: rgba(73, 177, 245, 0.2);
+  border-radius: 2em;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--theme-color);
+  /* 发廊转筒风：静态斜条纹，主题色深浅交替（浅=叠白 45%，深=叠黑 20%）
+     条纹宽 9px、周期 18px —— 3px 太密、7px 仍偏密，9px 是松弛又不糊成色块的档位 */
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.45) 0 9px,
+    rgba(0, 0, 0, 0.2) 9px 18px
+  );
+  border-radius: 2em;
+}
+
+::-webkit-scrollbar-corner {
+  background-color: transparent;
+}
+
+/* 手机端自绘滚动条
+   手机浏览器（含 Chromium 的 overlay 滚动条模式）只用系统滚动条，会完全忽略 ::-webkit-scrollbar，
+   所以电脑上那条主题色斜条纹在手机宽度下根本不会出现。这里准备一条同样式样的自绘滚动条，
+   由 source/js/fomal.js 末尾的脚本驱动：固定在右边缘、随滚动进度移动；只要页面能滚就一直显示（与电脑端“滚动条不隐藏”的取舍一致）。 */
+#mscrollbar {
+  display: none;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 2px;
+  width: 8px;
+  border-radius: 2em;
+  background-color: rgba(73, 177, 245, 0.2);
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+#mscrollbar.mscrollbar-on {
+  opacity: 1;
+}
+
+#mscrollbar-thumb {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  border-radius: 2em;
+  background-color: var(--theme-color);
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.45) 0 9px,
+    rgba(0, 0, 0, 0.2) 9px 18px
+  );
+}
+
+/* ≤768px：隐藏系统滚动条，改用上面那条自绘的，免得出现两条 */
+@media screen and (max-width: 768px) {
+  html {
+    scrollbar-width: none !important;
+  }
+  html::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+  #mscrollbar {
+    display: block;
+  }
+}
+
+::-moz-selection {
+  color: #fff;
+  background-color: var(--theme-color) !important;
+}
+
+/* 代码框底部滚动条 */
+#article-container figure.highlight > ::-webkit-scrollbar-thumb {
+  background-color: #35393f !important;
+  background-image: -webkit-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.1) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.1) 75%,
+    transparent 75%,
+    transparent
+  ) !important;
+  border-radius: 2em !important;
+}
+
+/* 字体引入
+   常规（正文）字体 3 款 + 代码块字体 3 款，**全部为开源可商用字体**（SIL OFL 1.1），
+   统一走公共 CDN（jsDelivr 上的 @fontsource/* 包），不依赖任何自建对象存储。
+   family 名 = 美化设置面板按钮 onclick 传的值 = localStorage.font / codeFont 的值，
+   也是 _config.fomalhaut.yml 里 font-family / code-font-family 引用的名字，改名时这几处要一起改。
+   *** 想换成自己的字体：把下面的 src 换成你自己的 woff2 地址即可，family 名保持不变最省事。 *** */
+@font-face {
+  font-family: LXGW;
+  /* 霞鹜文楷（LXGW WenKai）· SIL OFL 1.1 */
+  src: url(https://cdn.jsdelivr.net/npm/@fontsource/lxgw-wenkai-tc@5/files/lxgw-wenkai-tc-chinese-traditional-400-normal.woff2);
+  font-display: swap;
+}
+
+@font-face {
+  font-family: SourceHanSerif;
+  /* 思源宋体（Noto Serif SC）· SIL OFL 1.1 */
+  src: url(https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/files/noto-serif-sc-chinese-simplified-400-normal.woff2);
+  font-display: swap;
+}
+
+@font-face {
+  font-family: LXGWNeoXiHei;
+  /* 霞鹜新晰黑 → 同族思源黑体（Noto Sans SC）替代 · SIL OFL 1.1 */
+  src: url(https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/files/noto-sans-sc-chinese-simplified-400-normal.woff2);
+  font-display: swap;
+}
+
+/* —— 代码块字体 ——
+   pre/code 的字体不写死，改由 --code-font 变量决定
+   （_config.fomalhaut.yml 的 font.code-font-family 写成 var(--code-font, JetBrainsMono), var(--global-font), ...），
+   面板切换代码字体时只改这个变量，不用重写样式表。 */
+@font-face {
+  font-family: JetBrainsMono;
+  /* JetBrains Mono · SIL OFL 1.1 */
+  src: url(https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5/files/jetbrains-mono-latin-400-normal.woff2);
+  font-display: swap;
+}
+
+@font-face {
+  font-family: FiraCode;
+  /* Fira Code · SIL OFL 1.1 */
+  src: url(https://cdn.jsdelivr.net/npm/@fontsource/fira-code@5/files/fira-code-latin-400-normal.woff2);
+  font-display: swap;
+}
+
+@font-face {
+  font-family: SourceCodePro;
+  /* Source Code Pro · SIL OFL 1.1 */
+  src: url(https://cdn.jsdelivr.net/npm/@fontsource/source-code-pro@5/files/source-code-pro-latin-400-normal.woff2);
+  font-display: swap;
+}
+
+/* 代码块字体：主题只给 #article-container pre/code 设了代码字体，
+   这里把文章区以外的 pre/code/kbd/samp 也接到同一个变量上，保证「凡是渲染代码的地方」都跟面板走 */
+pre,
+code,
+kbd,
+samp {
+  font-family: var(--code-font, JetBrainsMono), var(--global-font), "Microsoft YaHei", Menlo, "PingFang SC", "Microsoft JhengHei", sans-serif !important;
+}
+
+/* 特定部件字体调用 */
+div#menus {
+  font-weight: bold !important;
+}
+h1#site-title {
+  font-size: 3em !important;
+  font-weight: bold !important;
+}
+a.article-title,
+a.blog-slider__title,
+a.categoryBar-list-link,
+h1.post-title {
+  font-weight: bold !important;
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 3em;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-zhongbiao::before {
+  color: #f7c768;
+}
+
+/* 解决artitalk的图标问题 */
+#uploadSource > svg {
+  width: 1.19em;
+  height: 1.5em;
+}
+
+/* 滚动显示的标题居中 */
+center#name-container {
+  position: absolute !important;
+  width: fit-content !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+@media screen and (max-width: 768px) {
+  center#name-container {
+    display: none;
+  }
+}
+
+/* 去掉蓝色条 */
+/* #nav *::after{
+    background-color: transparent!important;
+} */
+
+/* 一级菜单居中 */
+#nav .menus_items {
+  /* 这个带不带都可以，本来就是inline */
+  display: inline;
+  position: absolute !important;
+  width: max-content !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+#nav .menus_items .menus_item {
+  padding: 0 0 0 8px !important;
+}
+/* 子菜单横向展示 */
+#nav .menus_items .menus_item:hover .menus_item_child {
+  display: flex !important;
+}
+/* 【2026-10-01 改】二级菜单一律在父栏目水平居中（宽度自适应）
+   原先按栏目写死的 nth-child(2)~(7) left: -149px ~ -105px 偏移已删除：
+   「标签/分类」合并成「统计」后，文章 子菜单变窄，写死的偏移就对不上了 */
+#nav .menus_items .menus_item .menus_item_child {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+}
+/* 主题 _global/function.styl 里的 sub_menus 关键帧只做 translateY，
+   会盖掉上面的 translateX(-50%)，所以同名覆盖一份（写在后面即生效），
+   把 -50% 一起写进关键帧：进场动画保留，居中也不会丢 */
+@keyframes sub_menus {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/*top-img黑色透明玻璃效果移除，不建议加，除非你执着于完全一图流或者背景图对比色明显 */
+/* #page-header:not(.not-top-img):before {
+  background-color: transparent !important;
+} */
+
+/* 置顶滚动圆角 */
+.blog-slider__img img {
+  border-radius: 18px !important;
+}
+
+/* 首页文章卡片 */
+#recent-posts > .recent-post-item {
+  background: var(--trans-light);
+  border-radius: 25px;
+  border: var(--border-style);
+}
+
+/* 首页侧栏卡片 */
+#aside-content .card-widget {
+  background: var(--trans-light);
+  border-radius: 18px;
+  border: var(--border-style);
+  padding: 20px;
+}
+
+/* 文章页、归档页、普通页面 */
+div#post,
+div#page,
+div#archive {
+  background: var(--trans-light);
+  border: var(--border-style);
+  border-radius: 20px;
+}
+
+/* 导航栏颜色 */
+[data-theme="dark"] #page-header.nav-fixed #nav {
+  background: rgba(0, 0, 0, 0.95) !important;
+}
+
+/* 夜间模式遮罩 */
+[data-theme="dark"] #recent-posts > .recent-post-item,
+[data-theme="dark"] #aside-content .card-widget,
+[data-theme="dark"] div#post,
+[data-theme="dark"] div#archive,
+[data-theme="dark"] div#page {
+  background: var(--trans-dark);
+}
+
+/* 白天模式头图与页脚遮罩 */
+[data-theme="light"] #page-header:before {
+  background-color: rgba(0, 0, 0, 0.2) !important;
+  z-index: -3;
+}
+[data-theme="light"] #footer:before {
+  background-color: rgba(0, 0, 0, 0.25) !important;
+  z-index: -3;
+}
+
+/* 夜间模式全局黑暗遮罩 */
+[data-theme="dark"] #web_bg:before {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* 头图隐藏 */
+#page-header {
+  background: transparent !important;
+}
+/* 夜间模式页脚遮罩隐藏 */
+[data-theme="dark"] #footer:before {
+  background: transparent !important;
+}
+/* 夜间模式页脚头部遮罩隐藏 */
+[data-theme="dark"] #page-header::before {
+  background: transparent !important;
+}
+
+/* 阅读模式 */
+.read-mode #aside-content .card-widget {
+  background: rgba(158, 204, 171, 0.5) !important;
+}
+.read-mode div#post {
+  background: rgba(158, 204, 171, 0.5) !important;
+}
+
+/* 夜间模式下的阅读模式 */
+[data-theme="dark"] .read-mode #aside-content .card-widget {
+  background: rgba(25, 25, 25, 0.9) !important;
+  color: #ffffff;
+}
+[data-theme="dark"] .read-mode div#post {
+  background: rgba(25, 25, 25, 0.9) !important;
+  color: #ffffff;
+}
+
+/* 评论框  */
+.vwrap {
+  box-shadow: 2px 2px 5px #bbb;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 30px;
+  margin: 30px 0px 30px 0px;
+}
+
+/* 设置评论框 */
+.vcard {
+  box-shadow: 2px 2px 5px #bbb;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 30px;
+  margin: 30px 0px 0px 0px;
+}
+
+/* 超链接样式 参考heo */
+#article-container
+  a:not(.fancybox, .imgbox, .swf, .box, .pimgbox, .magnet_link) {
+  text-decoration: none;
+  /* border-bottom: 2px solid var(--theme-color) */
+  /* border-radius: 4px 4px 0 0 */
+}
+
+#article-container
+  a:not(
+    .fancybox,
+    .imgbox,
+    .swf,
+    .box,
+    .pimgbox,
+    .magnet_link,
+    .gallery_link
+  ):hover {
+  text-decoration: none;
+  color: #fefefe;
+  background: var(--text-bg-hover) !important;
+  border-radius: 4px;
+  box-shadow: 0 8px 12px -3px #4259ef23;
+  padding: 2px;
+  transition: all 0.3s ease-in-out;
+}
+
+#article-container #hpp_talk p img {
+  display: inline;
+}
+
+/* 代码框主题 */
+#article-container figure.highlight {
+  border-radius: 10px;
+}
+[data-theme="dark"] #article-container figure.highlight {
+  border: 0.5px solid #404040;
+}
+
+/* 鼠标样式 */
+#cursor {
+  position: fixed;
+  width: 16px;
+  height: 16px;
+  background: var(--theme-color) !important;
+  border-radius: 8px;
+  opacity: 0.25;
+  z-index: 10086;
+  pointer-events: none;
+  transition: 0.2s ease-in-out;
+  transition-property: background, opacity, transform;
+}
+
+#cursor.hidden {
+  opacity: 0;
+}
+
+#cursor.hover {
+  opacity: 0.1;
+  transform: scale(2.5);
+  -webkit-transform: scale(2.5);
+}
+
+#cursor.active {
+  opacity: 0.5;
+  transform: scale(0.5);
+  -webkit-transform: scale(0.5);
+}
+
+/* 手机端不显示 */
+@media screen and (max-width: 500px) {
+  #cursor {
+    display: none !important;
+  }
+}
+
+/* twikoo评论美化 */
+/* 自定义twikoo评论输入框高度 */
+#twikoo .el-textarea textarea {
+  min-height: 120px !important;
+  background-size: 90px;
+}
+
+/* 自定义表情优化 */
+#twikoo .OwO-body {
+  max-width: 100% !important;
+}
+/* 选择某个框 #twikoo .OwO .OwO-body .OwO-items:nth-child(1) */
+#twikoo .OwO .OwO-body .OwO-items {
+  max-height: 250px !important;
+}
+
+.OwO .OwO-body .OwO-items-image .OwO-item {
+  max-width: calc(9% - 10px);
+  box-sizing: content-box;
+}
+.OwO .OwO-body .OwO-items-image .OwO-item[title|="Heybox"],
+.OwO .OwO-body .OwO-items-image .OwO-item[title|="Tieba"],
+.OwO .OwO-body .OwO-items-show .OwO-item[title*="bilibili"] {
+  max-width: calc(7% - 10px) !important;
+  box-sizing: content-box;
+}
+
+#twikoo .OwO-items li img {
+  width: 100% !important;
+}
+
+.tk-comment .vemoji[alt|="Menhera"],
+.tk-comment .tk-owo-emotion[alt*="Menhera"],
+.tk-comment .vemoji[alt|="Snow"],
+.tk-comment .tk-owo-emotion[alt*="Snow"],
+.tk-comment .vemoji[alt|="Sweetie"],
+.tk-comment .tk-owo-emotion[alt*="Sweetie"],
+.tk-comment .vemoji[alt|="Tsuri"],
+.tk-comment .tk-owo-emotion[alt*="Tsuri"],
+.tk-comment .vemoji[alt|="Yurui"],
+.tk-comment .tk-owo-emotion[alt*="Yurui"] {
+  max-width: 120px !important;
+  max-height: 120px !important;
+  width: 120px;
+  margin: 8px 1px;
+  display: block !important;
+}
+
+/* 手机端适配 */
+@media screen and (max-width: 768px) {
+  .tk-comment .vemoji[alt|="Menhera"],
+  .tk-comment .tk-owo-emotion[alt*="Menhera"],
+  .tk-comment .vemoji[alt|="Snow"],
+  .tk-comment .tk-owo-emotion[alt*="Snow"],
+  .tk-comment .vemoji[alt|="Sweetie"],
+  .tk-comment .tk-owo-emotion[alt*="Sweetie"],
+  .tk-comment .vemoji[alt|="Tsuri"],
+  .tk-comment .tk-owo-emotion[alt*="Tsuri"],
+  .tk-comment .vemoji[alt|="Yurui"],
+  .tk-comment .tk-owo-emotion[alt*="Yurui"] {
+    max-width: calc(100% - 30px) !important;
+    max-height: calc(100% - 30px) !important;
+  }
+  .OwO .OwO-body .OwO-items-image .OwO-item[title*="Menhera"],
+  .OwO .OwO-body .OwO-items-image .OwO-item[title*="Snow"],
+  .OwO .OwO-body .OwO-items-image .OwO-item[title*="Sweetie"],
+  .OwO .OwO-body .OwO-items-image .OwO-item[title*="Tsuri"],
+  .OwO .OwO-body .OwO-items-image .OwO-item[title*="Yurui"] {
+    max-width: calc(33% - 10px);
+    box-sizing: border-box;
+  }
+  .OwO .OwO-body .OwO-items-image .OwO-item[title*="Heybox"],
+  .OwO .OwO-body .OwO-items-image .OwO-item[title*="bilibili"],
+  .OwO .OwO-body .OwO-items-image .OwO-item[title*="Tieba"],
+  .OwO .OwO-body .OwO-items-image .OwO-item[title*="QQ"] {
+    max-width: calc(18% - 10px) !important;
+    box-sizing: content-box;
+  }
+}
+
+/* 右下角闭眼 */
+.el-textarea__inner {
+  background-image: url(/assets/open.webp) !important;
+}
+.el-textarea__inner:focus {
+  background-image: url(/assets/close.webp) !important;
+}
+
+/* 调整楼中楼样式 ，整体左移，贴合气泡化效果 */
+.tk-replies {
+  left: -70px;
+  width: calc(100% + 70px);
+}
+/* 头像宽度调整 rem单位与全局字体大小挂钩，需配合自己情况调整大小以保证头像显示完整*/
+.tk-replies .tk-avatar {
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+}
+.tk-replies .tk-avatar img {
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+}
+/* 回复框左移，避免窄屏时出框 */
+.tk-comments-container .tk-submit {
+  position: relative;
+  left: -70px;
+}
+/* 评论块气泡化修改 */
+.tk-content {
+  background: #8d6ca3;
+  padding: 10px;
+  color: #fff;
+  border-radius: 10px;
+  font-size: 16px !important;
+  width: fit-content;
+  max-width: 100%;
+  position: relative !important;
+  overflow: visible !important;
+  max-height: none !important;
+}
+/* 修复图片出框 */
+.tk-content img {
+  max-width: 100% !important;
+}
+/* 修复过长文本出框 */
+.tk-content pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.tk-content a {
+  color: #eeecaa; /*默认模式超链接配色*/
+}
+
+.tk-master .tk-content {
+  background: #29b19e;
+  color: #fff; /*默认模式博主气泡字体配色*/
+  width: fit-content;
+  max-width: 100%;
+  border: 0.5px solid #c3c3c3;
+}
+
+[data-theme="dark"] .tk-master .tk-content {
+  border: 0.5px solid #535353;
+}
+
+.tk-master .tk-content a {
+  color: #eeecaa;
+}
+
+.tk-row[data-v-d82ce9a0] {
+  max-width: 100%;
+  width: fit-content;
+}
+.tk-avatar {
+  border-radius: 50%;
+  margin-top: 10px;
+}
+
+/* 夜间模式配色，具体比照上方默认模式class */
+[data-theme="dark"] .tk-content {
+  background: #3a2c44;
+  color: #fff;
+}
+[data-theme="dark"] .tk-content a {
+  color: #dfa036;
+}
+[data-theme="dark"] .tk-content::before {
+  border-right: 15px solid #000;
+}
+[data-theme="dark"] .tk-master .tk-content {
+  background: #26453a;
+  color: #fff;
+}
+[data-theme="dark"] .tk-master .tk-content a {
+  color: #dfa036;
+}
+/* 自适应内容 */
+@media screen and (min-width: 1024px) {
+  /* 设置宽度上限，避免挤压博主头像 */
+  .tk-content {
+    max-width: 75%;
+    width: fit-content;
+  }
+
+  .tk-master .tk-avatar {
+    position: relative;
+    /* left: calc(75% + 70px); */
+  }
+  .tk-master .tk-row[data-v-d82ce9a0] {
+    position: relative;
+    top: 0px;
+    left: calc(75% - 230px);
+  }
+}
+/* 设备名称常态隐藏，悬停评论时显示 */
+.tk-extras {
+  opacity: 0;
+}
+.tk-content:hover + .tk-extras {
+  -webkit-animation: tk-extras-fadeIn 0.5s linear;
+  animation: tk-extras-fadeIn 0.5s linear;
+  -webkit-animation-fill-mode: forwards;
+  animation-fill-mode: forwards;
+}
+/* [P3 清理] 此处原有 @-moz-keyframes tk-extras-fadeIn（12 行）：Firefox 16+ / Opera 15+ 起已支持无前缀 @keyframes，删掉前缀版，无前缀版就在附近 */
+@-webkit-keyframes tk-extras-fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+    filter: none;
+  }
+}
+/* [P3 清理] 此处原有 @-o-keyframes tk-extras-fadeIn（12 行）：Firefox 16+ / Opera 15+ 起已支持无前缀 @keyframes，删掉前缀版，无前缀版就在附近 */
+@keyframes tk-extras-fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+    filter: none;
+  }
+}
+
+/* 文章页H1-H6图标样式效果 */
+/* 控制风车转动速度 */
+h1::before,
+h2::before,
+h3::before,
+h4::before,
+h5::before,
+h6::before {
+  -webkit-animation: ccc 6s linear infinite;
+  animation: ccc 6s linear infinite;
+}
+/* 控制风车转动方向 -1turn 为逆时针转动，1turn 为顺时针转动，相同数字部分记得统一修改 */
+@-webkit-keyframes ccc {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(-1turn);
+    transform: rotate(-1turn);
+  }
+}
+@keyframes ccc {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(-1turn);
+    transform: rotate(-1turn);
+  }
+}
+/* 设置风车颜色 */
+#content-inner.layout h1::before {
+  color: #ef50a8;
+  margin-left: -1.55rem;
+  font-size: 1.3rem;
+  margin-top: -0.23rem;
+}
+#content-inner.layout h2::before {
+  color: #fb7061;
+  margin-left: -1.35rem;
+  font-size: 1.1rem;
+  margin-top: -0.12rem;
+}
+#content-inner.layout h3::before {
+  color: #ffbf00;
+  margin-left: -1.22rem;
+  font-size: 0.95rem;
+  margin-top: -0.09rem;
+}
+#content-inner.layout h4::before {
+  color: #a9e000;
+  margin-left: -1.05rem;
+  font-size: 0.8rem;
+  margin-top: -0.09rem;
+}
+#content-inner.layout h5::before {
+  color: #57c850;
+  margin-left: -0.9rem;
+  font-size: 0.7rem;
+  margin-top: 0rem;
+}
+#content-inner.layout h6::before {
+  color: #5ec1e0;
+  margin-left: -0.9rem;
+  font-size: 0.66rem;
+  margin-top: 0rem;
+}
+/* s设置风车hover动效 */
+#content-inner.layout h1:hover,
+#content-inner.layout h2:hover,
+#content-inner.layout h3:hover,
+#content-inner.layout h4:hover,
+#content-inner.layout h5:hover,
+#content-inner.layout h6:hover {
+  color: var(--theme-color) !important;
+}
+#content-inner.layout h1:hover::before,
+#content-inner.layout h2:hover::before,
+#content-inner.layout h3:hover::before,
+#content-inner.layout h4:hover::before,
+#content-inner.layout h5:hover::before,
+#content-inner.layout h6:hover::before {
+  color: var(--theme-color) !important;
+  -webkit-animation: ccc 6s linear infinite;
+  animation: ccc 6s linear infinite;
+}
+
+/*哔哩哔哩视频适配*/
+.aspect-ratio {
+  position: relative;
+  width: 90%;
+  height: auto;
+  padding-bottom: 75%;
+  margin: 3% auto;
+  text-align: center;
+}
+.aspect-ratio iframe {
+  position: absolute;
+  width: 100%;
+  height: 86%;
+  left: 0;
+  top: 0;
+}
+
+/* 图片模糊渐变清晰 */
+/*3s为加载动画的时间，1为加载动画的次数，ease-in-out为动画效果*/
+#page-header,
+#web_bg {
+  -webkit-animation: imgblur 0.8s 1 ease-in-out;
+  animation: imgblur 0.8s 1 ease-in-out;
+}
+@keyframes imgblur {
+  0% {
+    filter: blur(5px);
+  }
+  100% {
+    filter: blur(0px);
+  }
+}
+/*适配使用-webkit内核的浏览器 */
+@-webkit-keyframes imgblur {
+  0% {
+    -webkit-filter: blur(5px);
+  }
+  100% {
+    -webkit-filter: blur(0px);
+  }
+}
+
+/* 背景滤镜 */
+#web_bg {
+  filter: var(--bg-filter) !important;
+}
+
+/* 全局宽度 参考:https://yisous.xyz/posts/d1fc759/ */
+.layout {
+  max-width: 1400px;
+}
+
+/* 侧边卡片栏宽度 */
+.aside-content {
+  max-width: 318px;
+  min-width: 300px;
+}
+
+/* 平板尺寸自适应(不启用侧边栏宽度限制) */
+@media screen and (max-width: 900px) {
+  .aside-content {
+    max-width: none !important;
+    padding: 0 5px 0 5px;
+  }
+}
+
+/* 除了首页以外其他页面隐藏卡片，并采用宽屏显示 */
+#archive,
+#page,
+#category,
+#tag {
+  width: 100%;
+}
+.page:not(.page.home) .aside-content {
+  display: none;
+}
+
+/* 友链一行显示更多 */
+.site-card {
+  width: calc(100% / 5 - 16px) !important;
+  border-radius: 18px !important;
+  border: 1px solid #d3d3d3 !important;
+  padding: 5px !important;
+}
+/* 卡片高度不再写死：写死的高度是按旧的整页宽度(1400px)调的，
+   页面收窄到 1200px 后卡片变窄而高度不变，看起来又高又瘦。
+   现在由图片的 16:10 比例撑开，宽度变化时高度自动跟着变。 */
+.site-card:not(.mini-link) {
+  height: auto !important;
+}
+[data-theme="light"] .site-card {
+  background-color: var(--hh-trans-color);
+}
+[data-theme="dark"] .site-card {
+  border: 1px solid #525252 !important;
+  background-color: #343434e8 !important;
+}
+
+[data-theme="light"]
+  #article-container
+  .timeline
+  .timeline-item
+  .timeline-item-content {
+  background-color: var(--hh-trans-color) !important;
+}
+[data-theme="dark"]
+  #article-container
+  .timeline
+  .timeline-item
+  .timeline-item-content {
+  background-color: #232323 !important;
+}
+
+.site-card .img {
+  height: auto !important;
+  aspect-ratio: 16 / 10;
+  border-radius: 18px !important;
+}
+/* 适应宽度不同的设备 */
+@media screen and (max-width: 1200px) {
+  .site-card {
+    width: calc(100% / 4 - 16px) !important;
+  }
+}
+@media screen and (max-width: 900px) {
+  .site-card {
+    width: calc(100% / 3 - 16px) !important;
+  }
+}
+@media screen and (max-width: 600px) {
+  .site-card {
+    width: calc(100% / 2 - 16px) !important;
+  }
+}
+
+.site-card:hover .img {
+  scale: 1.02 !important;
+}
+
+/* Gallery一行显示更多 + 整行居中 */
+#article-container .gallery-group-main {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px 16px;
+}
+#article-container figure.gallery-group {
+  float: none;
+  margin: 0;
+}
+.gallery-group {
+  width: calc(33% - 11px) !important;
+}
+/* 适应宽度不同的设备 */
+@media screen and (max-width: 1000px) {
+  .gallery-group {
+    width: calc(50% - 8px) !important;
+  }
+}
+
+/* 标题增强 */
+#site-name::before {
+  opacity: 0;
+  background-color: var(--theme-color) !important;
+  border-radius: 8px;
+  -webkit-border-radius: 8px;
+  transition: 0.3s;
+  -webkit-transition: 0.3s;
+  position: absolute;
+  top: 0 !important;
+  right: 0 !important;
+  width: 100%;
+  height: 100%;
+  content: "\f015";
+  box-shadow: 0 0 5px var(--theme-color) !important;
+  font-family: "Font Awesome 6 Free";
+  text-align: center;
+  color: white;
+  line-height: 34px; /*如果有溢出或者垂直不居中的现象微调一下这个参数*/
+  font-size: 18px; /*根据个人喜好*/
+}
+#site-name:hover::before {
+  opacity: 1;
+  scale: 1.03;
+}
+#site-name {
+  position: relative;
+  font-size: 24px; /*一定要把字体调大点，否则效果惨不忍睹！*/
+}
+
+/* 阅读百分比 */
+/* 返回顶部 */
+button#go-up #percent {
+  display: none;
+  font-weight: bold;
+  font-size: 15px !important;
+}
+
+button#go-up span {
+  font-size: 12px !important;
+  margin-right: -1px;
+}
+
+/* 鼠标滑动到按钮上时显示返回顶部图标 */
+button#go-up:hover i {
+  display: block !important;
+}
+
+button#go-up:hover #percent {
+  display: none !important;
+}
+
+#rightside > div > a,
+#rightside > div > button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  font-size: 18px;
+  border-radius: 6px;
+}
+
+/* 评论表情放大显示 */
+#owo-big {
+  position: fixed;
+  align-items: center;
+  background-color: rgb(255, 255, 255);
+  border: 1px #aaa solid;
+  border-radius: 10px;
+  z-index: 9999;
+  display: none;
+  transform: translate(0, -105%);
+  overflow: hidden;
+  animation: owoIn 0.3s cubic-bezier(0.42, 0, 0.3, 1.11);
+}
+
+[data-theme="dark"] #owo-big {
+  background-color: #4a4a4a;
+}
+
+#owo-big img {
+  width: 100%;
+}
+
+/* 动画效果代码由 Heo：https://blog.zhheo.com/ 提供 */
+@keyframes owoIn {
+  0% {
+    transform: translate(0, -95%);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(0, -105%);
+    opacity: 1;
+  }
+}
+
+/* 评论区输入提示 */
+/* 设置文字内容 :nth-child(1)的作用是选择第几个 */
+.el-input.el-input--small.el-input-group.el-input-group--prepend:nth-child(
+    1
+  ):before {
+  content: "输入QQ号会自动获取昵称和头像🐧";
+}
+
+.el-input.el-input--small.el-input-group.el-input-group--prepend:nth-child(
+    2
+  ):before {
+  content: "收到回复将会发送到您的邮箱📧";
+}
+
+.el-input.el-input--small.el-input-group.el-input-group--prepend:nth-child(
+    3
+  ):before {
+  content: "可以通过昵称访问您的网站🔗";
+}
+
+/* 当用户点击输入框时显示 */
+.el-input.el-input--small.el-input-group.el-input-group--prepend:focus-within::before,
+.el-input.el-input--small.el-input-group.el-input-group--prepend:focus-within::after {
+  display: block;
+}
+
+/* 主内容区 */
+.el-input.el-input--small.el-input-group.el-input-group--prepend::before {
+  /* 先隐藏起来 */
+  display: none;
+  /* 绝对定位 */
+  position: absolute;
+  /* 向上移动60像素 */
+  top: -60px;
+  /* 文字强制不换行，防止left:50%导致的文字换行 */
+  white-space: nowrap;
+  /* 圆角 */
+  border-radius: 10px;
+  /* 距离左边50% */
+  left: 50%;
+  /* 然后再向左边挪动自身的一半，即可实现居中 */
+  transform: translate(-50%);
+  /* 填充 */
+  padding: 14px 18px;
+  background: #444;
+  color: #fff;
+}
+
+/* 小角标 */
+.el-input.el-input--small.el-input-group.el-input-group--prepend::after {
+  display: none;
+  content: "";
+  position: absolute;
+  /* 内容大小（宽高）为0且边框大小不为0的情况下，每一条边（4个边）都是一个三角形，组成一个正方形。
+    我们先将所有边框透明，再给其中的一条边添加颜色就可以实现小三角图标 */
+  border: 12px solid transparent;
+  border-top-color: #444;
+  left: 50%;
+  transform: translate(-50%, -48px);
+}
+
+/* 美化模块 */
+.winbox {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.wb-body {
+  background-color: #e5f1f5;
+}
+
+.wb-full {
+  display: none;
+}
+
+.wb-min {
+  background-position: center;
+}
+
+[data-theme="dark"] .wb-body,
+[data-theme="dark"] #changeBgBox {
+  background: #333 !important;
+}
+
+/* 背景图墙：grid 逐行排满（从左到右，满了再换到下一行）。
+   原来是 flex + justify-content:space-between：一行装不下整数张、或最后一行不满时，
+   剩下的图会被推到最左和最右，中间留一个大空洞 */
+.bgbox {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.pimgbox,
+.imgbox,
+.box {
+  height: 100px;
+  width: 166px;
+  margin: 10px;
+  border-radius: 10px !important;
+  background-size: cover;
+}
+
+/* grid 版图墙：宽度交给列宽、间距交给 gap，不再用 margin 撑；
+   #define_colors 是 ID 规则，必须单独盖掉它的 width/margin */
+.bgbox > .pimgbox,
+.bgbox > .imgbox,
+.bgbox > .box {
+  width: 100%;
+  margin: 0;
+}
+
+.bgbox > #define_colors {
+  width: 100%;
+  margin: 0;
+}
+
+.pimgbox,
+.imgbox {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.imgbox:hover,
+.pimgbox:hover,
+.box:hover {
+  scale: 1.05;
+  transition: all 0.3s ease-in-out;
+}
+
+.pimgbox {
+  height: 240px;
+}
+
+.imgbox {
+  height: 95px;
+}
+
+@media screen and (max-width: 768px) {
+  /* 背景 */
+  .pimgbox,
+  .imgbox,
+  .box {
+    height: 73px;
+    width: 135px;
+  }
+  .pimgbox {
+    height: 205px;
+  }
+
+  /* 图墙在手机端：列更窄、间距更小，缩略图按比例缩放（其余沿用上面的 grid 规则） */
+  .bgbox {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 10px;
+  }
+  .bgbox > .imgbox,
+  .bgbox > .box {
+    height: auto;
+    aspect-ratio: 135 / 73;
+  }
+  .bgbox > .pimgbox {
+    height: 205px;
+  }
+
+  /* 自定义颜色框在手机端也跟纯色块一样按 135/73 比例 */
+  .bgbox > #define_colors {
+    height: auto;
+    aspect-ratio: 135 / 73;
+  }
+
+  /* 2.0新增内容 */
+  .wb-min {
+    display: none;
+  }
+  #changeBgBox .wb-body::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* 应用监控夜间模式适配 id要# class是直接来就行*/
+[data-theme="dark"] #statistic {
+  background: #2b2929;
+}
+
+/* ─── 已清理（2026-10-03 屎山重构 P3）──────────────────────────────
+   删除：侧栏个人信息卡片「动态渐变」整段（50 行，含 3 个 @keyframes Gradient 定义，全都写在注释里）
+   原因：早就不用这套渐变，改成了下面的 springBg.png / aurora.webp 背景图；注释里的 keyframes 永远不会生效，却容易让人以为 Gradient 定义在这里
+   恢复：bak/2026-10-03-屎山重构/before/themes/fomalhaut/source/css/_custom/custom.css
+   ─────────────────────────────────────────────────────────── */
+
+/* 个人信息卡片背景图 */
+[data-theme="light"] #aside-content > .card-widget.card-info {
+  background-image: url(https://picsum.photos/id/1043/1920/1080);
+  background-repeat: no-repeat;
+  background-attachment: inherit;
+  background-size: 100%;
+}
+[data-theme="dark"] #aside-content > .card-widget.card-info {
+  background-image: url(https://picsum.photos/id/1036/1920/1080);
+  background-repeat: no-repeat;
+  background-attachment: inherit;
+  background-size: 100%;
+}
+/* 头像呼吸灯 */
+[data-theme="light"] .avatar-img {
+  animation: huxi_light 4s ease-in-out infinite;
+}
+[data-theme="dark"] .avatar-img {
+  animation: huxi_dark 4s ease-in-out infinite;
+}
+@keyframes huxi_light {
+  0% {
+    box-shadow: 0px 0px 1px 1px #9ff2d2;
+  }
+  50% {
+    box-shadow: 0px 0px 5px 5px #9ff2d2;
+  }
+  100% {
+    box-shadow: 0px 0px 1px 1px #9ff2d2;
+  }
+}
+@keyframes huxi_dark {
+  0% {
+    box-shadow: 0px 0px 1px 1px #39c5bb;
+  }
+  50% {
+    box-shadow: 0px 0px 5px 5px #39c5bb;
+  }
+  100% {
+    box-shadow: 0px 0px 1px 1px #39c5bb;
+  }
+}
+
+/* 个人信息Follow me按钮 */
+#aside-content > .card-widget.card-info > #card-info-btn {
+  background-color: var(--theme-color) !important;
+  border-radius: 30px;
+  color: white;
+}
+#aside-content > .card-widget.card-info > #card-info-btn:hover {
+  background-color: var(--btn-hover-color) !important;
+  transition: all 0.2s ease-in-out;
+}
+
+/* ===== APlayer 美化：圆角 / 主题浅色底 / 主题色滚动条 / 收窄（八音盒音乐空间） ===== */
+#article-container .aplayer {
+  --aplayer-bg: color-mix(in srgb, var(--theme-color) 7%, #fff);
+  font-family: var(--global-font) !important;
+  max-width: 720px;
+  margin: 0 auto 26px !important;
+  border-radius: 16px;
+  background: var(--aplayer-bg);
+  border: 1px solid color-mix(in srgb, var(--theme-color) 18%, transparent);
+  box-shadow: 0 8px 24px -14px color-mix(in srgb, var(--theme-color) 70%, transparent);
+}
+/* 封面与播放按钮 */
+#article-container .aplayer .aplayer-pic {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px -3px color-mix(in srgb, var(--theme-color) 65%, transparent);
+}
+#article-container .aplayer .aplayer-pic .aplayer-button {
+  background: color-mix(in srgb, var(--theme-color) 88%, #fff);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--theme-color) 50%, transparent);
+}
+#article-container .aplayer .aplayer-pic .aplayer-button path {
+  fill: #fff;
+}
+/* 标题与作者 */
+#article-container .aplayer .aplayer-info .aplayer-music .aplayer-title {
+  font-weight: 600;
+}
+#article-container .aplayer .aplayer-info .aplayer-music .aplayer-author {
+  color: color-mix(in srgb, var(--theme-color) 55%, #666);
+}
+/* 进度条与滑块 */
+#article-container .aplayer .aplayer-bar {
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--theme-color) 18%, #fff);
+}
+#article-container .aplayer .aplayer-loaded {
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--theme-color) 35%, #fff);
+}
+#article-container .aplayer .aplayer-played {
+  height: 4px !important;
+  border-radius: 999px;
+  background: var(--theme-color) !important;
+}
+#article-container .aplayer .aplayer-thumb {
+  width: 11px;
+  height: 11px;
+  margin-top: -4px;
+  background: var(--theme-color) !important;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--theme-color) 45%, transparent);
+}
+/* 时间与图标 */
+#article-container .aplayer .aplayer-time {
+  color: color-mix(in srgb, var(--theme-color) 50%, #888);
+}
+#article-container .aplayer .aplayer-time .aplayer-icon path {
+  fill: color-mix(in srgb, var(--theme-color) 65%, #666);
+}
+#article-container .aplayer .aplayer-time .aplayer-icon:hover path {
+  fill: var(--theme-color);
+}
+/* 音量条 */
+#article-container .aplayer .aplayer-volume-bar {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--theme-color) 18%, #fff);
+}
+#article-container .aplayer .aplayer-volume {
+  border-radius: 999px;
+  background: var(--theme-color);
+}
+/* 顶部与列表之间的分隔线 */
+#article-container .aplayer.aplayer-withlist .aplayer-info {
+  border-bottom: 1px solid color-mix(in srgb, var(--theme-color) 15%, transparent);
+}
+/* 歌词遮罩：APlayer 默认用白色渐变（:before/:after），底色不再是白色后会露出两条白条，改成同底色 */
+#article-container .aplayer .aplayer-lrc:before {
+  background: linear-gradient(180deg, var(--aplayer-bg) 0, transparent);
+}
+#article-container .aplayer .aplayer-lrc:after {
+  background: linear-gradient(180deg, transparent 0, var(--aplayer-bg));
+}
+#article-container .aplayer .aplayer-lrc p {
+  color: color-mix(in srgb, var(--theme-color) 35%, #777);
+}
+/* 播放列表：圆角药丸行 + 很浅的主题色 */
+#article-container .aplayer .aplayer-list {
+  padding: 4px 8px 8px;
+}
+#article-container .aplayer .aplayer-list ol {
+  max-height: 340px;
+  border-radius: 12px;
+}
+#article-container .aplayer .aplayer-list ol li {
+  height: 32px;
+  line-height: 32px;
+  margin: 1px 0;
+  padding: 0 12px;
+  border-top: none;
+  border-radius: 10px;
+  color: #4a4a4a;
+  transition: all 0.2s ease;
+}
+#article-container .aplayer .aplayer-list ol li:hover {
+  background: color-mix(in srgb, var(--theme-color) 12%, #fff);
+}
+#article-container .aplayer .aplayer-list ol li.aplayer-list-light {
+  background: color-mix(in srgb, var(--theme-color) 18%, #fff);
+  color: color-mix(in srgb, var(--theme-color) 45%, #24413f);
+  font-weight: 600;
+}
+#article-container .aplayer .aplayer-list ol li .aplayer-list-cur {
+  width: 4px;
+  height: 18px;
+  top: 7px;
+  border-radius: 999px;
+}
+#article-container .aplayer .aplayer-list ol li .aplayer-list-index {
+  color: color-mix(in srgb, var(--theme-color) 40%, #999);
+}
+#article-container .aplayer .aplayer-list ol li .aplayer-list-author {
+  color: #999;
+}
+/* 播放列表滚动条：主题色系 */
+#article-container .aplayer .aplayer-list::-webkit-scrollbar,
+#article-container .aplayer .aplayer-list ol::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+#article-container .aplayer .aplayer-list::-webkit-scrollbar-track,
+#article-container .aplayer .aplayer-list ol::-webkit-scrollbar-track {
+  background: color-mix(in srgb, var(--theme-color) 10%, transparent);
+  border-radius: 999px;
+}
+#article-container .aplayer .aplayer-list::-webkit-scrollbar-thumb,
+#article-container .aplayer .aplayer-list ol::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--theme-color) 55%, #fff);
+  background-image: none;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+#article-container .aplayer .aplayer-list::-webkit-scrollbar-thumb:hover,
+#article-container .aplayer .aplayer-list ol::-webkit-scrollbar-thumb:hover {
+  background-color: var(--theme-color);
+}
+/* Firefox 回退：标准属性必须放在 @supports not 里，否则会禁用全局 webkit 滚动条样式 */
+@supports not selector(::-webkit-scrollbar) {
+  #article-container .aplayer .aplayer-list,
+  #article-container .aplayer .aplayer-list ol {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--theme-color) 55%, #fff) color-mix(in srgb, var(--theme-color) 10%, transparent);
+  }
+}
+/* 夜间模式 */
+[data-theme="dark"] #article-container .aplayer {
+  --aplayer-bg: color-mix(in srgb, var(--theme-color) 14%, #1c1c1c);
+  filter: none;
+  color: #e6e6e6;
+  background: var(--aplayer-bg);
+  border-color: color-mix(in srgb, var(--theme-color) 28%, transparent);
+  box-shadow: 0 8px 24px -16px #000;
+}
+[data-theme="dark"] #article-container .aplayer .aplayer-info .aplayer-music .aplayer-author {
+  color: color-mix(in srgb, var(--theme-color) 40%, #bbb);
+}
+[data-theme="dark"] #article-container .aplayer .aplayer-bar {
+  background: color-mix(in srgb, var(--theme-color) 25%, #242424);
+}
+[data-theme="dark"] #article-container .aplayer .aplayer-loaded {
+  background: color-mix(in srgb, var(--theme-color) 45%, #242424);
+}
+[data-theme="dark"] #article-container .aplayer .aplayer-lrc p {
+  color: color-mix(in srgb, var(--theme-color) 30%, #9a9a9a);
+}
+[data-theme="dark"] #article-container .aplayer .aplayer-time {
+  color: color-mix(in srgb, var(--theme-color) 45%, #aaa);
+}
+[data-theme="dark"] #article-container .aplayer .aplayer-time .aplayer-icon path {
+  fill: color-mix(in srgb, var(--theme-color) 55%, #ccc);
+}
+[data-theme="dark"] #article-container .aplayer .aplayer-list ol li {
+  color: #cfcfcf;
+}
+[data-theme="dark"] #article-container .aplayer .aplayer-list ol li:hover {
+  background: color-mix(in srgb, var(--theme-color) 22%, #1c1c1c);
+}
+[data-theme="dark"] #article-container .aplayer .aplayer-list ol li.aplayer-list-light {
+  background: color-mix(in srgb, var(--theme-color) 30%, #1c1c1c);
+  color: #fff;
+}
+[data-theme="dark"] #article-container .aplayer .aplayer-list ol li .aplayer-list-author {
+  color: #9a9a9a;
+}
+
+/* ===== 音乐页：歌单来源 / 简介 / 热评 ===== */
+#article-container .music-note {
+  max-width: 720px;
+  margin: -8px auto 26px;
+  padding: 14px 18px 16px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--theme-color) 6%, #fff);
+  border: 1px solid color-mix(in srgb, var(--theme-color) 16%, transparent);
+  font-size: 14px;
+  line-height: 1.9;
+  color: #4a4a4a;
+}
+#article-container .music-note-head {
+  font-size: 13px;
+  line-height: 1.8;
+  color: color-mix(in srgb, var(--theme-color) 50%, #777);
+}
+#article-container .music-note-tag {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 20px;
+  color: #fff;
+  background: var(--theme-color);
+}
+#article-container .music-note-id {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--theme-color);
+  background: color-mix(in srgb, var(--theme-color) 12%, transparent);
+  text-decoration: none;
+  transition: background .2s;
+}
+#article-container .music-note-id:hover {
+  color: var(--theme-color);
+  background: color-mix(in srgb, var(--theme-color) 24%, transparent);
+}
+#article-container .music-note-desc {
+  margin: 10px 0 12px;
+}
+#article-container .music-note-quote {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 0 12px 12px 0;
+  background: color-mix(in srgb, var(--theme-color) 8%, transparent);
+  font-size: 13.5px;
+  line-height: 1.85;
+  color: #555;
+}
+#article-container .music-note-quote cite {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  font-style: normal;
+  color: color-mix(in srgb, var(--theme-color) 45%, #999);
+}
+#article-container .music-note-sub {
+  margin: 0 0 10px;
+  font-size: 12px;
+  letter-spacing: .5px;
+  color: color-mix(in srgb, var(--theme-color) 60%, #8a8a8a);
+}
+#article-container .music-note-quotes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+[data-theme="dark"] #article-container .music-note-sub {
+  color: color-mix(in srgb, var(--theme-color) 45%, #999);
+}
+[data-theme="dark"] #article-container .music-note {
+  background: color-mix(in srgb, var(--theme-color) 12%, #1c1c1c);
+  border-color: color-mix(in srgb, var(--theme-color) 22%, transparent);
+  color: #cfcfcf;
+}
+[data-theme="dark"] #article-container .music-note-head {
+  color: color-mix(in srgb, var(--theme-color) 40%, #aaa);
+}
+[data-theme="dark"] #article-container .music-note-quote {
+  background: color-mix(in srgb, var(--theme-color) 14%, #1c1c1c);
+  color: #c8c8c8;
+}
+[data-theme="dark"] #article-container .music-note-quote cite {
+  color: color-mix(in srgb, var(--theme-color) 35%, #999);
+}
+
+/* 背景图片链接输入框placeholder*/
+input#pic-link::-webkit-input-placeholder {
+  color: rgb(150, 150, 150);
+}
+
+input#pic-link {
+  width: 82%;
+  border-radius: 30px;
+  border: 1px solid var(--theme-color) !important;
+  padding: 5px 10px 5px 10px;
+  line-height: 2;
+  outline: 1px solid var(--theme-color) !important;
+}
+
+/* 滤镜按钮 */
+input#blurRad::-webkit-input-placeholder,
+input#saturation::-webkit-input-placeholder,
+input#contrast::-webkit-input-placeholder {
+  color: rgb(180, 180, 180);
+}
+
+input#blurRad,
+input#saturation,
+input#contrast {
+  border-radius: 6px;
+  border: 0.6px solid #80808080 !important;
+  outline: 0.6px solid #80808080 !important;
+  line-height: 1.2;
+  height: 26px;
+  margin-top: 3px;
+  max-width: 50px;
+}
+
+input#blurRad:hover,
+input#saturation:hover,
+input#contrast:hover {
+  border: 0.6px solid var(--theme-color) !important;
+  outline: 0.6px solid var(--theme-color) !important;
+}
+
+/* heo 加载动画头像 */
+.loading-img {
+  background: url(/assets/avatar.webp)
+    no-repeat center center;
+  background-size: cover;
+}
+
+/* heo 夜间模式加载背景色 */
+[data-theme="dark"] {
+  --loading-color: rgba(25, 25, 25, 0.92) !important;
+}
+
+/* 顶栏常驻 */
+#page-header.nav-fixed #nav,
+#page-header.nav-visible #nav {
+  transform: translateY(58px) !important;
+  -webkit-transform: translateY(58px) !important;
+  background: linear-gradient(60deg, #ffd7e4 0, #c8f1ff 93%);
+  opacity: 0.95;
+}
+#page-header.nav-visible > .nav_visible {
+  display: var(--nav-visible-display) !important;
+}
+#page-header.nav-fixed > .nav_fixed {
+  display: var(--nav-fixed-display) !important;
+}
+#page-header.nav-fixed #nav {
+  display: var(--nav-fixed-display);
+}
+#page-header.nav-visible #nav {
+  display: var(--nav-visible-display);
+}
+
+#nav {
+  transition: none !important;
+  -webkit-transition: none !important;
+}
+#page-header.nav-fixed #nav a:hover {
+  color: inherit !important;
+}
+
+@media screen and (min-width: 600px) {
+  #nav {
+    padding: 0 28px !important;
+  }
+}
+
+/* 导航栏显示标题 */
+#page-name::before {
+  font-size: 18px;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  color: white !important;
+  top: 0;
+  left: 0;
+  content: "回到顶部";
+  background-color: var(--theme-color) !important;
+  transition: all 0.3s;
+  -webkit-transition: all 0.3s;
+  opacity: 0;
+  box-shadow: 0 0 3px var(--theme-color) !important;
+  line-height: 45px; /*如果垂直位置不居中可以微调此值，也可以删了*/
+}
+#page-name:hover:before {
+  opacity: 1;
+}
+#name-container {
+  transition: all 0.3s;
+  -webkit-transition: all 0.3s;
+}
+/* 悬停放大必须并进同一个 transform：
+   独立的 scale 属性和 transform: translateX(-50%) 一起用时，按 CSS Transforms 2 的合成顺序
+   scale 作用在已经位移过的坐标上，会把 -50% 的居中位移也放大 1.03 倍 →
+   整块标题左偏 0.5×宽度×0.03 ≈ 6.3px（悬停时才看得见，所以一直没发现）。
+   写成 translateX(-50%) scale(1.03) 时 translate 在最后一步，位移不再被放大，居中才是准的。 */
+center#name-container:hover {
+  transform: translateX(-50%) scale(1.03) !important;
+}
+#page-name {
+  position: relative;
+  padding: 10px 30px; /*如果文字间隔不合理可以微调修改，第二个是水平方向的padding，第一个是垂直的*/
+}
+
+/* 调节字体显示栏目 */
+#swfs,
+#swfs_code {
+  display: flex;
+  flex-wrap: wrap;
+}
+.swf {
+  padding: 10px;
+  font-size: 20px;
+  background-color: white;
+  /* 字体选择框边界由js指定 */
+  /* border: 2px solid var(--border-color); */
+  border-radius: 10px !important;
+  margin: 10px;
+}
+
+.swf:hover {
+  text-decoration: none !important;
+  background: var(--text-bg-hover) !important;
+}
+
+/* 主题色选择 */
+input[name="colors"] {
+  margin-right: 15px;
+  min-width: 1rem;
+  height: 1rem;
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 50%;
+}
+#red {
+  border: 3px solid var(--color-red);
+}
+#orange {
+  border: 3px solid var(--color-orange);
+}
+#yellow {
+  border: 3px solid var(--color-yellow);
+}
+#green {
+  border: 3px solid var(--color-green);
+}
+#puregreen {
+  border: 3px solid var(--color-puregreen);
+}
+#blue {
+  border: 3px solid var(--color-blue);
+}
+#purple {
+  border: 3px solid var(--color-purple);
+}
+#purepurple {
+  border: 3px solid var(--color-purepurple);
+}
+#pink {
+  border: 3px solid var(--color-pink);
+}
+#heoblue {
+  border: 3px solid var(--color-heoblue);
+}
+#darkblue {
+  border: 3px solid var(--color-darkblue);
+}
+#black {
+  border: 3px solid var(--color-black);
+}
+#gray {
+  border: 3px solid var(--color-gray);
+}
+#purple:checked {
+  box-shadow: 0 0 0 2px #fff inset;
+  border-radius: 50%;
+  border: 3px solid var(--color-purple);
+  background-color: var(--color-purple);
+}
+#purepurple:checked {
+  box-shadow: 0 0 0 2px #fff inset;
+  border-radius: 50%;
+  border: 3px solid var(--color-purepurple);
+  background-color: var(--color-purepurple);
+}
+#red:checked {
+  box-shadow: 0 0 0 2px #fff inset;
+  border-radius: 50%;
+  border: 3px solid var(--color-red);
+  background-color: var(--color-red);
+}
+#orange:checked {
+  box-shadow: 0 0 0 2px #fff inset;
+  border-radius: 50%;
+  border: 3px solid var(--color-orange);
+  background-color: var(--color-orange);
+}
+#yellow:checked {
+  box-shadow: 0 0 0 2px #fff inset;
+  border-radius: 50%;
+  border: 3px solid var(--color-yellow);
+  background-color: var(--color-yellow);
+}
+#green:checked {
+  box-shadow: 0 0 0 2px #fff inset;
+  border-radius: 50%;
+  border: 3px solid var(--color-green);
+  background-color: var(--color-green);
+}
+#puregreen:checked {
+  box-shadow: 0 0 0 2px #fff inset;
+  border-radius: 50%;
+  border: 3px solid var(--color-puregreen);
+  background-color: var(--color-puregreen);
+}
+#blue:checked {
+  box-shadow: 0 0 0 2px #fff inset;
+  border-radius: 50%;
+  border: 3px solid var(--color-blue);
+  background-color: var(--color-blue);
+}
+#pink:checked {
+  box-shadow: 0 0 0 2px #fff inset;
+  border-radius: 50%;
+  border: 3px solid var(--color-pink);
+  background-color: var(--color-pink);
+}
+#heoblue:checked {
+  box-shadow: 0 0 0 2px #fff inset;
+  border-radius: 50%;
+  border: 3px solid var(--color-heoblue);
+  background-color: var(--color-heoblue);
+}
+#darkblue:checked {
+  box-shadow: 0 0 0 2px #fff inset;
+  border-radius: 50%;
+  border: 3px solid var(--color-darkblue);
+  background-color: var(--color-darkblue);
+}
+#black:checked {
+  box-shadow: 0 0 0 2px #fff inset;
+  border-radius: 50%;
+  border: 3px solid var(--color-black);
+  background-color: var(--color-black);
+}
+#gray:checked {
+  box-shadow: 0 0 0 2px #fff inset;
+  border-radius: 50%;
+  border: 3px solid var(--color-gray);
+  background-color: var(--color-gray);
+}
+
+/* 主题色适配覆盖区域 */
+.category-lists ul li:before {
+  border: 0.215em solid var(--theme-color) !important;
+}
+a.article-meta__tags:hover,
+a.article-meta__categories:hover,
+a.blog-slider__title:hover,
+.tk-footer a:hover {
+  color: var(--theme-color) !important;
+}
+
+blockquote {
+  border-left: 3px solid var(--theme-color) !important;
+}
+#article-container .highlight-tools .copy-button:hover {
+  color: var(--theme-color) !important;
+}
+.error404 #error-wrap .error-content .error-img img {
+  background-color: var(--theme-color) !important;
+}
+.article-sort-title:before {
+  border: 5px solid var(--theme-color) !important;
+}
+/* ─── 已清理（2026-10-03 屎山重构 P3）──────────────────────────────
+   删除：.article-sort-item:before { order: 3px solid var(--theme-color) !important; }
+   原因：order 是 border 的笔误，浏览器把整条声明当无效丢弃；真正生效的规则是下面 .article-sort-item:before 的 border: 3px solid ...
+   恢复：bak/2026-10-03-屎山重构/before/themes/fomalhaut/source/css/_custom/custom.css
+   ─────────────────────────────────────────────────────────── */
+.article-sort-item.year:hover:before {
+  border-color: var(--theme-color) !important;
+}
+.article-sort-item-title:hover {
+  color: var(--theme-color) !important;
+}
+.category-lists .category-list a:hover {
+  color: var(--theme-color) !important;
+}
+#recent-posts > .recent-post-item > .recent-post-info > .article-title:hover {
+  color: var(--theme-color) !important;
+}
+#recent-posts
+  > .recent-post-item
+  > .recent-post-info
+  > .article-meta-wrap
+  a:hover {
+  color: var(--theme-color) !important;
+}
+.tag-cloud-list a:hover {
+  color: var(--theme-color) !important;
+}
+#aside-content .card-tag-cloud a:hover {
+  color: var(--theme-color) !important;
+}
+#aside-content .aside-list > .aside-list-item .content > .comment:hover {
+  color: var(--theme-color) !important;
+}
+#aside-content #card-toc .toc-content .toc-link:hover {
+  color: var(--theme-color);
+  scale: 1.03;
+}
+*::selection {
+  background: var(--theme-color) !important;
+}
+#aside-content #card-toc .toc-content .toc-link.active {
+  background: var(--theme-color);
+  border-radius: 8px;
+}
+#aside-content #card-toc .toc-content .toc-link.active:hover {
+  color: #fefefe;
+}
+.site-data > a:hover div {
+  color: var(--theme-color) !important;
+}
+
+#post-comment .comment-head #comment-switch .first-comment {
+  color: var(--theme-color) !important;
+}
+#post-comment .comment-head #comment-switch .switch-btn {
+  background-color: var(--theme-color) !important;
+}
+#page-header.nav-fixed #nav #toggle-menu:hover {
+  color: var(--theme-color) !important;
+}
+#post-info #post-meta a:hover {
+  color: var(--theme-color) !important;
+}
+#pagination .page-number.current {
+  background: var(--theme-color) !important;
+}
+#aside-content .aside-list > .aside-list-item .content > .title:hover {
+  color: var(--theme-color) !important;
+}
+#article-container h1:hover:before,
+#article-container h2:hover:before,
+#article-container h3:hover:before,
+#article-container h4:hover:before,
+#article-container h5:hover:before,
+#article-container h6:hover:before {
+  color: var(--theme-color) !important;
+}
+#article-container li::marker {
+  color: var(--theme-color) !important;
+}
+#post .tag_share .post-meta__tags {
+  border: 1px solid var(--theme-color) !important;
+  color: var(--theme-color);
+  display: flex;
+}
+a:hover {
+  color: var(--theme-color);
+}
+#post .tag_share .post-meta__tags:hover {
+  background: var(--theme-color) !important;
+}
+#post .post-copyright .post-copyright-meta {
+  color: var(--theme-color) !important;
+}
+#post .post-copyright-cc-info {
+  color: var(--theme-color) !important;
+}
+#waline-wrap {
+  --waline-theme-color: var(--theme-color) !important;
+}
+.hide-inline > .hide-button,
+.hide-block > .hide-button {
+  background: var(--theme-color) !important;
+}
+#article-container .tabs > .nav-tabs > .tab.active button {
+  border-top: 2px solid var(--theme-color) !important;
+}
+#article-container .timeline {
+  border-left: 2px solid var(--timeline-color, var(--theme-color));
+}
+#article-container .timeline .timeline-item:hover .item-circle:before {
+  border-color: var(--timeline-color, var(--theme-color));
+}
+#article-container
+  .timeline
+  .timeline-item.headline
+  .timeline-item-title
+  .item-circle:before {
+  border: 4px solid var(--timeline-color, var(--theme-color));
+}
+.search-dialog .search-nav {
+  color: var(--theme-color) !important;
+}
+.search-dialog .search-nav .search-close-button:hover {
+  color: var(--theme-color) !important;
+}
+#local-search .search-dialog .local-search-box input {
+  border: 2px solid var(--theme-color) !important;
+}
+#local-search .search-dialog .local-search__hit-item:before {
+  border: 3px solid var(--theme-color) !important;
+}
+#local-search .search-dialog .local-search__hit-item a:hover {
+  color: var(--theme-color) !important;
+}
+#nav *::after {
+  background-color: var(--theme-color) !important;
+}
+
+.article-sort {
+  border-left: 2px solid var(--theme-color) !important;
+}
+
+.article-sort-title:after {
+  background: var(--theme-color) !important;
+}
+
+.article-sort-item:before {
+  border: 3px solid var(--theme-color) !important;
+}
+
+/* 开关按钮 */
+.settings input[type="checkbox"] {
+  width: 37px;
+  height: 20px;
+  /* 开关是 flex 子项：禁止被压缩，否则手机窄屏下开关会被压扁、白色圆点会溢出胶囊 */
+  flex: 0 0 auto;
+  min-width: 37px;
+  position: relative;
+  border: 1px solid #000000;
+  background-color: #fdfdfd;
+  border-radius: 12px;
+  background-clip: content-box;
+  display: inline-block;
+  -webkit-appearance: none;
+  user-select: none;
+  outline: none;
+  transform: translateY(5px);
+}
+.settings input[type="checkbox"]:before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  border-radius: 10px;
+  background-color: #000;
+}
+.settings input[type="checkbox"]:checked {
+  background-color: var(--theme-color) !important;
+  border-color: var(--theme-color) !important;
+}
+.settings input[type="checkbox"]:checked:before {
+  left: 19px;
+  background-color: white !important;
+}
+.settings input[type="checkbox"] {
+  transition: border background-color box-shadow;
+}
+.settings input[type="checkbox"]:before {
+  transition: left 0.2s;
+}
+.settings input[type="checkbox"]:checked {
+  background-color: var(--theme-color) !important;
+}
+.settings input[type="checkbox"]:checked:before {
+  transition: left 0.2s;
+}
+.settings input[type="checkbox"]:checked:hover {
+  opacity: 0.8;
+}
+.settings input[type="checkbox"]:active {
+  background-color: #666666 !important;
+  border-color: #666666 !important;
+}
+.settings input[type="checkbox"]:active::before {
+  background-color: white !important;
+}
+.content-text {
+  margin-right: 5px;
+}
+
+/* 设置面板里的每一行：空间不够时换行，而不是把行内的控件压扁。
+   手机端开关变形、保存按钮被压成竖条、数字输入框变窄、颜色单选挤爆面板都是这一个原因 */
+.settings .content {
+  flex-wrap: wrap;
+}
+.settings .content > .content-text {
+  flex: 0 0 auto;
+}
+.settings .content input[type="checkbox"],
+.settings .content input[type="radio"],
+.settings .content input[type="number"] {
+  flex: 0 0 auto;
+}
+.settings .content > button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* 数字输入框固定宽度：不固定时宽度会随可用空间在 39px~50px 之间抖动 */
+.settings .content input[type="number"] {
+  width: 50px;
+}
+
+/* 手机侧边菜单栏 */
+#sidebar #sidebar-menus {
+  background: linear-gradient(60deg, #ffd7e4 0, #c8f1ff 93%);
+  border-radius: 15px;
+}
+
+/* 手机菜单栏渐变色适配暗黑模式 */
+[data-theme="dark"] #sidebar #sidebar-menus {
+  background: rgba(25, 25, 25, 0.95) !important;
+}
+
+/* 帧率检测 */
+#fps {
+  position: fixed;
+  left: 10px;
+  bottom: 10px;
+  z-index: 1919810;
+}
+[data-theme="light"] #fps {
+  background-color: rgba(252, 252, 252, 0.92);
+  padding: 4px;
+  border-radius: 4px;
+}
+[data-theme="dark"] #fps {
+  background-color: rgba(10, 10, 10, 0.85);
+  padding: 4px;
+  border-radius: 4px;
+}
+
+/* 侧边栏 */
+div#rightside {
+  display: var(--rightside-display);
+  opacity: 0.98 !important;
+  transform: translateX(-58px);
+}
+
+/* 标签圆角 */
+.hl-label {
+  border-radius: 8px;
+}
+
+/* 透明度和模糊半径滑块 */
+input[type="range"] {
+  display: block;
+  -webkit-appearance: none;
+  background-color: #bdc3c7;
+  width: 100%;
+  height: 5px;
+  border-radius: 3px;
+  margin: 0 auto;
+  outline: 0;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  background-color: var(--theme-color) !important;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  z-index: 100;
+}
+.range {
+  position: relative;
+  width: 300px;
+  /* 窄屏（手机）时自动收窄，避免固定 300px 把面板撑出横向滚动 */
+  max-width: calc(100% - 10px);
+  margin: 20px 0px 32px 10px;
+  /* 上下各留 9px 空白，把滑条的可点击区域从 5px 扩大到 23px（视觉高度不变） */
+  padding: 9px 0;
+  cursor: pointer;
+  /* 触屏：纵向仍可滚动页面，横向拖动交给滑条 */
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.rang_width {
+  position: absolute;
+  /* 与 .range 的 padding-top 对齐，正好压在轨道上 */
+  top: 9px;
+  left: 0px;
+  background: var(--theme-color) !important;
+  height: 5px;
+  border-radius: 2px 0 0 2px;
+  /* 关键：进度条不再拦截鼠标事件，轨道任意位置都能点到 input */
+  pointer-events: none;
+}
+
+/* 翻页按钮居中 */
+#pagination {
+  width: 100%;
+  margin: auto;
+}
+/* 翻页按钮上边距 */
+#pagination .pagination {
+  margin-top: 10px;
+}
+
+/* 文章卡片 */
+/* #recent-posts > .recent-post-item .post_cover {
+  height: 240px !important;
+} */
+
+/* 分类磁贴 */
+/* .categoryBar-list {
+  max-height: 210px !important;
+}
+@media screen and (max-width: 650px) {
+  .categoryBar-list {
+    max-height: 190px !important;
+  }
+}
+li.categoryBar-list-item {
+  border-radius: 20px !important;
+} */
+
+/* 置顶滚动栏电脑端样式，手机端用默认的 */
+@media screen and (min-width: 600px) {
+  .blog-slider {
+    height: 260px !important;
+  }
+  .blog-slider__img {
+    width: 36% !important;
+    height: 100% !important;
+  }
+}
+
+/* 自定义颜色框：与纯色块同尺寸同形状，用彩虹渐变代表“自定义颜色”，保留文字 */
+#define_colors {
+  position: relative;
+  width: 100%;
+  height: 100px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 10px !important;
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background: conic-gradient(
+    from 90deg,
+    #ff8a8a, #ffcf7a, #f6f37a, #9ee88f, #7fdfd0,
+    #8ec9ff, #b79cff, #ff9ad5, #ff8a8a
+  ) !important;
+}
+#define_colors::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+#define_colors::-webkit-color-swatch {
+  border: none;
+  opacity: 0;
+}
+#define_colors::-moz-color-swatch {
+  border: none;
+  opacity: 0;
+}
+#define_colors::before {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  content: "自定义颜色";
+}
+
+/* 顶部胶囊加载条 */
+.pace {
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+  z-index: 2000;
+  position: fixed;
+  margin: auto;
+  top: 10px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  border-radius: 8px;
+  width: 5rem;
+  background: #eaecf2;
+  border: 1px #e3e8f7;
+  overflow: hidden;
+}
+
+.pace-inactive .pace-progress {
+  opacity: 0;
+  transition: 0.3s ease-in;
+}
+
+.pace .pace-progress {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  max-width: 200px;
+  position: absolute;
+  z-index: 2000;
+  display: block;
+  top: 0;
+  right: 100%;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  animation: gradient 1.5s ease infinite;
+  background-size: 200%;
+}
+
+.pace.pace-inactive {
+  opacity: 0;
+  transition: 0.3s;
+  top: -8px;
+}
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* 右键菜单 */
+#rightMenu {
+  display: none;
+  position: fixed;
+  width: 160px;
+  height: fit-content;
+  top: 10%;
+  left: 10%;
+  background-color: var(--card-bg);
+  border: 1px solid var(--font-color);
+  border-radius: 8px;
+  z-index: 100;
+}
+#rightMenu .rightMenu-group {
+  padding: 7px 6px;
+}
+#rightMenu .rightMenu-group:not(:nth-last-child(1)) {
+  border-bottom: 1px solid var(--font-color);
+}
+#rightMenu .rightMenu-group.rightMenu-small {
+  display: flex;
+  justify-content: space-between;
+}
+#rightMenu .rightMenu-group .rightMenu-item {
+  height: 30px;
+  line-height: 30px;
+  border-radius: 8px;
+  transition: 0.3s;
+  color: var(--font-color);
+}
+#rightMenu .rightMenu-group.rightMenu-line .rightMenu-item {
+  display: flex;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 4px;
+}
+#rightMenu .rightMenu-group .rightMenu-item:hover {
+  background-color: var(--text-bg-hover) !important;
+}
+#rightMenu .rightMenu-group .rightMenu-item i {
+  display: inline-block;
+  text-align: center;
+  line-height: 30px;
+  width: 30px;
+  height: 30px;
+  padding: 0 5px;
+}
+#rightMenu .rightMenu-group .rightMenu-item span {
+  line-height: 30px;
+}
+
+#rightMenu .rightMenu-group.rightMenu-line .rightMenu-item * {
+  height: 40px;
+  line-height: 40px;
+}
+.rightMenu-group.hide {
+  display: none;
+}
+
+/* 页脚心跳动画 */
+#heartbeat {
+  color: red;
+  animation: iconAnimate 1s ease-in-out infinite;
+}
+/* [P3 清理] 此处原有 @-moz-keyframes iconAnimate（20 行）：Firefox 16+ / Opera 15+ 起已支持无前缀 @keyframes，删掉前缀版，无前缀版就在附近 */
+@-webkit-keyframes iconAnimate {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  10%,
+  30% {
+    transform: scale(0.9);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: scale(1.1);
+  }
+  50%,
+  70% {
+    transform: scale(1.1);
+  }
+}
+/* [P3 清理] 此处原有 @-o-keyframes iconAnimate（20 行）：Firefox 16+ / Opera 15+ 起已支持无前缀 @keyframes，删掉前缀版，无前缀版就在附近 */
+@keyframes iconAnimate {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  10%,
+  30% {
+    transform: scale(0.9);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: scale(1.1);
+  }
+  50%,
+  70% {
+    transform: scale(1.1);
+  }
+}
+
+/* 星空背景 */
+#universe {
+  position: fixed;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  /* 星空在底层避免干扰阅读 */
+  z-index: -2;
+}
+
+/* 星空手机模式消失 */
+@media screen and (max-width: 768px) {
+  #universe {
+    display: none !important;
+  }
+}
+
+/* 星空白天模式消失 */
+[data-theme="light"] #universe {
+  display: none !important;
+}
+
+/* 雪花特效 */
+[data-theme="light"] #snow {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -2;
+}
+
+/* 雪花夜间模式不显示 */
+[data-theme="dark"] #snow {
+  display: none !important;
+}
+
+/* 雪花手机模式不显示 */
+@media screen and (max-width: 768px) {
+  #snow {
+    display: none !important;
+  }
+}
+
+/* 右边的小猫咪 */
+/* 滚动条，我设置的不隐藏，为了可以到达任何地方 */
+/* body::-webkit-scrollbar {
+    width: 0;
+} */
+
+.neko {
+  width: 64px;
+  height: 64px;
+  /* https://bu.dusays.com/2022/07/20/62d812db74be9.png */
+  position: absolute;
+  right: 56px !important;
+  background-repeat: no-repeat;
+  background-size: contain;
+  transform: translateX(50%);
+  font-family: var(--global-font);
+  font-weight: 600;
+  font-size: 16px;
+  /* 报时文字写死成舒适的黑 #333，不跟随主题色（主题色在这个白色气泡上观感偏怪） */
+  color: #333 !important;
+  display: none;
+  /* 猫咪只当「视觉挂件」：不吃鼠标事件，被它压住的导航图标 / 侧边按钮 / 链接照常能点、能悬停 */
+  pointer-events: none;
+}
+
+.neko::after {
+  display: none;
+  width: 100px;
+  height: 100px;
+  background-image: url("https://bu.dusays.com/2022/07/20/62d812d95e6f5.png");
+  background-size: contain;
+  z-index: 9999;
+  position: absolute;
+  right: 50%;
+  text-align: center;
+  line-height: 106px;
+  top: -115%;
+}
+
+.neko.showMsg::after {
+  content: attr(data-msg);
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 猫咪是 pointer-events:none，:hover 永远不触发；改由 JS 判定指针是否落在猫咪身上，命中就加 .hoverOn */
+.neko.hoverOn::after {
+  content: attr(data-msg);
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.neko.fontColor::after {
+  color: #333;
+}
+
+/* 小猫咪手机端消失 */
+@media screen and (max-width: 768px) {
+  .neko,
+  #myscoll {
+    display: none !important;
+  }
+}
+
+#article-container .card-content img {
+  margin: 0;
+}
+
+@media screen and (min-width: 768px) {
+  .card-content .fancybox,
+  .card-content video {
+    display: inline-block;
+    max-width: 40%;
+    margin-right: 10px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .card-content .fancybox,
+  .card-content video {
+    display: inline-block;
+    max-width: 48%;
+    margin: 1%;
+  }
+}
+/* ─── 已清理（2026-10-03 屎山重构 P3）──────────────────────────────
+   删除：@keyframes Gradient（11 行）
+   原因：全站没有任何 animation 引用它（搜 "animation: Gradient" 无结果），是动态渐变被停用后留下的孤儿
+   恢复：bak/2026-10-03-屎山重构/before/themes/fomalhaut/source/css/_custom/custom.css
+   ─────────────────────────────────────────────────────────── */
+
+/* By Fomalhaut版权大小 */
+.copyright {
+  font-size: 16px;
+}
+
+/* 电子钟字体调节 */
+/* .card-clock-location,
+.card-clock-windDir,
+span.card-clock-weather {
+  font-family: var(--global-font) !important;
+} */
+
+/* 二级菜单圆角 */
+#nav .menus_items .menus_item .menus_item_child,
+#nav .menus_items .menus_item .menus_item_child li,
+#nav .menus_items .menus_item .menus_item_child li:first-child,
+#nav .menus_items .menus_item .menus_item_child li:last-child {
+  border-radius: 8px;
+}
+
+/* 右边的按钮间距 */
+#meihua-button,
+#nightmode-button {
+  padding-left: 12px;
+}
+#nav #toggle-menu {
+  padding: 2px 0 0 12px !important;
+}
+
+/* 搜索框样式 */
+#algolia-search .search-dialog .ais-SearchBox .ais-SearchBox-form input {
+  border: 2px solid var(--theme-color) !important;
+  border-right: 0px !important;
+}
+
+#algolia-search .search-dialog .ais-Hits-list a:hover {
+  color: var(--theme-color) !important;
+}
+
+#algolia-search .search-dialog .ais-Hits-list li:before {
+  border: 0.215em solid var(--theme-color) !important;
+}
+
+/* 小冰分类分类磁铁黑夜模式适配 */
+.magnet_item {
+  margin-right: 5px !important;
+}
+#catalog_magnet {
+  padding: 18px 18px 0 18px !important;
+}
+@media screen and (max-width: 600px) {
+  .magnet_item {
+    margin-right: 0px !important;
+  }
+}
+[data-theme="dark"] .magnet_link_context {
+  background: #232323;
+  color: antiquewhite;
+}
+[data-theme="dark"] .magnet_link_context {
+  border-radius: 6px;
+}
+[data-theme="dark"] .magnet_link_context:hover {
+  background: var(--text-bg-hover) !important;
+  color: #f2f2f2;
+  border-radius: 6px;
+}
+
+/* 公告栏、微博 */
+.anno_content:hover,
+.weibo-title:hover {
+  border-bottom: 2px solid var(--theme-color) !important;
+}
+
+/* 关于页面区块 */
+.about_page {
+  background: #fafafa;
+  border-radius: 20px;
+  padding: 12px;
+  margin: 5px;
+  border: 1px solid #c4c2c2;
+}
+[data-theme="dark"] .about_page {
+  background: #252525;
+}
+/* 首页文章信息彩色图标右边相隔5px */
+.post-ui-icon {
+  margin-right: 2px;
+}
+/* 欢迎信息 */
+#welcome-info {
+  background-color: var(--hh-trans-color);
+  /* background: linear-gradient(45deg, #d9f5ea, #d8f3f0); */
+  border-radius: 18px;
+  padding: 8px 8px;
+}
+[data-theme="dark"] #welcome-info {
+  background: #252525;
+}
+
+/* 霓虹灯颜色渐变 */
+#site-name,
+#site-title,
+#site-subtitle,
+#post-info,
+.author-info__name,
+.author-info__description {
+  transition: text-shadow 1s linear !important;
+}
+
+/* tzy页脚样式 */
+/* 自定义底部  start */
+#ft {
+  max-width: 1200px;
+  margin: 0 auto 12px;
+  display: flex;
+  color: rgb(255 255 255 / 80%) !important;
+  text-align: left;
+  flex-wrap: wrap;
+}
+
+.ft-item-1,
+.ft-item-2 {
+  display: flex;
+  height: 100%;
+  padding: 2px 14px;
+}
+
+.ft-item-1 {
+  flex-direction: column;
+  flex: 2;
+}
+
+.ft-item-2 {
+  flex: 1;
+  flex-direction: column;
+}
+
+.t-top {
+  display: flex;
+}
+
+.t-top .t-t-l {
+  display: flex;
+  flex-direction: column;
+  flex: 1.4;
+  margin-right: 10px;
+}
+
+.t-top .t-t-l .bg-ad {
+  width: 85%;
+  border-radius: 10px;
+  padding: 0 10px;
+}
+
+.btn-xz-box {
+  margin-top: 10px;
+}
+
+.btn-xz {
+  display: block;
+  background-color: var(--btn-bg);
+  color: var(--btn-color);
+  text-align: center;
+  line-height: 2.4;
+  margin: 8px 0;
+}
+
+.btn-xz:hover {
+  text-decoration: none !important;
+}
+
+.btn-xz-box:hover .btn-xz {
+  background-color: var(--btn-hover-color) !important;
+  transition: all 0.2s ease-in-out;
+}
+
+.t-top .t-t-r {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.ft-links {
+  padding: 0 14px;
+  list-style: none;
+  margin-top: 0 !important;
+}
+
+.ft-links li a {
+  display: inline-block !important;
+  width: 50%;
+}
+
+.ft-links li a:hover {
+  text-decoration: none !important;
+  color: var(--theme-color) !important;
+}
+
+.ft-item-2 .ft-img-group {
+  width: 100%;
+}
+
+.ft-t {
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+  line-height: 1;
+  font-weight: 600;
+}
+
+.t-l-t {
+  padding-left: 14px;
+}
+
+.ft-item-2 .ft-img-group .img-group-item {
+  display: inline-block;
+  width: 18.4%;
+  margin-right: 14px;
+  margin-bottom: 6px;
+}
+
+.ft-item-2 .ft-img-group .img-group-item a {
+  display: inline-block;
+  width: 100%;
+  height: 100%;
+}
+
+.ft-item-2 .ft-img-group .img-group-item a img {
+  width: 100%;
+  max-height: 80px;
+  border-radius: 10px;
+}
+
+.ft-item-2 .ft-img-group .img-group-item a img:hover {
+  scale: 1.1;
+  transition: all 0.3s ease-in-out;
+}
+
+@media screen and (max-width: 768px) {
+  .ft-item-1 {
+    flex-basis: 100% !important;
+  }
+
+  .ft-item-2 {
+    flex-basis: 100% !important;
+  }
+
+  .t-top .t-t-l .bg-ad {
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .t-top {
+    flex-wrap: wrap;
+  }
+
+  .t-top .t-t-l {
+    flex-basis: 100% !important;
+  }
+
+  .t-top .t-t-r {
+    margin-top: 16px;
+    flex-basis: 100% !important;
+  }
+}
+#footer-wrap a {
+  border-radius: 30px;
+}
+#footer-wrap {
+  padding: 20px 20px;
+}
+/* 自定义底部  End */
+
+/* 手机菜单栏选中圆角 */
+#sidebar #sidebar-menus .menus_items .site-page:hover {
+  border-radius: 10px;
+}
+
+/* 代码框数字行 */
+#article-container figure.highlight .gutter pre {
+  border-right: 0.5px solid #808080;
+}
+
+/* 右侧栏宽度 */
+@media screen and (min-width: 900px) {
+  #aside-content {
+    padding: 0 5px 0 5px;
+  }
+}
+
+/* 右边栏设置齿轮转速 */
+i.fas.fa-cog.right_side {
+  animation: fa-spin 5s linear infinite;
+}
+
+/* 文章封面箭头动画 */
+.recent-post-arrow {
+  animation: ddd 3s linear infinite;
+}
+
+/* 箭头圆角：主题 multicard.styl 里的 .recent-post-arrow 是直角 clip-path，
+   这里用同链选择器（特异性相同、且在 custom.css 中更靠后）覆盖成圆角三角形；
+   元素尺寸固定 20×10px，圆角半径约 2px，曲线按 4 段采样成多边形 */
+.recent-posts .recent-post-item .recent-post-content .recent-post-arrow {
+  -webkit-clip-path: polygon(4.8px 0px, 15.2px 0px, 16.27px 0.05px, 17.09px 0.21px, 17.65px 0.48px, 17.95px 0.85px, 18px 1.33px, 17.79px 1.91px, 17.32px 2.6px, 16.6px 3.4px, 11.4px 8.6px, 11.05px 8.91px, 10.7px 9.12px, 10.35px 9.26px, 10px 9.3px, 9.65px 9.26px, 9.3px 9.13px, 8.95px 8.91px, 8.6px 8.6px, 3.4px 3.4px, 2.68px 2.6px, 2.21px 1.91px, 2px 1.33px, 2.05px 0.85px, 2.35px 0.48px, 2.91px 0.21px, 3.73px 0.05px, 4.8px 0px);
+}
+
+@keyframes ddd {
+  0% {
+    top: 30px;
+  }
+  10% {
+    top: 20px;
+  }
+  20% {
+    top: 30px;
+  }
+  30% {
+    top: 20px;
+  }
+  60% {
+    top: 22px;
+  }
+  90% {
+    top: 20px;
+  }
+  100% {
+    top: 20px;
+  }
+}
+
+/* 下一篇文章的圆角 */
+.relatedPosts > .relatedPosts-list > div,
+#pagination.pagination-post,
+.postImgHover img,
+#pagination .prev-post img,
+#pagination .next-post img,
+.relatedPosts > .relatedPosts-list > div img {
+  border-radius: 12px;
+}
+
+/* 个人信息状态(参考鱼的) */
+.card-info-avatar .author-status-box {
+  position: absolute;
+  bottom: 0;
+  left: calc(100% - 28px);
+  width: 28px;
+  height: 28px;
+  border: 1px solid #d0d7de;
+  border-radius: 2em;
+  background-color: #f8f8f8f8;
+  transition: 0.4s;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .card-info-avatar .author-status-box {
+  background-color: #222222f2;
+  border: 1px solid #5c6060;
+}
+
+.card-info-avatar .author-status-box .author-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 5px;
+}
+
+.card-info-avatar .author-status-box:hover {
+  width: 105px;
+}
+
+.card-info-avatar .author-status-box:hover .author-status span {
+  width: 105px;
+  margin-left: 4px;
+}
+
+.card-info-avatar .author-status-box .author-status span {
+  width: 0;
+  font-size: 12px;
+  height: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: 0.4s;
+}
+
+.card-widget .card-info-avatar {
+  display: inline-block;
+  position: relative;
+}
+
+/* 波浪css */
+.main-hero-waves-area {
+  width: 100%;
+  position: absolute;
+  left: 0;
+  bottom: -11px;
+  z-index: 5;
+}
+.waves-area .waves-svg {
+  width: 100%;
+  height: 5rem;
+}
+/* Animation */
+
+.parallax > use {
+  animation: move-forever 25s cubic-bezier(0.55, 0.5, 0.45, 0.5) infinite;
+}
+.parallax > use:nth-child(1) {
+  animation-delay: -2s;
+  animation-duration: 7s;
+  fill: #f7f9febd;
+}
+.parallax > use:nth-child(2) {
+  animation-delay: -3s;
+  animation-duration: 10s;
+  fill: #f7f9fe82;
+}
+.parallax > use:nth-child(3) {
+  animation-delay: -4s;
+  animation-duration: 13s;
+  fill: #f7f9fe36;
+}
+.parallax > use:nth-child(4) {
+  animation-delay: -5s;
+  animation-duration: 20s;
+  fill: #f7f9fe;
+}
+/* 黑色模式背景 */
+[data-theme="dark"] .parallax > use:nth-child(1) {
+  animation-delay: -2s;
+  animation-duration: 7s;
+  fill: #18171dc8;
+}
+[data-theme="dark"] .parallax > use:nth-child(2) {
+  animation-delay: -3s;
+  animation-duration: 10s;
+  fill: #18171d80;
+}
+[data-theme="dark"] .parallax > use:nth-child(3) {
+  animation-delay: -4s;
+  animation-duration: 13s;
+  fill: #18171d3e;
+}
+[data-theme="dark"] .parallax > use:nth-child(4) {
+  animation-delay: -5s;
+  animation-duration: 20s;
+  fill: #18171d;
+}
+
+@keyframes move-forever {
+  0% {
+    transform: translate3d(-90px, 0, 0);
+  }
+  100% {
+    transform: translate3d(85px, 0, 0);
+  }
+}
+/*Shrinking for mobile*/
+@media (max-width: 768px) {
+  .waves-area .waves-svg {
+    height: 40px;
+    min-height: 40px;
+  }
+}
+/* 波浪黑夜模式隐藏 */
+[data-theme="dark"] .main-hero-waves-area {
+  display: none;
+}
+
+/* 图片圆角和边框 */
+.post-content img,
+#article-container:has(.fj-gallery, #gitZone, .about_page) img {
+  border-radius: 12px;
+  border: 0.5px solid #80808030;
+}
+
+/* twikoo评论框聚焦边框颜色 */
+#twikoo .el-textarea textarea:focus,
+.twikoo .el-input__inner:focus {
+  border-color: var(--theme-color) !important;
+}
+
+/* 友链描述 */
+.flink-desc {
+  font-size: 1.1em;
+  padding: 0px 0px 20px 10px;
+  font-weight: bold;
+}
+
+/* 目录样式 */
+#aside-content #card-toc .toc-content {
+  margin: 0 -16px 0 -25px;
+}
+
+/* diff块颜色 */
+figure.highlight pre .addition {
+  color: #13dfa8;
+}
+figure.highlight pre .deletion {
+  color: #f669f6;
+}
+
+/* 新年侧边栏 */
+
+#newYear {
+  color: white;
+  padding: 0 !important;
+}
+
+#newYear p,
+#newYear h3 {
+  font-weight: normal;
+  color: inherit;
+  margin: 0;
+}
+
+#newYear .item-headline {
+  display: none;
+}
+
+#newYear-main {
+  min-height: 160px;
+  padding: 1rem;
+  position: relative;
+  border-radius: 12px;
+  background-image: url(https://tuchuang.voooe.cn/images/2023/01/02/tunian.webp);
+  background-size: cover;
+  background-position: center;
+}
+
+#newYear-main * {
+  position: relative;
+  line-height: 1.3;
+}
+
+#newYear-main .newYear-time {
+  font-weight: bold;
+  text-align: center;
+}
+
+#newYear-main .time,
+#newYear-main .happyNewYear {
+  font-size: 3.5rem;
+  margin: 1rem 0;
+  display: block;
+}
+
+#newYear-main .day {
+  font-size: 5rem;
+}
+
+#newYear-main .day .unit {
+  font-size: 1rem;
+}
+
+#newYear-main .mask {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* 夜间模式友链文字颜色 */
+[data-theme="dark"] .site-card .info .desc {
+  color: #aaa;
+}
+[data-theme="dark"] .site-card .info .title {
+  color: #ddd;
+}
+[data-theme="light"] .site-card:hover .info .title {
+  color: #444 !important;
+}
+[data-theme="light"] .site-card:hover .info .desc {
+  color: #666 !important;
+}
+[data-theme="dark"] .site-card:hover .info .title {
+  color: #eee !important;
+}
+[data-theme="dark"] .site-card:hover .info .desc {
+  color: #ccc !important;
+}
+
+/* 信息卡片彩带 */
+/* .author_top:hover {
+  background: url(https://tuchuang.voooe.cn/images/2023/01/02/snow.gif);
+  background-size: cover;
+} */
+
+/* 霓虹灯css实现 light_15px 10s linear infinite */
+[data-theme="light"] #site-name,
+[data-theme="light"] #site-title,
+[data-theme="light"] #site-subtitle,
+[data-theme="light"] #post-info {
+  animation: none !important;
+}
+
+@keyframes light_15px {
+  0% {
+    text-shadow: #5636ed 0 0 15px;
+  }
+  12.5% {
+    text-shadow: #11ee5e 0 0 15px;
+  }
+  25% {
+    text-shadow: #f14747 0 0 15px;
+  }
+  37.5% {
+    text-shadow: #f1a247 0 0 15px;
+  }
+  50% {
+    text-shadow: #f1ee47 0 0 15px;
+  }
+  50% {
+    text-shadow: #b347f1 0 0 15px;
+  }
+  62.5% {
+    text-shadow: #002afa 0 0 15px;
+  }
+  75% {
+    text-shadow: #ed709b 0 0 15px;
+  }
+  87.5% {
+    text-shadow: #39c5bb 0 0 15px;
+  }
+  100% {
+    text-shadow: #5636ed 0 0 15px;
+  }
+}
+
+@keyframes light_10px {
+  0% {
+    text-shadow: #5636ed 0 0 10px;
+  }
+  12.5% {
+    text-shadow: #11ee5e 0 0 10px;
+  }
+  25% {
+    text-shadow: #f14747 0 0 10px;
+  }
+  37.5% {
+    text-shadow: #f1a247 0 0 10px;
+  }
+  50% {
+    text-shadow: #f1ee47 0 0 10px;
+  }
+  50% {
+    text-shadow: #b347f1 0 0 10px;
+  }
+  62.5% {
+    text-shadow: #002afa 0 0 10px;
+  }
+  75% {
+    text-shadow: #ed709b 0 0 10px;
+  }
+  87.5% {
+    text-shadow: #39c5bb 0 0 10px;
+  }
+  100% {
+    text-shadow: #5636ed 0 0 10px;
+  }
+}
+
+@keyframes light_5px {
+  0% {
+    text-shadow: #5636ed 0 0 5px;
+  }
+  12.5% {
+    text-shadow: #11ee5e 0 0 5px;
+  }
+  25% {
+    text-shadow: #f14747 0 0 5px;
+  }
+  37.5% {
+    text-shadow: #f1a247 0 0 15px;
+  }
+  50% {
+    text-shadow: #f1ee47 0 0 5px;
+  }
+  50% {
+    text-shadow: #b347f1 0 0 5px;
+  }
+  62.5% {
+    text-shadow: #002afa 0 0 5px;
+  }
+  75% {
+    text-shadow: #ed709b 0 0 5px;
+  }
+  87.5% {
+    text-shadow: #39c5bb 0 0 5px;
+  }
+  100% {
+    text-shadow: #5636ed 0 0 5px;
+  }
+}
+
+/* 夜间模式菜单栏发光字 0 0 1px var(--theme-color) */
+[data-theme="light"] .menu_word {
+  text-shadow: none !important;
+}
+[data-theme="dark"] .menu_word {
+  text-shadow: var(--menu-shadow);
+}
+
+/* 评论按钮 */
+.el-button--primary {
+  background-color: var(--theme-color) !important;
+  border-color: transparent !important;
+}
+.el-button--primary.is-disabled,
+.el-button--primary.is-disabled:active,
+.el-button--primary.is-disabled:focus,
+.el-button--primary.is-disabled:hover {
+  background-color: var(--high-trans-color) !important;
+}
+
+.twikoo .el-button:not(.el-button--primary):not(.el-button--text):active,
+.twikoo .el-button:not(.el-button--primary):not(.el-button--text):focus,
+.twikoo .el-button:not(.el-button--primary):not(.el-button--text):hover {
+  color: var(--theme-color) !important;
+  background-color: rgba(64, 158, 255, 0.063);
+  border-color: var(--high-trans-color) !important;
+}
+
+.tk-icon.__comments,
+.tk-action-icon,
+.tk-action-count,
+.tk-nick-link:hover {
+  color: var(--theme-color) !important;
+}
+.el-textarea__inner {
+  border-radius: 8px !important;
+}
+
+/* 分割线 */
+hr {
+  border: 2px dashed var(--high-trans-color) !important;
+}
+
+hr:before {
+  color: var(--theme-color) !important;
+}
+
+/* 版权下面标签排列 */
+#post .tag_share .post-meta__tag-list {
+  display: flex;
+}
+#post .tag_share .post-meta__tags {
+  border-radius: 20px;
+}
+
+/* 必应壁纸框 */
+#bingDayBox:hover,
+#bingHistoryBox:hover,
+#EEEDogBox:hover,
+#seovxBox:hover,
+#picsumBox:hover,
+#waiBizhiBox:hover,
+#btstuBox:hover,
+#unsplashBox:hover {
+  text-decoration: none !important;
+}
+
+.apiBox::before {
+  position: relative;
+  color: aliceblue;
+  border-radius: 5px;
+  top: 35px;
+  padding: 2px 5px;
+  background: #00000090;
+}
+
+#bingDayBox::before {
+  left: 34px;
+  content: "必应每日壁纸";
+}
+#bingHistoryBox::before {
+  left: 34px;
+  content: "必应历史壁纸";
+}
+#EEEDogBox::before {
+  left: 20px;
+  content: "EEEDog动漫壁纸";
+}
+#seovxBox::before {
+  left: 30px;
+  content: "seovx美女壁纸";
+}
+#picsumBox::before {
+  left: 24px;
+  content: "picsum随机壁纸";
+}
+#waiBizhiBox::before {
+  left: 34px;
+  content: "小歪高清壁纸";
+}
+#btstuBox::before {
+  left: 34px;
+  content: "博天随机壁纸";
+}
+#unsplashBox::before {
+  left: 15px;
+  content: "Unsplash随机壁纸";
+}
+
+/* 评论区圆角 */
+.tk-meta-input .el-input .el-input-group__prepend {
+  border-bottom-left-radius: 6px;
+  border-top-left-radius: 6px;
+}
+.el-input-group--prepend .el-input__inner {
+  border-bottom-right-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+/* Twikoo底部小字样式 */
+.tk-footer {
+  font-size: 0.9em;
+}
+
+.tk-footer a {
+  font-weight: bold;
+  color: #a591e0;
+}
+
+/* Github徽标 */
+.github-badge img:hover {
+  scale: 1.05;
+  transition: all 0.3s ease-in-out;
+}
+
+/* 最新文章图片圆角 */
+#aside-content .aside-list > .aside-list-item .thumbnail {
+  border-radius: 8px !important;
+}
+
+/* 转圈颜色 */
+.el-loading-spinner .path {
+  stroke: var(--theme-color) !important;
+}
+
+.mini-link:hover {
+  scale: 1.05;
+}
+
+.winbox_btn:hover {
+  background-color: var(--btn-hover-color) !important;
+  transition: all 0.2s ease-in-out;
+}
+
+#reset_btn:hover {
+  background: var(--btn-hover-color) !important;
+  transition: all 0.5s ease-in-out;
+}
+
+/* 侧栏显隐 */
+.layout:not(:has(#page)) {
+  justify-content: var(--layout-justify-content);
+}
+
+.layout:not(:has(#page)) > .aside-content {
+  display: var(--aside-content-display);
+}
+
+/* 侧栏位置 */
+.layout > div:first-child {
+  order: var(--first-child-order);
+}
+
+@media screen and (min-width: 1069px) {
+  .recent-posts .recent-post-item {
+    /* 右边：0px 1% 20px 0px 左边则反过来*/
+    margin: var(--recent-post-item-margin);
+  }
+}
+
+/* ─── 已清理（2026-10-03 屎山重构 P3）──────────────────────────────
+   删除：TianliGPT 整段样式（189 行：:root --heo-* 变量 + .post-TianliGPT 及配套类）
+   原因：该功能已下线（source/site/time/index.md 更新日志记着「去除 TianliGPT」），配置与模板里都搜不到 tianliGPT；这段 --heo-* 变量还会误导人以为是主题变量
+   恢复：bak/2026-10-03-屎山重构/before/themes/fomalhaut/source/css/_custom/custom.css
+   ─────────────────────────────────────────────────────────── */
+
+
+/* ==========================================================================
+   置顶文章角标（首页卡片左上角）
+   --------------------------------------------------------------------------
+   配合 themes/fomalhaut/layout/includes/mixins/post-ui.pug 里的
+   postStickyBadge 混入使用。字段：文章 Front-Matter 或正文标记
+   <!-- sticky --> 都会写入 sticky = 1；sticky: 2 及以上为「强置顶」，颜色更红。
+   .recent-post-item 本身是 overflow: hidden，所以角标只能贴在卡片内部
+   左上角（做成越界的缎带会被直接裁掉）。
+   ========================================================================== */
+.recent-post-item .post-sticky-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  padding: 0 11px 0 9px;
+  border-radius: 999px;
+  background-image: linear-gradient(135deg, #ff9a3d 0%, #ff5f4d 52%, #f5341d 100%);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(231, 63, 32, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+  pointer-events: none;
+  transform: translateZ(0);
+}
+
+/* 强置顶（sticky >= 2）：整体加深，和普通置顶拉开差距 */
+.recent-post-item .post-sticky-badge.is-top {
+  background-image: linear-gradient(135deg, #ff7a2f 0%, #f0351c 45%, #c8120b 100%);
+  box-shadow: 0 4px 14px rgba(196, 22, 10, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+}
+
+.recent-post-item .post-sticky-badge .post-sticky-icon {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  fill: #fff;
+}
+
+.recent-post-item .post-sticky-badge .post-sticky-text {
+  position: relative;
+  z-index: 1;
+}
+
+/* 划过卡片的斜向高光：置顶角标看起来是「会动」的，比较容易第一眼看到 */
+.recent-post-item .post-sticky-badge .post-sticky-shine {
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(100deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.72) 50%, rgba(255, 255, 255, 0) 100%);
+  transform: skewX(-18deg);
+  animation: post-sticky-shine 3.4s ease-in-out infinite;
+}
+
+@keyframes post-sticky-shine {
+  0%,
+  62% {
+    left: -60%;
+  }
+  86%,
+  100% {
+    left: 118%;
+  }
+}
+
+/* 暗色模式：卡片底色变深，角标再亮一点点避免发闷 */
+[data-theme='dark'] .recent-post-item .post-sticky-badge {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.34);
+}
+
+/* 尊重「减少动态效果」偏好的用户 */
+@media (prefers-reduced-motion: reduce) {
+  .recent-post-item .post-sticky-badge .post-sticky-shine {
+    animation: none;
+    display: none;
+  }
+}
+
+
+/* ===== 侧栏个人信息卡片改版：玻璃拟态 + 马克笔名字（2026-02-16） =====
+ * 只作用于侧栏第一张卡 #aside-content > .card-widget.card-info，
+ * 其他侧栏卡片（公告栏 / 最新文章 / 网站资讯 / 日历…）一律不受影响。
+ * 手法：卡内 ::before 铺一层磨砂玻璃（上半部渐隐，露出背景图原样）→ 杂志式排版；
+ *      统计行改竖线分组；Github 按钮改白底描边药丸（hover 填主题色）；
+ *      名字加黄色马克笔高亮（深色模式改墨字压黄条，保证对比度）。
+ * 回滚：整段删除即可；改动前备份见 bak/custom.css.bak-2026-10-03T04-13-13。
+ * 依赖：--theme-color 由站点内联脚本注入（默认 rgb(57,197,187)），--global-font = LXGW。
+ */
+#aside-content > .card-widget.card-info {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  box-shadow: 0 0 0 1px rgba(13, 43, 51, .07), 0 22px 44px -22px rgba(8, 42, 52, .5);
+}
+#aside-content > .card-widget.card-info::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* 2026-10-04 性能修复：backdrop-filter 只在 ≥1200px 的桌面端启用（见紧接其后的 @media）。
+     窄屏 / 平板降级成实底半透明面板 —— 没有实时模糊，卡片本身仍是卡片，
+     但不再让弱 GPU 在滚动时逐帧重算背景。原始玻璃配方原样保留在 @media 里。 */
+  background: linear-gradient(180deg, rgba(255, 255, 255, .62) 0%, rgba(255, 255, 255, .82) 30%, rgba(255, 255, 255, .92) 64%, rgba(255, 255, 255, .96) 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 22%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 22%);
+}
+/* ≥1200px：玻璃拟态（原始配方：磨砂 + 上半部渐隐，露出背景图原样） */
+@media (min-width: 1200px) {
+  #aside-content > .card-widget.card-info::before {
+    backdrop-filter: blur(11px) saturate(1.45);
+    -webkit-backdrop-filter: blur(11px) saturate(1.45);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, .42) 30%, rgba(255, 255, 255, .76) 64%, rgba(255, 255, 255, .88) 100%);
+  }
+}
+#aside-content > .card-widget.card-info > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* 名字：黄色马克笔高亮 + 微倾 */
+#aside-content > .card-widget.card-info .author-info__name {
+  /* display:table + margin:auto = 块级收缩盒：无论侧栏多宽都另起一行、水平居中在头像正下方
+     （inline-block 在宽侧栏下会被挤到头像右侧同一行，看着就像贴在头像右下角） */
+  display: table;
+  max-width: 100%;
+  margin: .14em auto 0;
+  padding: .06em .18em .1em;
+  font-size: 1.68em;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: .015em;
+  color: #0d2b33;
+  transform: rotate(-.7deg);
+}
+/* 马克笔条：改用伪元素按 em 定位（深/浅色同一套几何），避免行高把黄色条挤到字下面 */
+#aside-content > .card-widget.card-info .author-info__name::before {
+  content: "";
+  position: absolute;
+  left: .1em;
+  right: .1em;
+  bottom: .44em;
+  height: .64em;
+  z-index: -1;
+  border-radius: .09em;
+  background: rgba(255, 214, 102, .92);
+}
+/* 描述：小号大写 + 宽字距 */
+#aside-content > .card-widget.card-info .author-info__description {
+  margin-top: .14em;
+  font-size: .7em;
+  font-weight: 700;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: rgba(13, 43, 51, .72);
+}
+/* 统计：杂志式上下细线 + 竖分隔线 */
+#aside-content > .card-widget.card-info .card-info-data {
+  display: flex;
+  align-items: stretch;
+  margin: 15px 0 0;
+  padding: 10px 0;
+  border-top: 1px solid rgba(13, 43, 51, .14);
+  border-bottom: 1px solid rgba(13, 43, 51, .14);
+}
+#aside-content > .card-widget.card-info .card-info-data > a {
+  flex: 1 1 0;
+  position: relative;
+  padding: 0;
+}
+#aside-content > .card-widget.card-info .card-info-data > a + a::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8%;
+  bottom: 8%;
+  width: 1px;
+  background: rgba(13, 43, 51, .14);
+}
+#aside-content > .card-widget.card-info .card-info-data .headline {
+  font-size: .7em;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: .22em;
+  color: rgba(13, 43, 51, .62);
+}
+#aside-content > .card-widget.card-info .card-info-data .length-num {
+  font-size: 1.55em;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #0d2b33;
+  margin-top: -.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Github 按钮：白底描边药丸，hover 填充主题色 */
+#aside-content > .card-widget.card-info > #card-info-btn {
+  margin-top: 13px;
+  background-color: rgba(255, 255, 255, .82) !important;
+  color: #0d2b33 !important;
+  border: 1px solid rgba(13, 43, 51, .16);
+  border-radius: 999px;
+  line-height: 2.45;
+  font-weight: 600;
+  letter-spacing: .06em;
+  box-shadow: 0 8px 20px -12px rgba(8, 42, 52, .6);
+  transition: all .3s ease;
+}
+#aside-content > .card-widget.card-info > #card-info-btn:hover {
+  background-color: var(--theme-color) !important;
+  color: #fff !important;
+  border-color: transparent;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px -12px rgba(8, 42, 52, .7);
+}
+#aside-content > .card-widget.card-info .card-info-social-icons {
+  margin-top: 11px;
+}
+#aside-content > .card-widget.card-info .card-info-avatar .avatar-img {
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, .62), 0 12px 26px -14px rgba(8, 42, 52, .8);
+}
+
+/* ---- 深色模式适配：只换配色，规则本体一套 ---- */
+[data-theme="dark"] #aside-content > .card-widget.card-info {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .08), 0 22px 44px -20px rgba(0, 0, 0, .75);
+}
+[data-theme="dark"] #aside-content > .card-widget.card-info::before {
+  /* 窄屏降级版：实底（≥1200px 的玻璃版在紧随其后的 @media 里覆盖回来） */
+  background: linear-gradient(180deg, rgba(6, 22, 30, .66) 0%, rgba(6, 22, 30, .84) 30%, rgba(6, 22, 30, .92) 64%, rgba(6, 22, 30, .95) 100%);
+}
+@media (min-width: 1200px) {
+  [data-theme="dark"] #aside-content > .card-widget.card-info::before {
+    background: linear-gradient(180deg, rgba(6, 22, 30, 0) 0%, rgba(6, 22, 30, .42) 30%, rgba(6, 22, 30, .74) 64%, rgba(6, 22, 30, .86) 100%);
+  }
+}
+[data-theme="dark"] #aside-content > .card-widget.card-info .author-info__name {
+  color: #e9fffc;                     /* 浅字压在玻璃条上：真实页实测对比度 12.3:1 */
+  text-shadow: 0 1px 6px rgba(0, 0, 0, .5);
+}
+/* 夜间马克笔 = 午夜玻璃条：深色半透条 + 极光青细描边，压在文字后面（浅色仍用黄条，几何按 em 共享） */
+[data-theme="dark"] #aside-content > .card-widget.card-info .author-info__name::before {
+  display: block;
+  bottom: .40em;
+  height: .74em;
+  background: rgba(9, 29, 37, .72);
+  border: 1px solid rgba(127, 227, 218, .45);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .45), inset 0 0 18px rgba(57, 197, 187, .18);
+}
+[data-theme="dark"] #aside-content > .card-widget.card-info .author-info__description {
+  color: rgba(242, 251, 251, .82);
+}
+[data-theme="dark"] #aside-content > .card-widget.card-info .card-info-data {
+  border-color: rgba(255, 255, 255, .2);
+}
+[data-theme="dark"] #aside-content > .card-widget.card-info .card-info-data > a + a::before {
+  background: rgba(255, 255, 255, .2);
+}
+[data-theme="dark"] #aside-content > .card-widget.card-info .card-info-data .headline {
+  color: rgba(242, 251, 251, .7);
+}
+[data-theme="dark"] #aside-content > .card-widget.card-info .card-info-data .length-num {
+  color: #fff;
+}
+[data-theme="dark"] #aside-content > .card-widget.card-info > #card-info-btn {
+  background-color: rgba(255, 255, 255, .14) !important;
+  color: #eaf7f7 !important;
+  border-color: rgba(255, 255, 255, .3);
+  box-shadow: none;
+}
+[data-theme="dark"] #aside-content > .card-widget.card-info > #card-info-btn:hover {
+  background-color: var(--theme-color) !important;
+  color: #fff !important;
+  border-color: transparent;
+}
+
+/* ============================================================================
+ * 【美化面板：手机端排布 + 新增的包裹层】（2026-10-04）
+ * ----------------------------------------------------------------------------
+ * 面板 HTML 见 source/js/modules/settings.js 的 createWinbox()。本次配套改动：
+ *   · 每段「文字 + 开关」在 HTML 里包成 <label class="opt">；
+ *   · 背景滤镜三个参数各自包成 <label class="bgp">；
+ *   · 主题色那一行加了 .colorRow；
+ *   · 「恢复默认背景」按钮已删（reset() 里已经会 resetBg_()，那个按钮是重复的）。
+ * 所以下面除「手机端重排」外，还有几条给新包裹层兜底的基础规则。
+ *
+ * 【为什么不就地写在 2218 那个「设置面板的开关按钮」一节里】
+ *   这一段必须排在 .swf(原 1902) / 颜色单选(原 1918) / 开关按钮(原 2218) 之后，
+ *   同权重时才压得住它们；而文件头那份目录索引里的行号是按插入位置算的，
+ *   插在中间会把后面所有条目的行号整体推走 —— 放到文件末尾，索引继续有效。
+ *   桌面端一律维持原样：真正的重排全部落在下面那条 max-width:768px 里。
+ * ------------------------------------------------------------------------- */
+
+/* 开关行里的一段「文字 + 开关」。原先两者是 .content 的直接子元素，
+   窄屏换行时会被拆散（文字留在一行、开关掉到下一行），包一层就不会分家了 */
+.settings .content > .opt {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  cursor: pointer;
+}
+.settings .content > .opt > .content-text {
+  padding-left: 10px;
+}
+/* 并排的第二列留出更大间距（原先是写在 HTML 上的 padding-left:20px） */
+.settings .content > .opt + .opt > .content-text {
+  padding-left: 20px;
+}
+
+/* 背景滤镜参数：模糊半径 / 饱和度 / 对比度各自成组，数字框与它的单位不再被拆行 */
+.settings .bgparams {
+  align-items: center;
+  gap: 6px 10px;
+}
+.settings .bgp {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.settings .bgp-v {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+/* 保存按钮：原来这几个属性写在 HTML 的 inline style 上 */
+.settings .bgp-save {
+  background: var(--theme-color);
+  width: 48px;
+  border-radius: 6px;
+  color: white;
+  line-height: 1.2;
+  height: 28px;
+  margin-top: 2px;
+}
+
+/* 「切换背景」按钮：原来写成 🌈切换背景🌈 —— 两边各一个彩虹，窄屏时会把文字挤成两行
+   （另一个彩虹单独掉到第二行）。彩虹已删，下面这堆原本是 inline style。 */
+.settings .picbtn {
+  background: var(--theme-color);
+  width: 35%;
+  padding: 5px 0 7px 0;
+  border-radius: 30px;
+  color: white;
+  line-height: 2;
+}
+
+/* 主题色选择行：桌面一行铺开，手机端换成网格均分（见下面的 @media） */
+.settings .colorRow {
+  display: flex;
+  flex-wrap: wrap;
+  padding-left: 12px;
+}
+
+/* 恢复默认设置按钮：原来是写死在 inline style 里的 #fc354c→#0abfbc 红青渐变，
+   现在跟随主题色。第一行是给不支持 color-mix() 的老浏览器回退的纯主题色。 */
+#reset_btn {
+  display: block;
+  width: 40%;
+  padding: 15px 0;
+  border-radius: 30px;
+  color: white;
+  font-size: 1.1em;
+  white-space: nowrap;
+  background: var(--theme-color);
+  background: linear-gradient(to right, color-mix(in srgb, var(--theme-color) 55%, #ffffff), var(--theme-color));
+}
+
+@media screen and (max-width: 768px) {
+  /* 开关行：一段独占一整行，文字在左、开关贴右，叠几行也是齐的 */
+  .settings .content > .opt {
+    flex: 1 1 100%;
+    justify-content: space-between;
+    min-height: 38px;
+  }
+  /* 两列都从 10px 起，免得读完一行又缩进 10px */
+  .settings .content > .opt > .content-text,
+  .settings .content > .opt + .opt > .content-text {
+    padding-left: 10px;
+  }
+  /* translateY(5px) 是给原来的基线对齐补的，这里改成行内居中就不需要了 */
+  .settings .content > .opt > input[type="checkbox"] {
+    transform: none;
+  }
+
+  /* 「模糊半径: 0px | 饱和度: 108% | 对比度: 105%」这行摘要：360px 窄屏下 1em 会正好在
+     「对比度:」和红色数值之间断成两行，缩一档让它留住一行 */
+  #bgFilterShow {
+    font-size: .9em;
+  }
+
+  /* 背景滤镜参数：一行一项，标签在左、数字框+单位在右，保存按钮独占一行铺满 */
+  .settings .bgparams {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .settings .bgp {
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 34px;
+  }
+  .settings .bgparams > .bgp-save {
+    width: 100%;
+    height: 34px;
+    margin-top: 4px;
+  }
+
+  /* 「切换背景」按钮：跟「保存」一样整行宽，不再缩成一小坨 */
+  .settings .picbtn {
+    width: 100%;
+    padding: 9px 0;
+    line-height: 1.2;
+    font-size: .95em;
+  }
+
+  /* 主题色：13 个色圈改成等宽网格，不再挤成参差不齐的「10 + 3」两行 */
+  .settings .colorRow {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(38px, 1fr));
+    gap: 8px 0;
+    justify-items: center;
+    padding-left: 0;
+  }
+  .settings .colorRow > input[name="colors"] {
+    margin-right: 0;
+    width: 24px;
+    height: 24px;
+  }
+
+  /* 字体按钮：等宽两列 + 字号内边距收一档。只动手机端 ——
+     桌面端的 winboxNeedSize() 靠量前 5 个 .swf 的宽度来定面板宽度，不能碰 */
+  .settings #swfs,
+  .settings #swfs_code {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 8px;
+  }
+  .settings #swfs > .swf,
+  .settings #swfs_code > .swf {
+    margin: 0;
+    padding: 8px 6px;
+    font-size: 17px;
+    text-align: center;
+  }
+
+  /* 恢复默认设置：整行宽，再窄的手机也不会折成两行 */
+  #reset_btn {
+    width: 100%;
+    padding: 13px 0;
+    font-size: 1em;
+  }
+}
+
+/* 面板打开时，把右下角悬浮工具条 #rightside 压到面板下面。
+   WinBox 面板的 z-index 是 99（settings.js 里 WinBox({ index: 99 })），
+   主题的 #rightside 是 z-index:100（themes/fomalhaut/source/css/_layout/rightside.styl:5），
+   而手机端面板宽 95%、面板最大化时更是整屏 —— 必然重叠，工具条会盖住右对齐的开关。 */
+body:has(#meihuaBox) #rightside {
+  z-index: 90;
+}
+
+
+
+
+

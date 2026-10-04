@@ -1,0 +1,110 @@
+#footer-wrap
+  #ft
+    .ft-item-1
+      .t-top
+        .t-t-l
+          p.ft-t.t-l-t 格言🧬
+          .bg-ad
+            div
+              | 再看看那个光点，它就在这里，这是家园，这是我们 —— 你所爱的每一个人，你认识的每一个人，你听说过的每一个人，曾经有过的每一个人，都在它上面度过他们的一生✨
+            .btn-xz-box
+              a.btn-xz(href='/box/astronomy/') 点击开启星辰之旅
+        .t-t-r
+          p.ft-t.t-l-t 猜你想看💡
+          ul.ft-links
+            li
+              a(href='/archives/') 开源指南
+              a(href='/box/nav/') 网址导航
+            li
+              a(href='/social/link/') 我的朋友
+              a(href='/comments/') 留点什么
+            li
+              a(href='/personal/about/') 关于作者
+              a(href='/archives/') 文章归档
+            li
+              a(href='/categories/') 文章分类
+              a(href='/tags/') 文章标签
+            li
+              a(href='/box/gallery/') 我的画廊
+              a(href='/site/time/') 建设进程
+            li
+              a(href='/site/census/') 网站统计
+    .ft-item-2
+      p.ft-t 推荐友链⌛
+      //- 硬编码的展示位；换成你自己的朋友即可（头像建议 100x100 以内的小图）
+      .ft-img-group
+        .img-group-item
+          a(href='https://example.com/' title='本站')
+            img(src='/assets/avatar.webp' alt='')
+        .img-group-item
+          a(href='https://hexo.io/zh-cn/' title='Hexo')
+            img(src='https://picsum.photos/id/1036/100/100' alt='')
+        .img-group-item
+          a(href='https://butterfly.js.org/' title='Butterfly')
+            img(src='https://picsum.photos/id/1039/100/100' alt='')
+        .img-group-item
+          a(href='https://example.org/' title='示例站点 A')
+            img(src='https://picsum.photos/id/1018/100/100' alt='')
+        .img-group-item
+          a(href='javascript:void(0)' title='广告位招租')
+            img(src='https://picsum.photos/id/1044/100/100' alt='')
+        .img-group-item
+          a(href='javascript:void(0)' title='广告位招租')
+            img(src='https://picsum.photos/id/1015/100/100' alt='')
+        .img-group-item
+          a(href='javascript:void(0)' title='广告位招租')
+            img(src='https://picsum.photos/id/1016/100/100' alt='')
+        .img-group-item
+          a(href='javascript:void(0)' title='广告位招租')
+            img(src='https://picsum.photos/id/1018/100/100' alt='')
+
+  if theme.footer.owner.enable
+    - var now = new Date()
+    - var nowYear = now.getFullYear()
+    //- if theme.footer.owner.since && theme.footer.owner.since != nowYear
+    //-   .copyright!= `&copy;${theme.footer.owner.since} - ${nowYear} By ${config.author}`
+    //- else
+    //-   .copyright!= `&copy;${nowYear} By ${config.author}`
+    //- 新加的
+    if theme.footer.owner.since && theme.footer.owner.since != nowYear
+      .copyright
+        span!= `<b>&copy;${theme.footer.owner.since}-${nowYear}</b>`
+        span!= `<b>&nbsp;&nbsp;By ${config.author}</b>`
+    else
+       .copyright
+         span!= `<b>&copy;${nowYear}</b>`
+         span!= `<b>&nbsp;&nbsp;By ${config.author}</b>`
+    //- 到这里
+  if theme.footer.copyright
+    .framework-info
+      span= _p('footer.framework') + ' '
+      a(href='https://hexo.io')= 'Hexo'
+      span.footer-separator |
+      span= _p('footer.theme') + ' '
+      a(href='https://github.com/jerryc127/hexo-theme-butterfly')= 'Butterfly'
+  if theme.footer.custom_text
+    .footer_custom_text!=`${theme.footer.custom_text}`
+  #workboard
+  p#ghbdages
+    a.github-badge(target='_blank' href="https://hexo.io/" style='margin-inline:5px' title="博客框架为Hexo_v6.3.0")
+      img(src="https://img.shields.io/badge/Frame-Hexo-blue.svg" alt='')
+
+    a.github-badge(target='_blank' href="https://github.com/yourname/hexo-theme-Fomalhaut" style='margin-inline:5px' title="主题Fomalhaut v1.0.0(基于Butterfly v4.3.1)")
+      img(src="/assets/badge/Theme-Fomalhaut-6513df.svg" alt='')
+
+    a.github-badge(target='_blank' href="https://vercel.com/" style='margin-inline:5px' title="本站采用多线部署，主线路托管于Vercel")
+      img(src="https://img.shields.io/badge/Hosted-Vercel-brightgreen.svg" alt='')
+
+    a.github-badge(target='_blank' href="https://user.51.la/" style='margin-inline:5px' title="本站数据分析得益于51la技术支持")
+      img(src="https://img.shields.io/badge/Analytics-51la-3db1eb.svg" alt='')
+
+
+
+    a.github-badge(target='_blank' href="https://npmmirror.com/" style='margin-inline:5px' title="本站使用npmmirror为部分静态资源加速")
+      img(src="/assets/badge/CDN-npmmirror-fff2cc.svg" alt='')
+
+    a.github-badge(target='_blank' href="https://github.com/" style='margin-inline:5px' title="本网站源码由Github提供存储仓库")
+      img(src="https://img.shields.io/badge/Source-GitHub-d021d6.svg" alt='')
+
+    //- a.github-badge(target='_blank' href="http://creativecommons.org/licenses/by-nc-sa/4.0/" style='margin-inline:5px' title="本站采用知识共享署名-非商业性使用-相同方式共享4.0国际许可协议进行许可")
+    //-   img(src="https://picsum.photos/id/1039/1200/675" alt='')

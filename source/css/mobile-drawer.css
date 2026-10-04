@@ -1,0 +1,491 @@
+@charset "UTF-8";
+/*!
+ * 手机端抽屉菜单改版（mobile-drawer.css）
+ * ============================================================================
+ * 改的是什么
+ *   手机端点右上角汉堡后从右边滑出来的那个抽屉：#sidebar > #sidebar-menus
+ *   （themes/fomalhaut/layout/includes/sidebar.pug 渲染，DOM 顺序固定为
+ *     .avatar-img → .sidebar-site-data → hr → .menus_items，全是主题生成的，不能改结构）
+ *
+ * 为什么是「新增一个站点样式文件」而不是改主题
+ *   主题只给了抽屉最朴素的默认样式（themes/fomalhaut/source/css/_layout/sidebar.styl：
+ *   一行一个文字链接 + 一条 2px 虚线 hr；配色在 themes/fomalhaut/source/css/_custom/custom.css:2303-2312）。
+ *   主题没有任何开关能调出「层级 / 卡片 / 图标底衬 / 动效」这些设计感，配置项做不到，
+ *   所以按站点既有约定（source/css/stats.css、source/css/twikoo.css 同样做法）新增独立样式表，
+ *   themes/ 下一行源码都不动。
+ *
+ * 引入
+ *   _config.fomalhaut.yml → inject.head：
+ *     <link rel="stylesheet" href="/css/mobile-drawer.css?v=20261007">
+ *   放在 /css/site-inject.css 之后 → 层叠顺序在主题 /css/index.css 与各站点样式之后，同权重必胜。
+ *
+ * 配色
+ *   一律从 var(--theme-color)（fomal.js 按用户选的主题色写进 :root）派生。
+ *   每个自定义属性写两行：第一行是不支持 color-mix() 的老浏览器回退值，第二行才是 color-mix()。
+ *   深色模式只覆盖变量，规则本体一套。
+ *
+ * 【维护提醒】#sidebar-menus::before / ::after 里的站名与简介是写死在 CSS 里的，
+ *   改 _config.yml 的 title / description 时记得同步这两行。
+ *
+ * 回滚
+ *   删掉 _config.fomalhaut.yml inject.head 里那行 <link>，抽屉立刻退回主题原样（本文件留着无害）。
+ *   配置备份：bak/20261007-mobile-drawer/before/_config.fomalhaut.yml
+ * ========================================================================== */
+
+/* ---------------------------------------------------------------- 变量 */
+#sidebar #sidebar-menus {
+  /* 抽屉宽度：原来的固定 300px 在 390 视口下太窄，改成按视口走、最多 340px。
+     注意必须同时改 right —— 主题用 right:-300px 起手再 translate3d(-100%) 滑进来，
+     宽度和 right 不一致的话滑完右边会留一条缝。 */
+  --md-w: 338px;
+  --md-w: min(86vw, 340px);
+
+  --md-base: #f7fbfd;                                              /* 面板兜底底色 */
+  --md-aurora-rose: #ffd7e4;                                       /* 左上：晨曦粉（沿用原抽屉的粉蓝基因） */
+  --md-aurora-sky: #c8f1ff;                                        /* 右上：天光蓝 */
+  --md-aurora-mint: rgba(57, 197, 187, 0.16);                      /* 底部：主题色薄雾 */
+  --md-aurora-mint: color-mix(in srgb, var(--theme-color) 16%, transparent);
+  --md-star: rgba(255, 255, 255, 0);                               /* 浅色模式不撒星星 */
+
+  --md-ink: #2b3a3f;                                               /* 主文字 */
+  --md-ink-soft: #4a5e64;                                          /* 次级文字 */
+  --md-ink-mute: #7e9096;                                          /* 弱化文字（标签、页脚签名） */
+  --md-accent: #39c5bb;                                            /* 主题色本体：只做装饰（光晕、描边） */
+  --md-accent: var(--theme-color, #39c5bb);
+  --md-accent-ink: #1d6b64;                                        /* 主题色压深：做文字用，保证对比度 */
+  --md-accent-ink: color-mix(in srgb, var(--theme-color, #39c5bb) 60%, #062b28);
+
+  --md-line: rgba(12, 60, 70, 0.09);                               /* 发丝线 */
+  --md-line-strong: rgba(12, 60, 70, 0.17);
+  --md-card: rgba(255, 255, 255, 0.62);                            /* 统计胶囊底 */
+  --md-wash: rgba(57, 197, 187, 0.1);                              /* hover 洗色 */
+  --md-wash: color-mix(in srgb, var(--theme-color) 10%, transparent);
+  --md-tile: rgba(255, 255, 255, 0.92);                            /* 图标方块底 */
+  --md-tile-on: rgba(57, 197, 187, 0.18);
+  --md-tile-on: color-mix(in srgb, var(--theme-color) 18%, transparent);
+  --md-halo: rgba(57, 197, 187, 0.34);                             /* 头像呼吸光晕 */
+  --md-halo: color-mix(in srgb, var(--theme-color) 34%, transparent);
+  --md-shadow: rgba(8, 42, 52, 0.55);                              /* 投影基色 */
+  --md-edge: rgba(255, 255, 255, 0.75);                            /* 左缘高光 */
+}
+
+/* ---------------------------------------------------------------- 面板本体 */
+#sidebar #sidebar-menus {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: var(--md-w);
+  right: calc(-1 * var(--md-w));
+  padding: 0 0 6px;
+  border-left: 1px solid var(--md-line);
+  border-radius: 22px 0 0 22px;
+  /* 背景全是「随元素固定」的图层（滚动容器上 background-attachment:scroll 即不随内容滚动），
+     所以这几团极光在抽屉里是静止的，只有内容在滚。 */
+  background-color: var(--md-base);
+  background-image:
+    radial-gradient(1.3px 1.3px at 23% 7%, var(--md-star) 49%, transparent 50%),
+    radial-gradient(1.6px 1.6px at 79% 15%, var(--md-star) 49%, transparent 50%),
+    radial-gradient(1.1px 1.1px at 46% 3%, var(--md-star) 49%, transparent 50%),
+    radial-gradient(1.4px 1.4px at 64% 26%, var(--md-star) 49%, transparent 50%),
+    radial-gradient(115% 40% at 74% -8%, var(--md-aurora-sky) 0%, transparent 62%),
+    radial-gradient(95% 32% at 8% 7%, var(--md-aurora-rose) 0%, transparent 60%),
+    radial-gradient(120% 38% at 50% 106%, var(--md-aurora-mint) 0%, transparent 66%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 42%);
+  box-shadow:
+    inset 1px 0 0 var(--md-edge),
+    -22px 0 56px -26px var(--md-shadow);
+  scrollbar-width: thin;
+  scrollbar-color: var(--md-line-strong) transparent;
+}
+
+/* 直接子项不参与伸缩：内容超高时正常出滚动条，而不是把每个块压扁 */
+#sidebar #sidebar-menus > * {
+  flex: 0 0 auto;
+}
+
+#sidebar #sidebar-menus::-webkit-scrollbar {
+  width: 6px;
+}
+#sidebar #sidebar-menus::-webkit-scrollbar-thumb {
+  border-radius: 99px;
+  background: var(--md-line-strong);
+}
+
+/* ---------------------------------------------------------------- 顶部字标 */
+/* 主题没有「站点名」这个节点，用伪元素补一行 masthead；★ 改站名记得改这里 */
+#sidebar #sidebar-menus::before {
+  content: "Demo";
+  display: block;
+  padding: 20px 24px 0;
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--md-ink-mute);
+}
+
+/* ---------------------------------------------------------------- 底部签名 */
+/* ★ 改站点简介（_config.yml 的 description）记得改这里 */
+#sidebar #sidebar-menus::after {
+  content: "Future is now 🍭🍭🍭";
+  margin-top: auto;                        /* 菜单短的时候把签名压到抽屉底部，避免下方一大片死白 */
+  padding: 18px 24px 14px;
+  text-align: center;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: var(--md-ink-mute);
+  opacity: 0.85;
+}
+
+/* ---------------------------------------------------------------- 头像 */
+#sidebar #sidebar-menus > .avatar-img {
+  overflow: visible;
+  width: 96px;
+  height: 96px;
+  margin: 24px auto 20px;
+  /* 呼吸灯不在这里写：主题的 huxi_light / huxi_dark 已由 /css/avatar-glow.css 改成
+     主题色派生（原来写死 #9ff2d2 / #39c5bb），抽屉头像直接复用同一套动画，
+     和电脑端作者卡保持一致；尺寸/圆角/白边仍归本文件管 */
+}
+
+#sidebar #sidebar-menus > .avatar-img img {
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.92),
+    0 0 0 4px var(--md-line-strong),
+    0 14px 28px -14px var(--md-shadow);
+}
+
+
+/* ---------------------------------------------------------------- 统计胶囊 */
+#sidebar #sidebar-menus .sidebar-site-data {
+  display: flex;
+  margin: 0 16px 2px;
+  padding: 0;
+  border-radius: 16px;
+  background: var(--md-card);
+  box-shadow:
+    inset 0 0 0 1px var(--md-line),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.8),
+    0 12px 24px -20px var(--md-shadow);
+}
+
+#sidebar #sidebar-menus .sidebar-site-data > a {
+  display: block;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 11px 4px 13px;
+  text-align: center;
+  transition: background 0.25s ease;
+}
+
+#sidebar #sidebar-menus .sidebar-site-data > a + a {
+  box-shadow: inset 1px 0 0 var(--md-line);
+}
+
+#sidebar #sidebar-menus .sidebar-site-data > a:hover {
+  background: var(--md-wash);
+}
+
+#sidebar #sidebar-menus .sidebar-site-data .headline {
+  color: var(--md-ink-mute);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  line-height: 1.5;
+}
+
+#sidebar #sidebar-menus .sidebar-site-data .length-num {
+  margin-top: 1px;
+  color: var(--md-accent-ink);
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 6px 16px var(--md-halo);
+}
+
+/* ---------------------------------------------------------------- 雪花分隔线 */
+/* 主题：hr 是 2px 虚线 + 靠左 5% 的 Font Awesome 雪花（_config.fomalhaut.yml hr_icon.icon = \f2dc），
+   hover 会滑到右边。改成一整条两端渐隐的发丝线，雪花居中并带主题色辉光。 */
+#sidebar #sidebar-menus hr {
+  position: relative;
+  width: auto;
+  height: 1px;
+  margin: 20px 26px 16px;
+  /* 主题 themes/fomalhaut/source/css/_custom/custom.css:3520 有 hr{border:2px dashed !important}，
+     这里必须跟着 !important，否则虚线框会盖掉下面这条渐变发丝线 */
+  border: 0 !important;
+  background: linear-gradient(90deg, transparent 0%, var(--md-line-strong) 16%, var(--md-line-strong) 84%, transparent 100%);
+}
+
+#sidebar #sidebar-menus hr:before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--md-accent-ink);
+  font-size: 13px;
+  line-height: 1;
+  text-shadow: 0 0 10px var(--md-halo), 0 0 2px var(--md-base);
+  transition: none;
+}
+
+#sidebar #sidebar-menus hr:hover:before {
+  left: 50%;
+}
+
+/* ---------------------------------------------------------------- 菜单 */
+#sidebar #sidebar-menus .menus_items {
+  padding: 0 12px 4px;
+}
+
+#sidebar #sidebar-menus .menus_items > .menus_item {
+  margin-bottom: 3px;
+}
+
+/* 一级项：图标方块 + 文字 + 右侧箭头的一整块圆角行 */
+#sidebar #sidebar-menus .menus_items > .menus_item > a.site-page {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 40px 9px 11px;
+  border-radius: 14px;
+  color: var(--md-ink);
+  font-size: 15.5px;
+  transition: background 0.22s ease, color 0.22s ease;
+}
+
+#sidebar #sidebar-menus .menus_items > .menus_item > a.site-page:hover {
+  background: var(--md-wash);
+  border-radius: 14px;
+}
+
+#sidebar #sidebar-menus .menus_items > .menus_item > a.site-page:active {
+  background: var(--md-tile-on);
+}
+
+/* .menu_word 的字号是主题写在行内 style 里的（17px），只能 !important 压掉 */
+#sidebar #sidebar-menus .menus_items > .menus_item > a.site-page .menu_word {
+  font-size: 15.5px !important;
+  line-height: 1.35;
+}
+
+/* 图标底衬：svg 的行内样式只锁了 width/height/fill，padding / 圆角 / 底色可以正常加。
+   行内是 1.30em，所以 font-size 变了它跟着变，不用动它。 */
+#sidebar #sidebar-menus .menus_items > .menus_item > a.site-page > svg {
+  box-sizing: content-box;
+  flex: 0 0 auto;
+  padding: 7px;
+  border-radius: 12px;
+  background: var(--md-tile);
+  box-shadow: inset 0 0 0 1px var(--md-line);
+  transition: background 0.25s ease, box-shadow 0.25s ease;
+}
+
+#sidebar #sidebar-menus .menus_items > .menus_item > a.site-page:hover > svg {
+  background: var(--md-tile-on);
+  box-shadow: inset 0 0 0 1px var(--md-line-strong);
+}
+
+/* 右侧箭头：主题是 .group > i:last-child{top:.78em;right:18px}，
+   这里用 margin-top 而不是 transform 做垂直居中，免得和展开态的 rotate 打架 */
+#sidebar #sidebar-menus .menus_items > .menus_item > a.site-page.group > i:last-child {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  margin-top: -0.5em;
+  font-size: 11px;
+  line-height: 1em;
+  opacity: 0.45;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+#sidebar #sidebar-menus .menus_items > .menus_item > a.site-page.group:hover > i:last-child {
+  opacity: 0.9;
+}
+
+/* 主题是 rotate(90deg)（朝左）；改成朝右，符合「点开子菜单」的直觉 */
+#sidebar #sidebar-menus .menus_items > .menus_item > a.site-page.group.hide > i:last-child {
+  transform: rotate(-90deg);
+}
+
+/* ---------------------------------------------------------------- 二级菜单 */
+/* 主题靠 display:none / block 硬切；这里改成 max-height + opacity 的手风琴。
+   展开/收起由主题 JS 切换 a 上的 .hide 类（themes/fomalhaut/source/js/main.js:543-548），所以选择器照它写。 */
+#sidebar #sidebar-menus .menus_items .menus_item_child,
+#sidebar #sidebar-menus .menus_items > .menus_item > a.site-page.group.hide + .menus_item_child,
+#sidebar #sidebar-menus .menus_items > .menus_item > a.site-page.group:not(.hide) + .menus_item_child {
+  display: block;
+}
+
+#sidebar #sidebar-menus .menus_items .menus_item_child {
+  max-height: 0;
+  margin: 0 0 0 22px;
+  padding: 0 0 0 12px;
+  overflow: hidden;
+  border-left: 1px solid var(--md-line);
+  opacity: 0;
+  pointer-events: none;
+  list-style: none;
+  transition: max-height 0.36s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.26s ease, margin-bottom 0.3s ease;
+}
+
+#sidebar #sidebar-menus .menus_items > .menus_item > a.site-page.group:not(.hide) + .menus_item_child {
+  max-height: 460px;
+  margin-bottom: 6px;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#sidebar #sidebar-menus .menus_items .menus_item_child li a.site-page.child {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 12px;
+  border-radius: 11px;
+  color: var(--md-ink-soft);
+  font-size: 14px;
+  transition: background 0.22s ease, color 0.22s ease;
+}
+
+#sidebar #sidebar-menus .menus_items .menus_item_child li a.site-page.child:hover {
+  background: var(--md-wash);
+  border-radius: 11px;
+  color: var(--md-ink);
+}
+
+#sidebar #sidebar-menus .menus_items .menus_item_child li a.site-page.child .menu_word {
+  font-size: 14px !important;
+  line-height: 1.35;
+}
+
+#sidebar #sidebar-menus .menus_items .menus_item_child li a.site-page.child > svg {
+  box-sizing: content-box;
+  flex: 0 0 auto;
+  padding: 4px;
+  border-radius: 9px;
+  background: var(--md-tile);
+  box-shadow: inset 0 0 0 1px var(--md-line);
+  transition: background 0.25s ease;
+}
+
+#sidebar #sidebar-menus .menus_items .menus_item_child li a.site-page.child:hover > svg {
+  background: var(--md-tile-on);
+}
+
+/* ---------------------------------------------------------------- 遮罩 */
+#sidebar #menu-mask {
+  background: radial-gradient(120% 78% at 100% 50%, rgba(6, 22, 26, 0.52) 0%, rgba(4, 12, 16, 0.86) 72%);
+}
+
+/* ---------------------------------------------------------------- 入场动效 */
+/* 主题给 .open 的前 4 个子元素做了 translateX(200px) 的错位滑入（themes/fomalhaut/source/css/_global/function.styl:107-133）；
+   这里换成更短的「上浮 + 淡入」，节奏更贴合这块面板。 */
+/* 【踩过的坑】主题 themes/fomalhaut/source/css/_global/function.styl:129-133 有
+   `#sidebar-menus.open > :nth-child(1..4) { animation: sidebarItem … }`，而 :nth-child(1) 就是头像。
+   这条选择器权重 (1,2,0) 压过主题自己那条 `[data-theme] .avatar-img { animation: huxi_* }` (0,2,0)，
+   所以**抽屉头像从主题原版起就没有呼吸灯**（电脑端作者卡不在 #sidebar-menus 里，不受影响）。
+   这里同理：只要还按 :nth-child(1) 给头像写入场动画，就还是会顶掉呼吸灯。
+   所以头像单独写两条并行动画 —— md-rise 只碰 opacity/transform，huxi_* 只碰 box-shadow，互不打架。 */
+[data-theme="light"] #sidebar #sidebar-menus.open > .avatar-img {
+  animation: md-rise 0.46s cubic-bezier(0.22, 1, 0.36, 1) 0.04s both, huxi_light 4s ease-in-out infinite;
+}
+[data-theme="dark"] #sidebar #sidebar-menus.open > .avatar-img {
+  animation: md-rise 0.46s cubic-bezier(0.22, 1, 0.36, 1) 0.04s both, huxi_dark 4s ease-in-out infinite;
+}
+#sidebar #sidebar-menus.open > :nth-child(2) { animation: md-rise 0.46s cubic-bezier(0.22, 1, 0.36, 1) 0.10s both; }
+#sidebar #sidebar-menus.open > :nth-child(3) { animation: md-rise 0.46s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both; }
+#sidebar #sidebar-menus.open > :nth-child(4) { animation: md-rise 0.46s cubic-bezier(0.22, 1, 0.36, 1) 0.20s both; }
+
+@keyframes md-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------------------------------------------------------------- 深色模式 */
+/* 只覆盖变量，规则本体一套 */
+[data-theme="dark"] #sidebar #sidebar-menus {
+  --md-base: #101b20;
+  --md-aurora-rose: rgba(96, 124, 214, 0.32);                       /* 左上：夜蓝 */
+  --md-aurora-sky: rgba(57, 197, 187, 0.3);                       /* 右上：极光青 */
+  --md-aurora-mint: rgba(57, 197, 187, 0.1);
+  --md-aurora-mint: color-mix(in srgb, var(--theme-color) 10%, transparent);
+  --md-star: rgba(255, 255, 255, 0.75);                            /* 深色下撒一层星星 */
+
+  --md-ink: #eaf3f4;
+  --md-ink-soft: rgba(234, 243, 244, 0.72);
+  --md-ink-mute: rgba(234, 243, 244, 0.46);
+  --md-accent-ink: #7fe3da;
+  --md-accent-ink: color-mix(in srgb, var(--theme-color, #39c5bb) 74%, #ffffff);
+
+  --md-line: rgba(255, 255, 255, 0.08);
+  --md-line-strong: rgba(255, 255, 255, 0.18);
+  --md-card: rgba(255, 255, 255, 0.055);
+  --md-wash: rgba(57, 197, 187, 0.13);
+  --md-wash: color-mix(in srgb, var(--theme-color) 13%, transparent);
+  --md-tile: rgba(255, 255, 255, 0.07);
+  --md-tile-on: rgba(57, 197, 187, 0.22);
+  --md-tile-on: color-mix(in srgb, var(--theme-color) 22%, transparent);
+  --md-halo: rgba(57, 197, 187, 0.4);
+  --md-halo: color-mix(in srgb, var(--theme-color) 40%, transparent);
+  --md-shadow: rgba(0, 0, 0, 0.8);
+  --md-edge: rgba(255, 255, 255, 0.07);
+}
+
+/* 深色下要重写一遍图层（变量换了，图层顺序不变），并且把主题那条
+   custom.css:2310 的 rgba(25,25,25,.95)!important 底色压掉 */
+[data-theme="dark"] #sidebar #sidebar-menus {
+  background-color: var(--md-base) !important; /* 压过 custom.css:2310 的 rgba(25,25,25,.95)!important */
+  background-image:
+    radial-gradient(1.3px 1.3px at 23% 7%, var(--md-star) 49%, transparent 50%),
+    radial-gradient(1.6px 1.6px at 79% 15%, var(--md-star) 49%, transparent 50%),
+    radial-gradient(1.1px 1.1px at 46% 3%, var(--md-star) 49%, transparent 50%),
+    radial-gradient(1.4px 1.4px at 64% 26%, var(--md-star) 49%, transparent 50%),
+    radial-gradient(115% 40% at 74% -8%, var(--md-aurora-sky) 0%, transparent 62%),
+    radial-gradient(95% 32% at 8% 7%, var(--md-aurora-rose) 0%, transparent 60%),
+    radial-gradient(120% 38% at 50% 106%, var(--md-aurora-mint) 0%, transparent 66%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 42%);
+}
+
+[data-theme="dark"] #sidebar #sidebar-menus > .avatar-img img {
+  box-shadow:
+    0 0 0 3px rgba(12, 20, 22, 0.9),
+    0 0 0 4px var(--md-line-strong),
+    0 14px 28px -14px rgba(0, 0, 0, 0.85);
+}
+
+[data-theme="dark"] #sidebar #sidebar-menus .sidebar-site-data {
+  box-shadow:
+    inset 0 0 0 1px var(--md-line),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
+    0 12px 24px -20px rgba(0, 0, 0, 0.9);
+}
+
+[data-theme="dark"] #sidebar #menu-mask {
+  background: radial-gradient(120% 78% at 100% 50%, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.9) 72%);
+}
+
+/* ---------------------------------------------------------------- 无障碍 */
+@media (prefers-reduced-motion: reduce) {
+  #sidebar #sidebar-menus,
+  #sidebar #sidebar-menus > *,
+  #sidebar #sidebar-menus::before,
+  #sidebar #sidebar-menus::after,
+  #sidebar #sidebar-menus .menus_item_child {
+    animation: none !important;
+    transition: none !important;
+  }
+  #sidebar #sidebar-menus .menus_items > .menus_item > a.site-page.group.hide > i:last-child {
+    transform: none;
+  }
+  /* 上面那条 animation:none!important 会把头像的呼吸灯一起关掉，这里补一圈常亮光晕，
+     和 /css/avatar-glow.css 在 reduce 模式下的处理保持一致 */
+  [data-theme="light"] #sidebar #sidebar-menus > .avatar-img {
+    box-shadow: 0 0 5px 5px var(--ag-ring, #9ff2d2), 0 0 18px 7px var(--ag-halo, rgba(57, 197, 187, 0.3));
+  }
+  [data-theme="dark"] #sidebar #sidebar-menus > .avatar-img {
+    box-shadow: 0 0 5px 5px var(--ag-ring, #39c5bb), 0 0 18px 7px var(--ag-halo, rgba(57, 197, 187, 0.42));
+  }
+}

@@ -1,0 +1,32 @@
+#article-container
+  if top_img === false
+    h1.page-title= page.title
+  .flink
+    if site.data.link
+      each i in site.data.link
+        if i.class_name
+          h2!= i.class_name
+        if i.class_desc
+          .flink-desc!="分类描述🎨：" + i.class_desc
+        .site-card-group
+          case i.class_name
+            when `0.推荐网站🍔`
+            when `1.技术支持🍟`
+            when `2.宝藏网站🍉`
+              each item in i.link_list
+                a.site-card(target='_blank' rel='noopener' href=url_for(item.link))
+                  .img
+                    - var siteshot = item.siteshot ? url_for(item.siteshot) : 'https://image.thum.io/get/allowJPG/wait/20/width/600/crop/950/' + item.link
+                    img.no-lightbox(src=siteshot onerror=`this.onerror=null;this.src='` + url_for(theme.error_img.post_page) + `'` alt='' )
+                  .info
+                    img.no-lightbox(src=url_for(item.avatar) onerror=`this.onerror=null;this.src='` + url_for(theme.error_img.flink) + `'` alt='' style="width:45px;height:45px;border-radius:35px;margin: 5px 5px 0px 5px;")
+                    span.title= item.name
+                    span.desc(title=item.descr)= item.descr
+            default
+              each item in i.link_list
+                a.site-card.mini-link(target='_blank' rel='noopener' href=url_for(item.link) style="background-color:"+ item.theme_color + ";height:90px;border-radius:12px !important")
+                  .info
+                    img.no-lightbox(src=url_for(item.avatar) onerror=`this.onerror=null;this.src='` + url_for(theme.error_img.flink) + `'` alt='' style="width:60px;height:60px;border-radius:35px;margin: 0 5px 10px 5px;")
+                    span.title= item.name
+                    span.desc(title=item.descr)= item.descr              
+  != page.content

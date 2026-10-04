@@ -1,0 +1,495 @@
+/* =============================================================================
+ * timeline-archive.css —— 「旧时光」(/site/time/) 时间轴改版 · 站点独立样式
+ * -----------------------------------------------------------------------------
+ * 不改主题源码：主题渲染出的 DOM 结构一个字都没动，只在本文件里重新排版。
+ *   主题结构：#article-container > .timeline > .timeline-item(.headline) >
+ *             .timeline-item-title > .item-circle > p       ← 日期
+ *             .timeline-item-content > ol > li              ← 正文
+ * 本文件的选择器全部带 #article-container + .tl-ready 两级守卫：
+ *   .tl-ready 由 /js/timeline-archive.js 在确认「整页只有这一条 timeline、
+ *   且条目数 ≥ 8」之后才加上。JS 没跑（被拦 / 报错 / 缓存旧版）整块失效，
+ *   页面自动退回主题原样，不会出现半成品。
+ * 配色全部从 --theme-color / --font-color / --card-bg 派生，跟主题色与明暗模式走。
+ * 回滚：删掉 _config.fomalhaut.yml 里的这两行即可 ——
+ *   <link rel="stylesheet" href="/css/timeline-archive.css?v=20261009">
+ *   <script defer src="/js/timeline-archive.js?v=20261009"></script>
+ *   （配置备份 bak/20261009-timeline-archive/before/_config.fomalhaut.yml）
+ * 改本文件记得把 ?v= 一起提版本，否则会吃缓存。
+ * ========================================================================== */
+
+/* ── 0. 变量与容器 ───────────────────────────────────────────────────────── */
+
+#article-container .timeline.tl-ready {
+  /* 轨道列宽 / 列间距（JS 生成的年份分隔器与条目共用同一套栅格） */
+  --tl-rail: 104px;
+  --tl-gap: 28px;
+
+  --tl-c: var(--theme-color, #39c5bb);
+  --tl-ink: var(--font-color, #4c4948);
+  --tl-card: var(--card-bg, #fff);
+
+  /* 旧浏览器回退值写在每个 color-mix 的上一行 */
+  --tl-hair: rgba(0, 0, 0, .08);
+  --tl-hair: color-mix(in srgb, var(--font-color, #4c4948) 13%, transparent);
+  --tl-mute: rgba(76, 73, 72, .52);
+  --tl-mute: color-mix(in srgb, var(--font-color, #4c4948) 52%, transparent);
+  --tl-soft: rgba(57, 197, 187, .1);
+  --tl-soft: color-mix(in srgb, var(--tl-c) 10%, transparent);
+  --tl-tint: #f7fbfb;
+  --tl-tint: color-mix(in srgb, var(--tl-c) 4%, var(--card-bg, #fff));
+
+  /* 轨道线的起止由 /js/timeline-archive.js 量好写进来（头部高度不定，CSS 算不出来） */
+  --tl-rail-top: 30px;
+  --tl-rail-bottom: 24px;
+
+  position: relative;
+  margin: 0;
+  padding: 0;
+  border-left: 0;
+}
+
+/* 深色模式：color-mix 的兜底值也要跟着换（不支持 color-mix 的浏览器才用得到） */
+[data-theme='dark'] #article-container .timeline.tl-ready {
+  --tl-card: #121212;
+  --tl-hair: rgba(255, 255, 255, .1);
+  --tl-mute: rgba(255, 255, 255, .46);
+  --tl-tint: #1a1e1f;
+  --tl-tint: color-mix(in srgb, var(--tl-c) 6%, var(--card-bg, #121212));
+}
+
+/* 自绘纵向轨道：顶部浓、中段淡、末端淡出 */
+#article-container .timeline.tl-ready::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--tl-rail) + var(--tl-gap) / 2);
+  top: var(--tl-rail-top);
+  bottom: var(--tl-rail-bottom);
+  width: 2px;
+  border-radius: 2px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(57, 197, 187, .5), rgba(57, 197, 187, .18) 10%, rgba(57, 197, 187, .18) 90%, transparent);
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--tl-c) 50%, transparent) 0%,
+    color-mix(in srgb, var(--tl-c) 20%, transparent) 9%,
+    color-mix(in srgb, var(--tl-c) 20%, transparent) 91%,
+    transparent 100%);
+}
+
+/* ── 1. 头部：标题 + 统计 + 年份锚点 ─────────────────────────────────────── */
+
+#article-container .timeline.tl-ready .timeline-item.headline {
+  display: block;
+  margin: 0 0 6px;
+  padding: 0;
+}
+
+#article-container .timeline.tl-ready .timeline-item.headline .item-circle::before {
+  display: none;
+}
+
+#article-container .timeline.tl-ready .tl-head {
+  padding: 2px 0 8px;
+}
+
+#article-container .timeline.tl-ready .tl-head-kicker {
+  display: inline-block;
+  margin: 0 0 12px;
+  padding: 3px 11px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .16em;
+  line-height: 1.7;
+  text-transform: uppercase;
+  color: var(--tl-c);
+  background: var(--tl-soft);
+}
+
+#article-container .timeline.tl-ready .tl-head-title {
+  margin: 0 0 8px;
+  padding: 0;
+  font-size: 1.85rem;
+  font-weight: 800;
+  line-height: 1.28;
+  letter-spacing: -.01em;
+  color: var(--tl-ink);
+}
+
+#article-container .timeline.tl-ready .tl-head-sub {
+  margin: 0 0 18px;
+  padding: 0;
+  font-size: .86rem;
+  line-height: 1.7;
+  color: var(--tl-mute);
+  font-variant-numeric: tabular-nums;
+}
+
+#article-container .timeline.tl-ready .tl-head-sub b {
+  color: var(--tl-c);
+  font-weight: 700;
+}
+
+#article-container .timeline.tl-ready .tl-head-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 30px;
+  padding: 0;
+}
+
+#article-container .timeline.tl-ready .tl-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 5px 12px;
+  border: 1px solid var(--tl-hair);
+  border-radius: 10px;
+  background: var(--tl-card);
+  color: var(--tl-ink);
+  font-size: .88rem;
+  font-weight: 700;
+  line-height: 1.5;
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+  transition: color .2s, border-color .2s, transform .2s, box-shadow .2s;
+}
+
+#article-container .timeline.tl-ready .tl-chip span {
+  font-size: .72rem;
+  font-weight: 600;
+  color: var(--tl-mute);
+}
+
+#article-container .timeline.tl-ready a.tl-chip:hover {
+  color: var(--tl-c);
+  border-color: rgba(57, 197, 187, .45);
+  border-color: color-mix(in srgb, var(--tl-c) 45%, transparent);
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px -8px rgba(57, 197, 187, .7);
+  box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--tl-c) 70%, transparent);
+}
+
+#article-container .timeline.tl-ready a.tl-chip:hover span {
+  color: var(--tl-c);
+}
+
+#article-container .timeline.tl-ready .tl-chip--new,
+#article-container .timeline.tl-ready a.tl-chip--new:hover {
+  color: #fff;
+  background: var(--tl-c);
+  border-color: var(--tl-c);
+}
+
+#article-container .timeline.tl-ready .tl-chip--new span,
+#article-container .timeline.tl-ready a.tl-chip--new:hover span {
+  color: rgba(255, 255, 255, .85);
+}
+
+/* ── 2. 年份分隔器 ───────────────────────────────────────────────────────── */
+
+#article-container .timeline.tl-ready .tl-year {
+  display: grid;
+  grid-template-columns: var(--tl-rail) 1fr;
+  column-gap: var(--tl-gap);
+  align-items: center;
+  margin: 44px 0 16px;
+  scroll-margin-top: 88px;
+}
+
+#article-container .timeline.tl-ready .tl-year-num {
+  grid-column: 1;
+  text-align: right;
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: .01em;
+  color: var(--tl-mute);
+  font-variant-numeric: tabular-nums;
+  transition: color .25s;
+}
+
+#article-container .timeline.tl-ready .tl-year--now .tl-year-num {
+  color: var(--tl-c);
+}
+
+#article-container .timeline.tl-ready .tl-year-line {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: calc(var(--tl-gap) / -2);
+  min-width: 0;
+}
+
+#article-container .timeline.tl-ready .tl-year-line i {
+  flex: 1 1 auto;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(57, 197, 187, .45), transparent 88%);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--tl-c) 42%, transparent), transparent 88%);
+}
+
+#article-container .timeline.tl-ready .tl-year-line em {
+  flex: 0 0 auto;
+  font-style: normal;
+  font-size: .76rem;
+  letter-spacing: .04em;
+  color: var(--tl-mute);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 3. 单条记录：左日期轨 + 右卡片 ─────────────────────────────────────── */
+
+#article-container .timeline.tl-ready .timeline-item {
+  display: grid;
+  grid-template-columns: var(--tl-rail) 1fr;
+  column-gap: var(--tl-gap);
+  align-items: start;
+  margin: 0 0 18px;
+}
+
+#article-container .timeline.tl-ready .timeline-item > .timeline-item-title {
+  grid-column: 1;
+  position: relative;
+  padding: 14px 0 0;
+  text-align: right;
+}
+
+#article-container .timeline.tl-ready .timeline-item > .timeline-item-title .item-circle > p {
+  margin: 0;
+  padding: 0;
+  font-weight: 700;
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+}
+
+#article-container .timeline.tl-ready .tl-y {
+  display: block;
+  font-size: .7rem;
+  font-weight: 600;
+  letter-spacing: .12em;
+  color: var(--tl-mute);
+}
+
+#article-container .timeline.tl-ready .tl-md {
+  display: block;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -.01em;
+  color: var(--tl-ink);
+}
+
+/* 轨道上的节点圆点：和 --tl-gap 联动，永远落在轨道正中间 */
+#article-container .timeline.tl-ready .timeline-item > .timeline-item-title .item-circle::before {
+  left: auto;
+  right: calc(var(--tl-gap) / -2 - 5.5px);
+  top: 18px;
+  width: 7px;
+  height: 7px;
+  border: 2px solid var(--tl-hair);
+  border-radius: 50%;
+  background: var(--tl-card);
+  transform: none;
+  transition: background .25s, border-color .25s;
+}
+
+#article-container .timeline.tl-ready .timeline-item:hover > .timeline-item-title .item-circle::before,
+#article-container .timeline.tl-ready .timeline-item.tl-item--latest > .timeline-item-title .item-circle::before {
+  border-color: var(--tl-c);
+  background: var(--tl-c);
+}
+
+/* 内容卡片 */
+#article-container .timeline.tl-ready .timeline-item > .timeline-item-content {
+  grid-column: 2;
+  position: relative;
+  padding: 16px 22px 17px 24px;
+  border: 1px solid var(--tl-hair);
+  border-radius: 14px;
+  background: var(--tl-tint);
+  color: var(--tl-ink);
+  font-size: .95rem;
+  line-height: 1.8;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  box-shadow: 0 1px 2px rgba(7, 17, 27, .03);
+  transition: border-color .25s, box-shadow .25s, transform .25s;
+}
+
+/* 卡片左侧主题色装饰条 */
+#article-container .timeline.tl-ready .timeline-item > .timeline-item-content::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 16px;
+  bottom: 16px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--tl-c);
+  opacity: .34;
+  transition: opacity .25s, top .25s, bottom .25s;
+}
+
+#article-container .timeline.tl-ready .timeline-item:hover > .timeline-item-content {
+  border-color: rgba(57, 197, 187, .32);
+  border-color: color-mix(in srgb, var(--tl-c) 32%, transparent);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px -14px rgba(57, 197, 187, .8), 0 1px 2px rgba(7, 17, 27, .03);
+  box-shadow: 0 8px 22px -14px color-mix(in srgb, var(--tl-c) 80%, transparent), 0 1px 2px rgba(7, 17, 27, .03);
+}
+
+#article-container .timeline.tl-ready .timeline-item:hover > .timeline-item-content::before {
+  opacity: 1;
+  top: 10px;
+  bottom: 10px;
+}
+
+/* 最新一条：卡片右上角飘一枚小胶囊 */
+#article-container .timeline.tl-ready .timeline-item.tl-item--latest > .timeline-item-content::after {
+  content: '最新记录';
+  position: absolute;
+  top: -10px;
+  right: 16px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  line-height: 1.7;
+  color: #fff;
+  background: var(--tl-c);
+  box-shadow: 0 4px 12px -6px rgba(57, 197, 187, .9);
+  box-shadow: 0 4px 12px -6px color-mix(in srgb, var(--tl-c) 90%, transparent);
+}
+
+/* 里程碑（区间式标题）里的整段说明：这是条目原文，要当标题看，不能弱化成小字 */
+#article-container .timeline.tl-ready .tl-mile-title {
+  margin: 0 0 12px;
+  padding: 0 0 10px;
+  border-bottom: 1px dashed var(--tl-hair);
+  font-size: .95rem;
+  font-weight: 800;
+  line-height: 1.6;
+  letter-spacing: .01em;
+  color: var(--tl-ink);
+}
+
+/* ── 4. 正文有序列表：序号改成主题色圆角小方块 ───────────────────────────── */
+
+#article-container .timeline.tl-ready .timeline-item-content > ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: tlol;
+}
+
+#article-container .timeline.tl-ready .timeline-item-content > ol > li {
+  counter-increment: tlol;
+  position: relative;
+  margin: 0;
+  padding-left: 36px;
+  list-style: none;
+}
+
+#article-container .timeline.tl-ready .timeline-item-content > ol > li + li {
+  margin-top: 10px;
+}
+
+#article-container .timeline.tl-ready .timeline-item-content > ol > li::before {
+  content: counter(tlol);
+  position: absolute;
+  left: 0;
+  top: 3px;
+  width: 22px;
+  height: 22px;
+  line-height: 22px;
+  text-align: center;
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--tl-c);
+  background: var(--tl-soft);
+  font-variant-numeric: tabular-nums;
+  transition: color .2s, background .2s;
+}
+
+#article-container .timeline.tl-ready .timeline-item:hover > .timeline-item-content > ol > li::before {
+  color: #fff;
+  background: var(--tl-c);
+}
+
+/* ── 5. 窄屏：轨道收窄，卡片内边距减小 ─────────────────────────────────── */
+
+@media screen and (max-width: 768px) {
+  #article-container .timeline.tl-ready {
+    --tl-rail: 62px;
+    --tl-gap: 16px;
+  }
+
+  #article-container .timeline.tl-ready .tl-head-title {
+    font-size: 1.45rem;
+  }
+
+  #article-container .timeline.tl-ready .tl-year {
+    margin: 34px 0 14px;
+  }
+
+  #article-container .timeline.tl-ready .tl-year-num {
+    font-size: 1.12rem;
+  }
+
+  #article-container .timeline.tl-ready .timeline-item {
+    margin: 0 0 14px;
+  }
+
+  #article-container .timeline.tl-ready .timeline-item > .timeline-item-title {
+    padding-top: 12px;
+  }
+
+  #article-container .timeline.tl-ready .tl-y {
+    font-size: .64rem;
+    letter-spacing: .08em;
+  }
+
+  #article-container .timeline.tl-ready .tl-md {
+    font-size: .9rem;
+  }
+
+  #article-container .timeline.tl-ready .timeline-item > .timeline-item-content {
+    padding: 14px 15px 15px 16px;
+    border-radius: 12px;
+    font-size: .9rem;
+    line-height: 1.75;
+  }
+
+  #article-container .timeline.tl-ready .timeline-item-content > ol > li {
+    padding-left: 30px;
+  }
+
+  #article-container .timeline.tl-ready .timeline-item-content > ol > li::before {
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    font-size: 11px;
+    border-radius: 6px;
+  }
+}
+
+/* 动效降级 */
+@media (prefers-reduced-motion: reduce) {
+  #article-container .timeline.tl-ready .timeline-item > .timeline-item-content,
+  #article-container .timeline.tl-ready .timeline-item > .timeline-item-content::before,
+  #article-container .timeline.tl-ready .timeline-item > .timeline-item-title .item-circle::before,
+  #article-container .timeline.tl-ready .timeline-item-content > ol > li::before,
+  #article-container .timeline.tl-ready a.tl-chip {
+    transition: none;
+  }
+
+  #article-container .timeline.tl-ready .timeline-item:hover > .timeline-item-content {
+    transform: none;
+  }
+
+  #article-container .timeline.tl-ready a.tl-chip:hover {
+    transform: none;
+  }
+}

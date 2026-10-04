@@ -1,412 +1,1034 @@
-### 🥝的网站目前已经开源啦！！！暂定名为**hexo-theme-Fomalhaut**，原作者网站：[www.fomal.cc](https://www.fomal.cc)，如果你喜欢的话可以帮我点一个免费的Star🌟🌟🌟哦！
+# hexo-theme-Fomalhaut · v1.0.0
 
-### 🚧🚧🚧本开源项目并不适合纯小白，需要一定的魔改经验，因此安装之前务必对Hexo框架命令和Butterfly主题比较熟悉，不熟悉的朋友建议提前熟悉[Hexo中文文档](https://hexo.bootcss.com/docs/configuration.html)和[Butterfly主题文档](https://butterfly.js.org/)，以及熟悉本站魔改教程，别上来就问文章怎么写！！！避免各种不必要的麻烦！！！望周知！！！！！！！！！！
+> 一套「克隆即用」的 Hexo 卡片式博客源码。主题基于 [Butterfly 4.3.1](https://butterfly.js.org/) 深度二次开发，
+> 并把**站点配置**与**主题代码**彻底分开：改配置就能搭起自己的站，升级主题不会冲掉你自己的改动。
 
+![hexo](https://img.shields.io/badge/Hexo-6.3.0-0e83c?style=flat-square&logo=hexo)
+![node](https://img.shields.io/badge/Node.js-18%20%7C%2020%20%7C%2022-339933?style=flat-square&logo=nodedotjs)
+![theme](https://img.shields.io/badge/Theme-Fomalhaut%20v1.0.0-6513df?style=flat-square)
+![license](https://img.shields.io/badge/License-Apache--2.0-blue?style=flat-square)
 
-![](/repoPic/cover.jpg)
+[界面预览](#六界面预览) · [快速开始](#五快速开始约-10-分钟) · [功能配置](#八主要功能怎么配) · [写文章](#九怎么开始写文章) · [文件地图](#七目录结构与文件地图) · [常见改动](#十最常改的地方速查)
 
-本源码是基于`Butterfly 4.3.1`的二次开发，暂时没做完全的主题分离，因此安装方法是整个博客的替换，建议另起一个文件夹进行安装，或备份好原来的资料再搬过来。当然你也可以不直接搬走，而是借鉴里面的部分代码写法。
+---
 
-### 📅📅📅3.5更新：微调部分样式，修复部分人反映手机端无法加载css样式的问题，问题在`fomal.js`的1340行附近，切换至手机端时候导致空指针异常，这部分代码注释掉即可！
+## 目录
 
-```js
-/* 搜索框修复 start */
-// searchSize();
-// window.addEventListener('resize', searchSize)
-// // 搜索窗口自适应
-// function searchSize() {
-//   // 只需要适应手机端
-//   if (document.body.clientWidth > 768) return
-//   let div = document.querySelector('#algolia-hits')
-//   // 监听插入，如果有插入则根据可视高度动态设置最大高度
-//   div.addEventListener('DOMNodeInserted', () => {
-//     div.children[0].style.maxHeight = (document.documentElement.clientHeight - 210) + 'px'
-//   })
-// }
-/* 搜索框修复 end */
+- [一、这是什么](#一这是什么)
+- [二、项目架构](#二项目架构)
+- [三、相比上一版改了什么](#三相比上一版改了什么)
+- [四、环境要求](#四环境要求)
+- [五、快速开始（约 10 分钟）](#五快速开始约-10-分钟)
+- [六、界面预览](#六界面预览)
+- [七、目录结构与文件地图](#七目录结构与文件地图)
+- [八、主要功能怎么配](#八主要功能怎么配)
+- [九、怎么开始写文章](#九怎么开始写文章)
+- [十、最常改的地方（速查）](#十最常改的地方速查)
+- [十一、外挂标签速查](#十一外挂标签速查)
+- [十二、部署](#十二部署)
+- [十三、常见问题](#十三常见问题)
+- [十四、授权与致谢](#十四授权与致谢)
+
+---
+
+## 一、这是什么
+
+**hexo-theme-Fomalhaut** 是一个跑在 Hexo 上的个人博客主题 / 站点模板。它不是单纯的 `themes/` 目录，而是一整套可运行站点：
+
+- 一套**主题代码**（`themes/fomalhaut/`，Pug + Stylus 渲染）；
+- 一份**站点配置**（根目录 `_config.yml` + 根目录 `_config.fomalhaut.yml`）；
+- 一批**站点级增强**（根目录 `scripts/` 下的 Hexo 插件、`source/js/` 与 `source/css/` 下的自定义脚本与样式）；
+- 若干**示例页面**（网址导航、画廊、八音盒、友人帐、朋友圈、网站统计、时间线归档、天文星图……）与 2 篇示例文章。
+
+它解决的问题是：Hexo 生态里大量的美化方案都靠「直接改主题源码」，一旦主题更新就得重新抄一遍。
+本仓库把**主题代码**与**站点改动**放进不同目录，站点侧的东西全部通过「配置注入 + 独立 css/js 文件」实现，升级主题时只需要替换 `themes/fomalhaut/`。
+
+**来源背景**：作者从 2022 年起用 Butterfly 4.3.1 搭建个人博客，三年间持续魔改，把散落在配置与主题里的大量改动逐步抽成独立文件；2026-10 做了一次完整的重构（内部代号「屎山重构」），把 2973 行的单文件 `fomal.js` 拆成模块、把配置里的 26 段内联样式与脚本抽成独立文件，最终整理为 **v1.0.0** 开源。
+
+> ⚠️ **示例数据说明**：仓库里的站点名（Demo）、域名（example.com）、头像、友链、文章、统计 ID 全部是占位示例；
+> 图片与字体走公共 CDN（jsDelivr / picsum.photos），不依赖任何私人服务，克隆后开箱即可运行。
+
+---
+
+## 二、项目架构
+
+```
+用户请求
+   │
+   ▼
+Hexo 6.3.0  ──┬─► 根 _config.yml           站点级配置（标题 / 作者 / 域名 / 部署 / 插件）
+              ├─► 根 _config.fomalhaut.yml  主题配置（Hexo 5+ 的 _config.[theme].yml，本站实际生效）
+              ├─► 根 scripts/*.js           站点级 Hexo 插件（构建期过滤器）
+              │
+              ├─► source/                   站点内容
+              │     ├─ _posts/             文章（Markdown）
+              │     ├─ box|life|site|social|personal/  独立页面
+              │     ├─ css/*.css js/*.js    站点级样式与脚本（不进主题）
+              │     └─ _data/{link,widget}.yml          友链与侧栏卡片数据
+              │
+              └─► themes/fomalhaut/         主题本体
+                    ├─ _config.yml         主题默认配置（被根 _config.fomalhaut.yml 覆盖）
+                    ├─ layout/*.pug        Pug 模板
+                    ├─ source/css/*.styl   Stylus 样式
+                    ├─ source/js/*.js      主题脚本
+                    └─ scripts/           主题级 Hexo 插件（标签、过滤器、助手函数）
+                        │
+                        ▼
+                 hexo generate  →  public/  →  gulp 压缩  →  推到托管平台
 ```
 
-大家如果还遇到什么问题欢迎给作者留言，作者看到会第一时间修复哦，感谢您的支持！
+**三层配置优先级**（Hexo 5+ 行为）：
 
-### 🍡🍡🍡安装教程（演示NodeJS v16.14.0 + Hexo 6.3.0）：
+| 层级 | 文件 | 作用 |
+| --- | --- | --- |
+| 站点 | 根 `_config.yml` | 站点名、作者、URL、部署、算法插件等 |
+| 主题（生效） | 根 `_config.fomalhaut.yml` | **本站真正使用的主题配置**，所有开关都在这里 |
+| 主题（默认） | `themes/fomalhaut/_config.yml` | 主题自带的默认值模板，留作参考 / 兜底 |
 
-1. 安装 NodeJs、Hexo、Git、注册并连接Github，此部分可参考[Hexo博客搭建基础教程(一)](https://www.fomal.cc/posts/e593433d.html)。
-  PS：相当于链接教程的第1-7步，第8步就不要做了，不然会清空源码的！！！（不是新手请跳过这条）
+---
 
-2. 把源码打包下载到自己的电脑，然后解压缩到一个你喜欢的文件夹中
+## 三、相比上一版改了什么
 
-3. 在git bash命令中切换到下载的博客根目录，使用以下命令进行模块安装。这里绝不能使用`hexo init`初始化，若不慎用了，则站点的配置文件`_config.yml`内容会被重置
+上一版（仓库历史里的 3.22 版）是「整套博客直接开源」：主题仍然是 `themes/butterfly/`，配置叫 `_config.butterfly.yml`，站点页面大多是空壳。
+v1.0.0 是一次结构性重写，主要变化：
 
-  ```bash
-  npm i
-  ```
+### 1. 主题独立，改名为 fomalhaut
 
-4. 执行以下命令清空并启动项目，启动成功后再浏览器地址栏输入`localhost:4000`进行验证
+| 项 | 旧版 (3.22) | 新版 (v1.0.0) |
+| --- | --- | --- |
+| 主题目录 | `themes/butterfly/` | `themes/fomalhaut/` |
+| 主题包名 | `hexo-theme-fomalhaut` v4.3.1（沿用 Butterfly 的 package.json） | `hexo-theme-fomalhaut` v1.0.0（独立版本号） |
+| 主题配置 | `_config.butterfly.yml` | `_config.fomalhaut.yml` |
+| 配置注入 | 少量 `inject` | 完整 `inject.head` / `inject.bottom` 注入体系 + 独立 css/js 文件 |
 
-  ```bash
-  hexo cl; hexo g; hexo s
-  ```
+### 2. 站点与主题彻底分离
 
-5. 到这里一般是没啥问题的了，当本地能成功启动后，改一下站点配置文件的`_config.yml`的`deploy`配置项，然后用以下命令部署到Github（这一步出问题的，请删除站点配置文件的`deploy`配置项与`baidu_url_submitter`的信息）
+- 所有自定义样式集中到 `themes/fomalhaut/source/css/_custom/custom.css`（近 4000 行，文件头带完整索引地图）与 `source/css/*.css`；
+- 所有自定义脚本从单文件 `fomal.js`（2973 行）拆成 **105 行主引导 + 10 个模块**（`source/js/modules/`）与 10 个注入脚本（`source/js/inject/`）；
+- 配置里的 26 段内联样式与脚本抽成 `source/css/site-inject.css` 与独立 js，配置文件从 2037 行瘦到 1482 行。
 
-  ```bash
-  hexo d
-  ```
+### 3. 新增功能
 
-### 🌈🌈🌈简要说明文档：
+| 功能 | 位置 | 说明 |
+| --- | --- | --- |
+| AI 助手 | `source/js/ai-chat.js` + `scripts/ai-chat-inject.js` + `api/chat/completions.js` | 右侧悬浮对话面板，前端可直连也可走同源代理隐藏 Key |
+| 美化设置面板 | `source/js/modules/settings.js` | 访客可自选字体、主题色、暗色、阅读模式、背景、特效开关，存 localStorage |
+| 侧栏日历 / 倒计时 | `source/js/aside-calendar.js` + `source/js/lunar.js` | 带农历、节气与节日提醒 |
+| 手机端抽屉 | `source/css/mobile-drawer.css` | 独立样式表，13 个小节：面板、字标、头像、统计胶囊、菜单、遮罩、入场动效 |
+| 网站统计页 | `source/site/census/` + `source/js/census.js` | 图表看板，配色由主题色派生 |
+| 时间线归档 | `source/site/time/` + `source/js/timeline-archive.js` | 用时间线标签写站史 / 里程碑 |
+| 网址导航 | `source/box/nav/` | 圆形头像小卡式导航，纯 CSS 计数器 |
+| 天文星图 | `source/box/astronomy/voyager.html` | 独立完整页面，用 iframe 引入，`skip_render` 不参与渲染 |
+| PWA + Service Worker | `themes/fomalhaut/source/sw.js` | 离线预缓存 + 请求分流 |
+| 多平台部署 | `.github/workflows/autodeploy.yml`、`vercel.json`、`functions/` | GitHub Actions / Vercel / Cloudflare Pages 三种方式 |
 
-- js的主体在`source/js/fomal.js`里面，做了基本分块逻辑的标注，后期整合的，以`... start`和`... end` 包裹
+### 4. 工程化与性能优化
 
-- css主体在`themes\butterfly\source\css\_custom\custom.css`里，与Butterfly的自带样式联合编译为一个index.css，有基本的注释
+- **构建链**：`hexo generate` → `gulp`（html 压缩 / css 压缩），一条命令出产物；
+- **图片懒加载修复**：`scripts/swiper-lazyload-fix.js` 处理轮播与 pjax 场景下 lazyload 失效；
+- **搜索懒加载**：`source/js/inject/search-lazy.js` 只在用户点开搜索时才拉取；
+- **pjax 守卫**：`source/js/pjax-guard.js` 修复换页后状态残留；
+- **CDN 预连接**：配置里对首屏外部域名做 `preconnect` / `dns-prefetch`；
+- **字体**：11 款自建字体改为公共 CDN（jsDelivr 的 `@fontsource/*`），并精简为 **6 款开源可商用字体**；
+- **图片外链**：原本指向作者私人对象存储的封面 / 壁纸 / 站点截图，全部改为公共占位图服务；
+- **配置瘦身**：`fomal.js` 2973 → 105 行，`custom.css` 删掉 341 行死代码并补上索引地图。
 
-- 因为兼顾了白天夜间模式不同壁纸和用户自定义壁纸，背景的切换做在了`fomal.js`的第3190行附近，美化模块代码逻辑在`fomal.js`的第2894-3596行，四个背景分别为PC端白天、PC端黑夜、手机端白天、手机端黑夜；美化模块起点为第3356行，可以自定义任何DOM，例如按钮、滑块、开关按钮、图片框和外挂标签等（注意：外挂标签必须要被`<div id="article-container">`包含才会被渲染）
+---
 
-  ![](repoPic/meihua.png)
+## 四、环境要求
 
-  ```js
-  /* 美化模块 start */
-  ...
-  // 雪花开关(这里就是默认关雪花，如果你想默认开就将none改为block)
-  if (localStorage.getItem("snow") == undefined) {
-    localStorage.setItem("snow", "none");
-  }
-  ...
-  // 背景图(约3190行) 下面链接换成你自己的图片链接
-  document.getElementById("defineBg").innerText = `:root{
-    --default-bg: url(https://lskypro.acozycotage.net/Fomalhaut/img/dm14.webp);
-    --darkmode-bg:url(https://lskypro.acozycotage.net/Fomalhaut/img/yuanshen1.webp);
-    --mobileday-bg: url(https://lskypro.acozycotage.net/Fomalhaut/img/snow.webp);
-    --mobilenight-bg: url(https://lskypro.acozycotage.net/Fomalhaut/img/mb8.webp);
-  }`;
-  ...
-  // 美化模块主体DOM(约3356行)
-    winbox.body.innerHTML = `
-    
-      ...
-      <h3>1. 二次元</h3>
-      {% folding cyan, 查看二次元背景 %}
-      <div class="bgbox">
-      <a href="javascript:;" rel="noopener external nofollow" style="background-image:url(https://lskypro.acozycotage.net/Fomalhaut/img/home_bg.webp)" class="imgbox" onclick="changeBg('url(https://lskypro.acozycotage.net/Fomalhaut/img/home_bg.webp)')"></a>
-      // 这里自己加图片
-      </div>
-      {% endfolding %}
-      ...
-  
-    `
-  ...
-  /* 美化模块 end */
-  
-  ```
+| 依赖 | 版本 | 说明 |
+| --- | --- | --- |
+| Node.js | **18 / 20 / 22 LTS**（推荐 22） | 仓库自带的 GitHub Actions 工作流使用 `22.x` |
+| npm | 9+ | 随 Node 一起安装 |
+| Hexo | **6.3.0** | 已写进 `package.json` 的 `hexo.version`，无需全局安装即可用 `npx hexo` |
+| Git | 任意较新版本 | 克隆与部署用 |
 
-- 页脚部分请见`themes\butterfly\layout\includes\footer.pug`，包括页脚计时器、徽标、文字、布局等
+除此之外不需要 Python、不需要全局 `hexo-cli`。
 
-- 封面图在主题配置文件`_config.butterfly.yml`的`default_cover`配置项，建议配置多项后随机刷出封面图
+---
 
-  ```yaml
-  cover:
-    # display the cover or not (是否顯示文章封面)
-    index_enable: true
-    aside_enable: true
-    archives_enable: true
-    # the position of cover in home page (封面顯示的位置)
-    # left/right/both
-    position: both
-    # When cover is not set, the default cover is displayed (當沒有設置cover時，默認的封面顯示)
-    default_cover:
-      - https://source.fomal.cc/img/default_cover_14.webp
-      - https://source.fomal.cc/img/default_cover_15.webp
-      # ......
-  ```
+## 五、快速开始（约 10 分钟）
 
-  
+### 1. 克隆并安装依赖
 
-- 加载页面时中间的头像在`custom.css`约1300行附近，直接搜索替换成你自己的头像即可
+```bash
+git clone https://github.com/yourname/hexo-theme-Fomalhaut.git my-blog
+cd my-blog
+npm install          # 或 npm ci（有 package-lock.json，更快更稳）
+```
 
-  ```css
-  /* heo 加载动画头像 */
-  .loading-img {
-    background: url(https://lskypro.acozycotage.net/LightPicture/2022/12/60e5d4e39da7c077.webp)
-      no-repeat center center;
-    background-size: cover;
-  }
-  ```
+> 不要在这个目录里执行 `hexo init`！那会重置 `_config.yml`，站点配置会丢。
 
-- 页脚时间由`fomal.js`控制，搜索以下代码，将网站诞生时间改为你自己的即可(示例：`2022-08-09`)
+### 2. 本地预览
 
-  ```js
-  /* 页脚计时器 start */
-  var now = new Date();
-  function createtime() {
-    // 当前时间
-    now.setTime(now.getTime() + 1000);
-    var start = new Date("08/01/2022 00:00:00"); // 旅行者1号开始计算的时间
-    var dis = Math.trunc(23400000000 + ((now - start) / 1000) * 17); // 距离=秒数*速度 记住转换毫秒
-    var unit = (dis / 149600000).toFixed(6);  // 天文单位
-    // 网站诞生时间
-    var grt = new Date("08/09/2022 00:00:00");
-  ...
-    let currentTimeHtml = "";
-    (currentTimeHtml =
-      hnum < 18 && hnum >= 9
-        ? `<img class='boardsign' src='https://lskypro.acozycotage.net/Fomalhaut/badge/F小屋-科研摸鱼中.svg' title='什么时候能够实现财富自由呀~'><br> <div style="font-size:13px;font-weight:bold">本站居然运行了 ${dnum} 天 ${hnum} 小时 ${mnum} 分 ${snum} 秒 <i id="heartbeat" class='fas fa-heartbeat'></i> <br> 旅行者 1 号当前距离地球 ${dis} 千米，约为 ${unit} 个天文单位 🚀</div>`
-        : `<img class='boardsign' src='https://lskypro.acozycotage.net/Fomalhaut/badge/F小屋-下班休息啦.svg' title='下班了就该开开心心地玩耍~'><br> <div style="font-size:13px;font-weight:bold">本站居然运行了 ${dnum} 天 ${hnum} 小时 ${mnum} 分 ${snum} 秒 <i id="heartbeat" class='fas fa-heartbeat'></i> <br> 旅行者 1 号当前距离地球 ${dis} 千米，约为 ${unit} 个天文单位 🚀</div>`),
-      document.getElementById("workboard") &&
-      (document.getElementById("workboard").innerHTML = currentTimeHtml);
-  }
-  ...
-  
-  /*页脚计时器 end */
-  ```
+```bash
+npx hexo server      # 打开 http://localhost:4000
+```
 
-  
+改 `source/` 下的内容与 CSS 会自动重新渲染；**改 `themes/` 下的 `.pug` 模板需要重启 server**（Hexo 只在启动时读模板）。
 
-- 控制台字符画，在`fomal.js`找到以下代码，并进行相应的替换，字符画可以到：[Text to ASCII Art Generator (TAAG)](https://patorjk.com/software/taag/#p=display&f=Graffiti&t=Type%20Something%20)生成
+### 3. 改成你自己的站点（关键三步）
 
-  ```js
-  /* 控制台输出字符画 start */
-  var now1 = new Date();
-  
-  function createtime1() {
-    var grt = new Date("08/09/2022 00:00:00"); //此处修改你的建站时间或者网站上线时间
-    now1.setTime(now1.getTime() + 250);
-    var days = (now1 - grt) / 1000 / 60 / 60 / 24;
-    var dnum = Math.floor(days);
-  
-    var ascll = [
-      `欢迎来到Fomalhaut🥝の小家!`,
-      `Future is now 🍭🍭🍭`,
-      `
-          
-  ███████  ██████  ███    ███  █████  ██      ██   ██  █████  ██    ██ ████████ 
-  ██      ██    ██ ████  ████ ██   ██ ██      ██   ██ ██   ██ ██    ██    ██    
-  █████   ██    ██ ██ ████ ██ ███████ ██      ███████ ███████ ██    ██    ██    
-  ██      ██    ██ ██  ██  ██ ██   ██ ██      ██   ██ ██   ██ ██    ██    ██    
-  ██       ██████  ██      ██ ██   ██ ███████ ██   ██ ██   ██  ██████     ██   
-                                                
-  `,
-      "小站已经苟活",
-      dnum,
-      "天啦!",
-      "©2022 By Fomalhaut",
-    ];
-  
-    setTimeout(
-      console.log.bind(
-        console,
-        `\n%c${ascll[0]} %c ${ascll[1]} %c ${ascll[2]} %c${ascll[3]}%c ${ascll[4]}%c ${ascll[5]}\n\n%c ${ascll[6]}\n`,
-        "color:#39c5bb",
-        "",
-        "color:#39c5bb",
-        "color:#39c5bb",
-        "",
-        "color:#39c5bb",
-        ""
-      )
-    );
-  }
-  
-  createtime1();
-  
-  function createtime2() {
-    var ascll2 = [`NCC2-036`, `调用前置摄像头拍照成功，识别为「大聪明」`, `Photo captured: `, ` 🤪 `];
-  
-    setTimeout(
-      console.log.bind(
-        console,
-        `%c ${ascll2[0]} %c ${ascll2[1]} %c \n${ascll2[2]} %c\n${ascll2[3]}`,
-        "color:white; background-color:#10bcc0",
-        "",
-        "",
-        'background:url("https://unpkg.zhimg.com/anzhiyu-assets@latest/image/common/tinggge.gif") no-repeat;font-size:450%'
-      )
-    );
-  
-    setTimeout(console.log.bind(console, "%c WELCOME %c 欢迎光临，大聪明", "color:white; background-color:#23c682", ""));
-  
-    setTimeout(
-      console.warn.bind(
-        console,
-        "%c ⚡ Powered by Fomalhaut🥝 %c 你正在访问Fomalhaut🥝の小家",
-        "color:white; background-color:#f0ad4e",
-        ""
-      )
-    );
-  
-    setTimeout(console.log.bind(console, "%c W23-12 %c 系统监测到你已打开控制台", "color:white; background-color:#4f90d9", ""));
-    setTimeout(
-      console.warn.bind(console, "%c S013-782 %c 你现在正处于监控中", "color:white; background-color:#d9534f", "")
-    );
-  }
-  createtime2();
-  ...
-  /* 控制台输出字符画 end */
-  ```
+**第一步：改 `_config.yml`（站点级）**
 
+```yaml
+title: 我的小站
+subtitle: ''
+description: '记录学习与生活'
+keywords: 'Hexo,博客'
+author: 你的名字
+language: zh-CN
+url: https://your-domain.com/
 
-- 加载头像见`themes\butterfly\source\css\_custom\custom.css`下的：
+deploy:
+  - type: git
+    repository: https://github.com/yourname/yourname.github.io.git
+    branch: main
+```
 
-  ```css
-  .loading-img {
-    background: url(https://lskypro.acozycotage.net/LightPicture/2022/12/60e5d4e39da7c077.webp)
-      no-repeat center center;
-    background-size: cover;
-  }
-  ```
+**第二步：改 `_config.fomalhaut.yml`（主题级）**
 
-- 文章打赏彩蛋，见主题配置文件：`_config.butterfly.yml`
+至少改这几处，站点就完全是你的了：
 
-  ```yml
-  # Sponsor/reward
-  reward:
+```yaml
+avatar:
+  img: /assets/avatar.webp        # 换成你自己的头像（也可用图床外链）
+
+social:                            # 社交图标，格式： 名称: 链接 || 图标类名 || 动画类名
+  Github: https://github.com/yourname || icon-github || faa-tada
+  邮箱: mailto:you@example.com || icon-youxiang || faa-tada
+
+index_img: /assets/head.jpg        # 首页大图
+
+footer:
+  owner:
     enable: true
-    coinAudio: https://npm.elemecdn.com/akilar-candyassets@1.0.36/audio/aowu.m4a
-    QR_code:
-      - img: https://tuchuang.voooe.cn/images/2023/01/04/2.webp
-        link:
-        text: 微信
-      - img: https://tuchuang.voooe.cn/images/2023/01/04/20f8e49805975b8f8.webp
-        link:
-        text: 支付宝
-  ```
+    since: 2022
 
-- 哔哔页面样式部分：见`source\personal\bb\index.md`：
+menu:                              # 顶部导航（键 = 显示名，值 = 路径 || 图标）
+  首页: / || fas fa-home
+  归档: /archives/ || fas fa-archive
+  关于: /personal/about/ || fas fa-user
+```
 
-  ```markdown
-  ---
-  title: 唠叨
-  date: 2022-09-08 23:08:13
-  comments: false
-  ---
-  
-  <style>
-  /* 哔哔页面 */
-  #bibi button {
-    color: #fff;
-    border: 0;
-    margin: 20px auto;
-    border-radius: 0.3125rem;
-    display: block;
-    padding: 0 1rem;
-    height: 40px;
-    font-weight: 500;
-    text-align: center;
-    transition: all 0.5s ease-out;
-    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-    background-size: 1000% 1000%;
-    animation: Gradient 60s linear infinite;
-    outline: 0;
-  }
-  
-  #bibi .bb-info {
-    font-weight: 700;
-    font-size: 22px;
-  }
-  
-  #bibi .bb-card {
-    padding: 15px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid #a5a5a5ee;
-    margin-top: 20px;
-    transition: all 0.25s;
-    user-select: none;
-    width: calc(48% - 7px);
-    margin: 10px;
-  }
-  
-  @media screen and (max-width: 800px) {
-    #bibi .bb-card {
-    width: 100%;
-    }
-  }
-  
-  #bibi .bb-card:hover {
-    box-shadow: 0 5px 10px 8px #07111b29;
-    transform: translateY(-3px);
-  }
-  
-  #bibi .card-header {
-    display: flex;
-    align-items: center;
-  }
-  
-  #bibi .card-header .avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    margin-right: 10px;
-    border-radius: 20px;
-    overflow: hidden;
-  }
-  
-  #bibi .card-header svg {
-    height: 20px;
-    width: 20px;
-    margin-left: 5px;
-  }
-  
-  #bibi .card-header .card-time {
-    font-size: 12px;
-    text-shadow: #d9d9d9 0 0 1px, #fffffb 0 0 1px, #fffffb 0 0 2px;
-    margin-left: 10px;
-  }
-  
-  #bibi .card-content {
-    padding: 10px 0;
-    white-space: pre-wrap;
-  }
-  
-  #bibi .card-footer {
-    display: flex;
-    padding-bottom: 10px;
-  }
-  
-  #bibi .card-footer .card-label {
-    border-radius: 5px;
-    padding: 0 5px;
-    font-weight: 550;
-    border-radius: 5px;
-    box-shadow: inset 0 -1px 0 rgb(27 31 35 / 12%);
-    font-size: 14px;
-    user-select: none;
-    margin-right: 10px;
-  }
-  
-  div#bb_loading img{
-    border-radius: 15px;
-  }
-  
-  #bb-main {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-  }
-  
-  </style>
-  
-  <script src="/js/bibi.js"></script>
-  
-  <div id="bibi">
-  <div class="bb-info"></div><div id="bb-main"></div>
-  </div>
-  
-  ```
+**第三步：写文章**
 
-- 哔哔的API请见`source\js\bibi.js`，部署教程：[哔哔部署](https://www.fomal.cc/posts/d1927166.html#%E5%93%94%E5%93%94%E9%83%A8%E7%BD%B2)
+```bash
+npx hexo new post "我的第一篇文章"   # 生成 source/_posts/YYYY-MM-DD-我的第一篇文章.md
+```
 
-- 欢迎信息地理位置显示，这个需要配置自己的 key，类似的还有 bibi 的配置、朋友圈等配置均需要参考相关文档改成自己的API
+详细写法见 [九、怎么开始写文章](#九怎么开始写文章)。
 
-- 网站图标为根目录的`favicon.ico`，替换为你自己的图标即可
-- 个人信息卡片的图标和菜单栏等图标，参考[博客魔改教程总结(二)](https://www.fomal.cc/posts/5389e93f.html)中的第4-7项
-- 其余配置项基本与Butterfly兼容，参考[Butterfly官方文档](https://butterfly.js.org/)即可
-- 遇到问题请多看相关文档(Hexo主题文档、Butterfly主题文档、店长的教程)和本站教程，若有其他疑问请加Q群：`691942826` 验证回答：`🥝开源项目`
+### 4. 构建产物
 
+```bash
+npx hexo clean && npx hexo generate && npx gulp
+```
 
+产物在 `public/`，`gulp` 负责 HTML / CSS 压缩。
 
-### 项目星标概况
+---
 
-[![Star History Chart](https://api.star-history.com/svg?repos=fomalhaut1998/hexo-theme-Fomalhaut&type=Timeline)](https://star-history.com/#fomalhaut1998/hexo-theme-Fomalhaut&Timeline)
+## 六、界面预览
 
+### 首页
 
+顶部是全屏大图 + 站点名 + 打字机副标题，右侧固定悬浮按钮列（设置 / AI 助手 / 分享 / 回到顶部）。
+
+![首页](repoPic/screenshot/01-home.jpg)
+
+### 首页文章列表与侧栏
+
+文章卡片、侧栏日历（含农历与节气）、倒计时卡、公告栏、小站资讯、右下角交互按钮。
+
+![首页列表与侧栏](repoPic/screenshot/02-home-list.jpg)
+
+### 文章页
+
+文章标题栏、自动生成的右侧目录、代码块（语言标签 + 一键复制 + 行号）、外挂标签渲染（提示块 / 标签页）。
+
+![文章页](repoPic/screenshot/03-post.jpg)
+
+### 美化设置面板
+
+点右下角齿轮打开。访客可以自己换字体、主题色、背景、特效开关，设置存 `localStorage`，刷新不丢。
+
+![美化设置面板](repoPic/screenshot/04-settings.jpg)
+
+> 想换成自己的截图：把图片放进 `repoPic/screenshot/`，改上面这几行的相对路径即可。
+
+---
+
+## 七、目录结构与文件地图
+
+### 7.1 整体结构
+
+```
+├─ _config.yml                 站点级配置（标题/作者/域名/部署/插件）
+├─ _config.fomalhaut.yml       主题配置 ★ 大部分开关在这里
+├─ package.json                依赖与 npm scripts
+├─ gulpfile.js                 构建压缩任务
+├─ vercel.json                 Vercel 函数配置（用 Vercel 部署时才需要）
+├─ scaffolds/                  新建文章/页面的模板
+├─ scripts/                    ★ 站点级 Hexo 插件（构建期生效）
+├─ api/        Vercel 云函数（AI 代理）
+├─ functions/  Cloudflare Pages 函数（同一份逻辑）
+├─ tools/      本地脚本（一键部署 Vercel）
+├─ .github/workflows/autodeploy.yml   GitHub Actions 自动部署
+├─ repoPic/                    README 用图（不参与构建）
+├─ source/                     ★ 站点内容
+│   ├─ _posts/                 文章
+│   ├─ _data/link.yml          友链数据
+│   ├─ _data/widget.yml        侧栏自定义卡片
+│   ├─ assets/                 站点图片（头像、加载动画、徽章…）
+│   ├─ css/*.css               站点级样式（见 7.2）
+│   ├─ js/*.js                 站点级脚本（见 7.3）
+│   ├─ box/  life/  site/  social/  personal/    各种独立页面
+│   └─ categories/ tags/       分类页与标签页
+└─ themes/fomalhaut/           ★ 主题本体（升级时整体替换即可）
+    ├─ _config.yml             主题默认配置（被根 _config.fomalhaut.yml 覆盖）
+    ├─ layout/                 Pug 模板
+    ├─ source/css|js|img/      Stylus 样式 / 主题脚本 / 主题图
+    ├─ scripts/                tag（外挂标签）/ filters / helpers / events
+    └─ languages/              多语言文案
+```
+
+### 7.2 `source/css/` —— 站点级样式，各管什么
+
+| 文件 | 负责的功能 | 哪里会用到 |
+| --- | --- | --- |
+| `about-page.css` | 关于页版式（Hero、线路卡、技术栈、时间线） | 选择器全部以 `.ab2` 开头，只影响 `/personal/about/` |
+| `aside-calendar.css` | 侧栏「日历卡 + 倒计时卡」外观 | 只作用 `#aside-calendar` / `#aside-countdown`，配 `js/aside-calendar.js` |
+| `avatar-glow.css` | 侧栏头像呼吸灯（颜色跟随主题色） | 全站侧栏生效 |
+| `census.css` | 网站统计页看板排版 | 只由 `/site/census/` 页面 `<link>` 引入 |
+| `coin.css` | 投币按钮样式 | 文章底部「投喂」区 |
+| `gitcalendar.css` | GitHub 贡献日历底色与格子 | `#git_container`，配 `js/gitcalendar.js` |
+| `kslink.css` | 友人帐「快速申请」按钮 | `/social/link/` |
+| `mobile-drawer.css` | 手机端抽屉菜单改版（面板/字标/头像/菜单/遮罩/入场动效 13 小节） | 窄屏自动生效 |
+| `site-inject.css` | 站点注入样式合集（横幅公告、PC 浅色主题、侧栏加宽、列表分页、面包屑、小站资讯卡、aplayer 音量条、页脚隐藏本站项等） | 由 `_config.fomalhaut.yml` 的 `inject.head` 以 `<link>` 引入 |
+| `stats.css` | 文章统计页图表排版 | 只由 `/tags/` 页生效 |
+| `timeline-archive.css` | 「旧时光」页时间轴外观 | `/site/time/` |
+| `twikoo.css` | Twikoo 评论区美化（表单/列表/按钮统一到主题色） | 全站评论，配 `comments.use: Twikoo` |
+| `typewriter.css` | 首页副标题打字机观感 | 配 `js/inject/typewriter.js` |
+
+### 7.3 `source/js/` —— 站点级脚本，各管什么
+
+**入口与模块**（由 `source/js/fomal.js` 统一按顺序加载，加载清单在 `_config.fomalhaut.yml` 的 `inject.bottom`）
+
+| 文件 | 负责的功能 |
+| --- | --- |
+| `fomal.js` | 站点主引导（105 行）。定义全局 `window.__fomal`，控制台执行 `__fomal.check()` 可自检各模块是否加载成功 |
+| `modules/reading.js` | 阅读进度条 + FPS 检测（左下角那个 FPS 数字） |
+| `modules/nav.js` | 导航栏吸顶、首屏欢迎语、侧栏「欢迎信息」卡片（腾讯位置服务）、分享按钮、「随便逛逛」 |
+| `modules/console-art.js` | 控制台字符画与版权署名 |
+| `modules/effects.js` | 页面装饰特效：雪花 / 星空 / 表情放大 |
+| `modules/cursor.js` | 鼠标相关：右键菜单、小猫咪、听话鼠标 |
+| `modules/shell.js` | 站点「外壳」行为：快捷键、夜间动画、标题恶搞、搜索框、手机滚动条 |
+| `modules/settings.js` | **美化设置面板**（Winbox），含字体 / 主题色 / 背景 / 显示偏好四节的全部交互 |
+| `modules/footer-time.js` | 页脚「本站已运行 X 天」计时器 + 摸鱼徽章 |
+| `data/holidays.js` | 法定休息日判断（纯数据） |
+| `data/voyager1.js` | 旅行者 1 号距离模型（纯计算），页脚那行「旅行者 1 号当前距离地球…」 |
+
+**独立功能脚本**（按需由配置引入或在页面里 `<script>`）
+
+| 文件 | 负责的功能 |
+| --- | --- |
+| `ai-chat.js` | AI 助手前端本体（对话面板、流式输出、Markdown 渲染） |
+| `aside-calendar.js` | 侧栏日历卡 + 倒计时卡渲染（含农历、节气、距离下一个节日） |
+| `lunar.js` | 农历 / 二十四节气换算（1900–2100） |
+| `festival.js` | 节日提醒通知卡片（25 个节日集中成一张表） |
+| `celebrate.js` | 全屏礼炮 / 烟花（只在喜庆节日被 `festival.js` 动态插入） |
+| `author-status.js` | 侧栏个人信息卡右上角状态胶囊（按时间与节假日切换） |
+| `census.js` | 网站统计页图表数据（百度统计 API） |
+| `stats.js` | 文章统计页增强 |
+| `gitcalendar.js` | GitHub 贡献日历渲染 |
+| `timeline-archive.js` | 「旧时光」页时间轴行为层 |
+| `notify.js` | 轻量通知组件（替代 Vue + Element-UI 的 `$notify`） |
+| `pjax-guard.js` | 修 pjax 选择器不匹配导致的「换页退回整页刷新」与「加载遮罩一直转圈」 |
+| `wechat-qr.js` | 社交二维码点击 → 同页灯箱展示（不跳转不下载） |
+| `kslink.js` | 友人帐「快速申请」表单填充 |
+| `bibi.js` | B 站粉丝数等数据展示 |
+| `coin.js` | 投币音效与动画 |
+| `footer-music.js` | 页脚「猜你想看」补一条「听点音乐」→ `/life/music/` |
+| `leaves.js` | 落叶特效 |
+| `love.js` | 「在一起 X 天」计时 |
+| `51la.js` | 51LA 统计与灵雀监控初始化 |
+| `jquery.min.js` / `winbox.bundle.min.js` | 第三方库 |
+
+**`source/js/inject/`**（由 `_config.fomalhaut.yml` 的 `inject.head` / `inject.bottom` 以 `<script>` 引入）
+
+| 文件 | 负责的功能 |
+| --- | --- |
+| `beauty-boot.js` | 美化模块首屏预置（把 localStorage 里的字体/主题色/背景尽早写进 `:root`，避免闪一下默认样式） |
+| `typewriter.js` | 首页副标题打字机「丝滑版」（同名 `window.Typed` 接管主题自带 Typed.js） |
+| `search-lazy.js` | Algolia 搜索按需加载（点开搜索才拉取） |
+| `scroll-gap-fix.js` | 锚点跳转补偿（常驻顶栏 70px） |
+| `webinfo-card.js` | 侧栏「小站资讯」卡：KPI 数字滚动、运行天数、站点更新时间 |
+| `ping-route.js` + `ping-route-boot.js` | 公告栏里每条部署线路的实时延迟徽标（boot 文件放可调参数 initialDelay / stagger） |
+| `about-route-probe.js` | 关于页线路卡右下角的「实时延迟」徽标 |
+| `pc-local-link.js` | 版权卡「文章链接」显示当前访问域名（而不是写死主域名） |
+| `right-menu-state-boot.js` | 侧栏「右键模式」按钮的状态同步 |
+| `ft-ad-extra.js` | 页脚友链补一个「广告位招租」（靠 `a[title="广告位招租"]` 存在才生效） |
+
+### 7.4 `scripts/` —— 站点级 Hexo 插件（构建期跑）
+
+| 文件 | 负责的功能 |
+| --- | --- |
+| `ai-chat-inject.js` | 往每个页面 `</body>` 前注入 `window.AI_CHAT_CONFIG` 与 `/js/ai-chat.js` |
+| `gallery-pager.js` | 相册自动分页（生成 `/box/gallery/wallpaper/p2.html` 这类分页） |
+| `magnet-local-links.js` | 修 `hexo-magnet-fomal` 首页小冰磁贴跳到外站的问题 |
+| `post-copyright-local-link.js` | 修文章版权卡「文章链接」写死主域名的问题 |
+| `sticky-post.js` | 正文标记置顶（`sticky: true` → 首页置顶角标） |
+| `swiper-lazyload-fix.js` | 修首页轮播在 pjax 往返后懒加载失效 |
+| `tag-map-local.js` | 把 `hexo-tag-map` 的 jsDelivr CDN 改成本站自托管 |
+| `vercel-api-copy.js` | 构建后把 `api/`、`functions/`、`vercel.json` 拷进 `public/` |
+
+### 7.5 `themes/fomalhaut/` —— 主题本体
+
+| 目录 | 说明 |
+| --- | --- |
+| `layout/` | Pug 模板：`index` / `post` / `page` / `archive` / `category` / `tag` + `includes/` 组件（head、header、footer、aside、widget、third-party…） |
+| `source/css/` | Stylus 样式；`_custom/custom.css` 是站点自定义总表（文件头有完整索引） |
+| `source/js/` | 主题自带脚本（`main.js` 等） |
+| `scripts/tag/` | 外挂标签实现 |
+| `scripts/filters/` | 构建期过滤器（图片懒加载、随机封面） |
+| `scripts/helpers/` | 模板助手（归档、分类、相关文章、echarts…） |
+| `scripts/events/` | 启动事件（版本横幅、CDN 预解析、404、评论初始化） |
+| `languages/` | 多语言文案 |
+
+> 💡 **要不要改主题？** 尽量别改。能用配置解决的走 `_config.fomalhaut.yml`；配置解决不了的，写进 `source/css/*.css` 或 `source/js/`，再用 `inject` 引入——这样升级主题时直接覆盖 `themes/fomalhaut/` 就行。
+
+---
+
+## 八、主要功能怎么配
+
+> 下面所有片段都写在**站点根目录**的 `_config.fomalhaut.yml` 里（除非特别说明）。
+
+### 8.1 导航菜单
+
+```yaml
+menu:
+  首页: / || fas fa-home
+  时间轴:
+    归档: /archives/ || fas fa-archive
+    标签: /tags/ || fas fa-tags
+  清单:
+    友人帐: /social/link/ || fas fa-link
+    朋友圈: /social/fcircle/ || faa-tada
+  关于: /personal/about/ || fas fa-user
+```
+
+缩进一层就是二级菜单。图标可以写 `fas fa-xxx`（Font Awesome）或 `faa-tada`、`faa-spin` 这类动画类名。
+菜单项指向的页面如果不存在，直接在 `source/` 里建一个同名目录 + `index.md` 即可（见 [9.3 加新页面](#93-加一个新页面)）。
+
+### 8.2 顶部图与封面
+
+```yaml
+disable_top_img: false
+index_img: /assets/head.jpg        # 首页顶部大图（留空 = 不显示，露出站点背景图）
+default_top_img: /assets/head.jpg  # 其他页面默认顶部图
+archive_img:                       # 归档页顶部图（留空跟随 default_top_img）
+category_img:                      # 分类页顶部图
+
+cover:
+  index_enable: true    # 首页文章卡片显示封面
+  aside_enable: true    # 侧栏文章卡片显示封面
+  archives_enable: true # 归档页显示封面
+  default_cover:        # 文章没写 cover 时从这里随机取一张
+    - https://picsum.photos/id/1015/1200/675
+    - https://picsum.photos/id/1018/1200/675
+```
+
+- 单篇文章想指定封面：在文章 Front-matter 写 `cover: 图片链接`。
+- `cover.default_cover` 现在填的是**固定的 picsum 图片 ID**（不是随机 seed），所以每次刷新不会变图、也不会出现奇怪内容。换成你自己的图床地址即可。
+
+### 8.3 主题色与暗色模式
+
+```yaml
+theme_color:
+  enable: true
+  main: '#49b1f5'       # 主题色（留空则用顶部那套默认值）
+  paginator:            # 分页器颜色
+  button_hover:         # 按钮悬浮色
+  text_selection:       # 选中文字底色
+  link_color: '#a591e0' # 链接色
+  meta_color: '#858585' # 次要文字
+  hr_color: '#A4D8FA'   # 分隔线
+
+display_mode: light     # light | dark | auto（跟随系统）
+darkmode:
+  enable: true
+  button: true          # 右下角显示日夜切换按钮
+```
+
+站点里绝大部分自定义样式的颜色都由 `var(--theme-color)` 派生（用了 `color-mix`），所以换主题色时整站会跟着变——这也是美化面板「主题色设置」能实时预览的原因。
+
+### 8.4 侧栏卡片
+
+```yaml
+aside:
+  enable: true
+  card_author:            # 个人信息卡
+    enable: true
+    description: '这是我的小站'
+    button:
+      enable: true
+      text: 关注我
+      link: https://github.com/yourname
+  card_announcement:      # 公告栏（支持 HTML）
+    enable: true
+    content: 这里写公告
+  card_recent_post:       # 最新文章
+    enable: true
+    limit: 5
+  card_categories:        # 分类
+    enable: true
+    limit: 8
+  card_tags:              # 标签
+    enable: true
+    limit: 40
+  card_archives:          # 归档
+    enable: true
+    type: monthly
+    format: MMMM YYYY
+  card_webinfo:           # 小站资讯（字数 / 访客 / 运行天数）
+    enable: true
+    post_count: true
+    last_push_date: true
+  card_friend_link:       # 友人帐侧栏卡
+    enable: true
+  card_newest_comment:    # 最新评论
+    enable: false
+```
+
+想加**完全自定义**的卡片：写进 `source/_data/widget.yml`，用 `top:` / `bottom:` 分组，`html:` 里写任意 HTML。
+侧栏的「日历卡 / 倒计时卡」就是这么做出来的（见 `source/js/aside-calendar.js` 顶部注释）。
+
+### 8.5 评论系统
+
+支持 11 种：`Twikoo` / `Waline` / `Valine` / `Giscus` / `Utterances` / `Gitalk` / `Disqus` / `Disqusjs` / `Livere` / `Remark42` / `Facebook Comments`。
+
+```yaml
+comments:
+  use:
+    - Twikoo               # ★ 在这里切换用哪个
+  text: true               # 显示「评论」二字
+  lazyload: true           # 滚动到评论区才加载（开了之后评论数会失效）
+  count: false             # 文章顶部显示评论数
+  card_post_count: false   # 首页卡片显示评论数
+```
+
+#### Twikoo 完整配置（推荐，无需后端服务器）
+
+1. **部署 Twikoo 服务端**（三选一）：
+   - **Vercel 一键部署**（最省事）：打开 <https://twikoo.js.org/quick-start.html> → 点「Vercel 部署」→ 登录 Vercel → 一路 Next → 部署完把首页那张图里的地址复制下来；
+   - **Docker**：`docker run -d -p 8080:8080 -v /data/twikoo:/data -e TWIKOO_THROTTLE=200 ikew0ng/twikoo`；
+   - **云函数**：腾讯云 SCF / 阿里云 FC 都有 Twikoo 模板。
+2. **在配置里填地址**：
+
+```yaml
+twikoo:
+  envId: https://你的-twikoo-地址         # ← 就这一处必填
+  region:                                # 腾讯云 SCF 部署时才需要填（如 ap-shanghai）
+  visitor: false                         # 开启访客统计（需要配合 envId 的服务端）
+  option:                                # 透传给 Twikoo 初始化，如 lang、path
+```
+
+3. **打开评论区**：把上面的 `comments.use` 设成 `Twikoo`。
+4. **（可选）美化**：仓库已带 `source/css/twikoo.css`，由 `_config.fomalhaut.yml` 的 `inject.head` 引入，把表单/列表/按钮统一到主题色。不需要就在 `inject.head` 里删掉那一行。
+5. **（可选）首页显示最新评论**：把 `aside.card_newest_comment.enable` 设为 `true`。
+
+> 其他评论系统的参数（`waline` / `valine` / `giscus` …）在同一个配置文件的 `comments` 段下方，键名与官方文档一致，照填即可。
+
+### 8.6 搜索
+
+```yaml
+local_search:            # 方案 A：本地搜索，零后端、零 Key
+  enable: true
+  preload: false
+  top_n_per_article: 1
+  unescape: false
+  trigger: auto          # auto = 点开搜索才拉取（更快）；manual = 手动
+
+algolia_search:          # 方案 B：Algolia 云搜索（内容多时更快、支持全文高亮）
+  enable: false
+  hits:
+    per_page: 10
+```
+
+用 Algolia 还要在根 `_config.yml` 补上应用信息（否则构建时报错）：
+
+```yaml
+algolia:
+  appId: YOUR_ALGOLIA_APP_ID         # https://dashboard.algolia.com/account/api-keys
+  apiKey: YOUR_ALGOLIA_SEARCH_KEY
+  adminApiKey: YOUR_ALGOLIA_ADMIN_KEY
+  chunkSize: 5000
+  indexName: your_index_name
+  fields:
+    - content:strip:truncate,0,30000
+    - excerpt:strip
+    - permalink
+    - title
+```
+
+改完执行 `npx hexo algolia` 推送索引，再 `npx hexo generate`。仓库里 `source/js/inject/search-lazy.js` 会让 Algolia 的资源延后到点开搜索才加载。
+
+### 8.7 网站统计
+
+#### ① 不蒜子（前端 PV / UV，零配置）
+
+```yaml
+busuanzi:
+  site_uv: true     # 站点访客数
+  site_pv: true     # 站点访问量
+  page_pv: true     # 单页访问量
+```
+
+#### ② 各平台统计脚本（填 ID 即生效）
+
+```yaml
+baidu_analytics:                     # 百度统计 ID，https://tongji.baidu.com/web/welcome/login
+google_analytics:                    # GA4 衡量 ID（G-XXXXXXX）
+cnzz_analytics:                      # 友盟 CNZZ 站点 ID
+cloudflare_analytics:                # Cloudflare Web Analytics token
+microsoft_clarity:                   # Microsoft Clarity ID
+```
+
+#### ③ 51LA + 灵雀监控（这个不在 yml 里）
+
+打开 `source/js/51la.js`，把两个 ID 换成你自己的（<https://user.51.la/> 申请）：
+
+```js
+LA.init({ id: "YOUR_51LA_ID", ck: "YOUR_51LA_CK", hashMode: true });
+new LingQue.Monitor().init({ id: "YOUR_LINGQUE_ID", sendSpaPv: true });
+```
+
+不需要就在 `_config.fomalhaut.yml` 的 `inject.head` / `inject.bottom` 里删掉 `sdk.51.la` 与 `/js/51la.js` 那几行。
+
+#### ④ 网站统计页 `/site/census/`（图表看板）
+
+这一页用百度统计的开放 API 拉数据，配置在 `source/js/census.js`：
+
+```js
+var start_date = '20200101'                     // 统计开始日期
+var access_token = 'YOUR_BAIDU_ACCESS_TOKEN'    // 百度统计 access_token（30 天有效）
+var site_id = 'YOUR_BAIDU_SITE_ID'              // 站点 ID
+// 刷新 token 的接口见文件第 4 行注释
+```
+
+不想用就把 `source/site/census/` 整个目录删掉，并去掉菜单里的「网站统计」。
+
+#### ⑤ GitHub 贡献日历
+
+根 `_config.yml` 里的 `gitcalendar` 段（**默认已关闭**，因为它需要你自己搭数据源）：
+
+```yaml
+gitcalendar:
+  enable: true                       # 想用就改成 true
+  enable_page: /site/census/
+  user: yourname                     # GitHub 用户名
+  apiurl: "https://gitcalendar.example.com"   # 自建的 gitcalendar 服务
+  jsonurl: "https://cdn.jsdelivr.net/gh/yourname/gitcalendar-data@main/data.json" # 或 GitHub Action 定时产出的 JSON
+```
+
+### 8.8 美化设置面板（每一项都干什么）
+
+打开方式：右下角**齿轮图标**（`themes/fomalhaut/layout/includes/rightside.pug` 的 `#rightside_config`），面板本体在 `source/js/modules/settings.js`。
+所有设置存在浏览器 `localStorage`，不写服务器；面板底部有「恢复默认设置」。
+
+| 分节 | 项目 | 作用 |
+| --- | --- | --- |
+| **一、显示偏好** | 卡片透明度 | 正文卡片背景的不透明度（0–100%） |
+| | 背景滤镜 | 对全站背景图做模糊 / 饱和度 / 对比度处理（各一个滑条 + 保存） |
+| | 星空特效（夜间模式） | 夜间背景上飘的星空粒子 |
+| | 霓虹彩虹（夜间模式） | 夜间标题的霓虹发光动画 |
+| | 帧率监测 | 左下角 FPS 数字（调试用，平时可关） |
+| | 雪花特效（白天模式） | 白天飘雪 |
+| | 右侧部件 | 右下角按钮列的显示/隐藏 |
+| | 顶栏常驻 | 滚动时导航栏是否一直吸顶 |
+| | 侧栏显隐 | 侧栏显示 / 隐藏 |
+| | 侧栏位置 | 侧栏放左边还是右边 |
+| **二、主题色设置** | 13 个预设色 | red / orange / yellow / green / puregreen / blue / heoblue / darkblue / purple / purepurple / pink / gray / black，点一下全站换色 |
+| **三、字体设置** | 常规字体 3 款 | 霞鹜文楷（默认）/ 思源宋体 / 霞鹜新晰黑，另有「系统默认」 |
+| | 代码块字体 3 款 | JetBrains Mono / Fira Code / Source Code Pro |
+| **四、背景设置** | 1 风景 · 山野 / 2 风景 · 水与森林 / 3 风景 · 更多 | 三组风景壁纸（各 8 张，走 picsum 公共 CDN） |
+| | 4 渐变色 / 5 纯色 | 免图片的渐变与纯色背景 |
+| | 6 适配手机 | 竖屏比例的背景图 |
+| | 7 壁纸 API | 每次刷新随机换一张的在线壁纸接口 |
+| | 8 自定义背景 | 自己粘贴图片链接 |
+
+**改面板本身**：
+
+- 想改**默认值**（访客没动过面板时用什么）：改 `_config.fomalhaut.yml` 的 `font` / `theme_color` / `background` 段，以及 `source/js/inject/beauty-boot.js`；
+- 想改**可选列表**（加字体、加壁纸、加主题色）：改 `source/js/modules/settings.js` 的 `FONT_LIST` / `CODE_FONT_LIST`（第 108–111 行）与面板 HTML（第 845–1050 行），新增字体的 `@font-face` 写在 `themes/fomalhaut/source/css/_custom/custom.css` 的「字体引入」一节；
+- 想**直接关掉面板**：`_config.fomalhaut.yml` 的 `beautify.enable: false`，然后去掉 `inject.bottom` 里 `settings.js` 那一行。
+
+### 8.9 刷新与性能相关开关
+
+```yaml
+pjax:
+  enable: true        # 站内跳转不整页刷新
+instantpage: true     # 鼠标悬停在链接上时预加载
+lazyload:
+  enable: true
+  field: site         # site = 全站；post = 仅文章
+  blur: true
+pangu: true           # 中英文之间自动加空格
+preloader:            # 首屏加载动画
+  enable: false
+  source: 1           # 1~10，对应 themes/fomalhaut/layout/includes/loading/load_style/
+```
+
+### 8.10 AI 助手
+
+#### 它是什么
+
+右侧悬浮的对话面板，能总结当前页面、解释名词。前端本体在 `source/js/ai-chat.js`，由 `scripts/ai-chat-inject.js` 自动注入到每个页面（不改主题源码）。
+
+#### 配置项（`_config.fomalhaut.yml` 的 `ai_chat` 段）
+
+```yaml
+ai_chat:
+  enable: true                 # 总开关：false 则不注入按钮和面板
+  api_base: https://api.deepseek.com
+  api_key: ''                  # ⚠️ 直接写 Key 会随页面下发，只建议本地测试
+  api_key_file: .ai-chat-key   # 或把 Key 写进这个文件（已在 .gitignore 里）
+  model: deepseek-chat         # 换模型只改这一行
+  temperature: 0.7
+  max_tokens: 8192             # 单次回复上限（含思考模型的 reasoning token）
+  max_history: 12              # 每次带给模型的历史轮数
+  max_page_chars: 32000        # 页面正文上限（超长文章取开头 60% + 结尾 35%）
+  timeout_ms: 10000            # 首字节超时提示
+  welcome: 你好，我是这个页面的 AI 助手……
+  first_question: 请用中文总结这个页面的内容：先用一句话概括，再列 3-5 条要点。
+  system_prompt: |
+    你是这个博客的页面助手，语气自然、简洁、像朋友聊天。
+```
+
+#### 两种用法
+
+**用法 A：直连服务商（本地 / 内网测试用）**
+
+把 Key 放进 `.ai-chat-key`（站点根目录，一行纯文本）或直接写 `ai_chat.api_key`。
+这样 Key 会随页面下发到浏览器，**任何人 F12 都能看到**，别在公网用。
+
+**用法 B：同源代理（公网推荐，仓库已带实现）**
+
+1. 部署平台加环境变量 `DEEPSEEK_API_KEY`（Vercel：Settings → Environment Variables；Cloudflare Pages：Settings → Environment variables）；
+2. 构建时 `scripts/ai-chat-inject.js` 会自动把前端的 `api_base` 改成 `/api`、Key 换成占位符 `via-proxy`；
+3. 请求打到 `api/chat/completions.js`（Vercel）或 `functions/api/chat/completions.js`（Cloudflare Pages），由它在服务端读环境变量再去请求服务商。
+
+代理函数自带：每 IP 限流、`max_tokens` 上限（`MAX_TOKENS_CAP = 8192`）、CORS 白名单。
+白名单默认放行 `example.com`，改法：
+
+```bash
+# 方式一：直接改两个常量（api/chat/completions.js 与 functions/api/chat/completions.js 都要改）
+const DEFAULT_ORIGINS = 'https://example.com,https://www.example.com'
+const DEFAULT_SUFFIXES = 'example.com'
+
+# 方式二：不改代码，用环境变量覆盖
+AI_PROXY_ORIGINS=https://your-domain.com
+AI_PROXY_ALLOW_SUFFIXES=your-domain.com
+```
+
+#### 换成别的大模型
+
+`api_base` 改成服务商地址（如 `https://api.openai.com`、`https://api.moonshot.cn`），`model` 改成对应模型名，代理函数里的 `Authorization: Bearer <key>` 是 OpenAI 兼容格式，大多数国内厂商都通用。
+
+#### 关掉它
+
+`ai_chat.enable: false` 即可（面板、按钮、注入脚本都不会再出现）。
+
+### 8.11 友人帐 / 朋友圈 / 画廊等页面
+
+| 页面 | 入口文件 | 数据来源 |
+| --- | --- | --- |
+| 友人帐（友链） | `source/social/link/index.md` | `source/_data/link.yml` |
+| 朋友圈 | `source/social/fcircle/index.md` | [hexo-circle-of-friends](https://github.com/Rock-Candy-Tea/hexo-circle-of-friends) 产出的静态 JSON |
+| 画廊 | `source/box/gallery/index.md` + `wallpaper/index.md` | 页面内 Markdown 图片 |
+| 网址导航 | `source/box/nav/index.md` | 页面内 HTML + `source/box/nav/icons/` 图标 |
+| 关于 | `source/personal/about/index.md` | 页面内 HTML，样式在 `source/css/about-page.css` |
+| 旧时光（时间线） | `source/site/time/index.md` | `{% timeline %}` 标签 |
+| 八音盒 | `source/life/music/index.md` | Meting API + 网易云歌单 ID |
+| 小游戏 / 动画 | `source/life/games/`、`source/box/animation/` | 外链演示 |
+| 天文星图 | `source/box/astronomy/voyager.html` | 独立 HTML，`skip_render` 不参与渲染 |
+
+**友人帐怎么加人**：编辑 `source/_data/link.yml`：
+
+```yaml
+- class_name: 小伙伴们🍭
+  class_desc: 交换友链请在友人帐页面留言
+  link_list:
+    - name: 示例站点
+      link: https://example.com/
+      avatar: https://example.com/avatar.jpg   # 建议 100x100 以内
+      descr: 一句话介绍
+      siteshot: https://example.com/shot.jpg   # 可选，站点截图
+```
+
+友人帐有三种样式，改 `flink_style: volantis`（可选 `butterfly` / `volantis` / `flexcard`）。
+不需要的页面：删掉对应目录，再去 `menu:` 里去掉菜单项。
+
+### 8.12 页脚与页脚徽标
+
+页脚模板在 `themes/fomalhaut/layout/includes/footer.pug`，四块内容：
+
+1. **`格言` + `猜你想看`**（第 1–31 行）：文案与链接都直接写在 pug 里，改文字就改这里；
+2. **`推荐友链` 小头像格**（第 32–59 行）：硬编码的展示位，换成你自己的朋友即可（头像建议 100×100 以内）；
+   - `source/js/inject/ft-ad-extra.js` 会在末尾再补一个「广告位招租」凑成 4+4 两排；不想要就删掉那个文件与 `inject.bottom` 里的引用；
+3. **版权行 / 已运行天数 / 摸鱼徽章**（第 60–85 行）：文字来自 `_config.fomalhaut.yml` 的 `footer.owner` 与 `footer.custom_text`；
+4. **徽章列 `p#ghbdages`**（第 86–113 行）：一行小徽章，两种来源——
+   - **本地 SVG**：放在 `source/assets/badge/`，用 `/assets/badge/xxx.svg` 引用（仓库自带 `Theme-Fomalhaut-6513df.svg`、`CDN-npmmirror-fff2cc.svg`）；
+   - **shields.io 动态徽章**：`https://img.shields.io/badge/左侧文字-右侧文字-颜色.svg`，例如
+     `https://img.shields.io/badge/Frame-Hexo-blue.svg`、`https://img.shields.io/badge/Hosted-Vercel-brightgreen.svg`；
+     文字里的空格写成 `_`，颜色可用十六进制（去掉 `#`）。
+
+增删一行徽章的写法：
+
+```pug
+a.github-badge(target='_blank' href='https://hexo.io/' style='margin-inline:5px' title='博客框架为 Hexo')
+  img(src='https://img.shields.io/badge/Frame-Hexo-blue.svg' alt='')
+```
+
+改完页脚记得 **重启 `hexo server`**（Hexo 只在启动时读 pug 模板）。
+
+---
+
+## 九、怎么开始写文章
+
+### 9.1 新建一篇文章
+
+三种方式任选：
+
+```bash
+npx hexo new post "文章标题"        # 按 scaffolds/post.md 生成 source/_posts/YYYY-MM-DD-文章标题.md
+npx hexo new draft "草稿标题"       # 生成到 source/_drafts/，加 --publish 才进入正式列表
+```
+
+或者直接在 `source/_posts/` 里新建一个 `.md` 文件——文件名建议用 `YYYY-MM-DD-标题.md`（由 `_config.yml` 的 `new_post_name` 决定）。
+
+文章网址由 `permalink: posts/:abbrlink.html` 自动生成一串哈希（`hexo-abbrlink` 插件），所以**改标题不会改变已发布文章的网址**。
+
+### 9.2 Front-matter 全字段说明
+
+写在文件开头 `---` 之间：
+
+```yaml
+---
+title: 文章标题                 # 必填
+date: 2026-10-01 10:00:00      # 必填，发布时间
+updated: 2026-10-02 10:00:00   # 可选，更新时间（不写则按文件修改时间）
+
+description: 一句话摘要          # 可选，首页卡片与搜索引擎摘要
+keywords: 关键词1,关键词2        # 可选
+
+categories:                     # 分类（可多个）
+  - 开始使用
+tags:                           # 标签（可多个）
+  - Hexo
+  - Fomalhaut
+
+cover: https://picsum.photos/id/1015/1200/675   # 卡片封面；不写则从 cover.default_cover 随机取
+top_img: /assets/head.jpg       # 文章页顶部大图；不写则跟随 default_top_img
+randomcover: false              # true = 每次刷新从 default_cover 随机换一张
+
+sticky: 1                       # 置顶（数值越大越靠前）；也可在正文写 <!-- sticky --> 
+
+toc: true                       # 是否显示右侧目录
+toc_number: true                # 目录是否带序号
+toc_expand: false               # 目录默认是否展开
+toc_style_simple: false         # 简洁目录样式
+
+comments: true                  # 本文是否开启评论
+aside: true                     # 本文是否显示侧栏
+highlight_shrink: false         # 代码块默认折叠
+
+copyright: true                 # 是否显示版权卡片
+copyright_author: 你的名字
+copyright_author_href: https://example.com/
+copyright_url: https://example.com/posts/xxx.html
+copyright_info: 转载请标明出处
+
+mathjax: true                   # 本文启用 MathJax 公式
+katex: false                    # 本文启用 KaTeX（二选一）
+mermaid: true                   # 本文启用 Mermaid 图表
+aplayer: true                   # 本文启用 APlayer 音乐
+---
+```
+
+> 只写需要的字段即可，其余留空就是默认行为。
+
+### 9.3 加一个新页面
+
+1. 在 `source/` 下建目录（例如 `source/tools/`），里面放 `index.md`：
+
+```markdown
+---
+title: 工具箱
+date: 2026-10-01 10:00:00
+comments: false
+---
+
+这一页的正文……
+```
+
+2. 在 `_config.fomalhaut.yml` 的 `menu:` 里加一项：`工具箱: /tools/ || fas fa-toolbox`。
+
+页面默认套用 `themes/fomalhaut/layout/page.pug`（带侧栏、带顶部图）。**页面里可以直接写 HTML**，例如：
+
+```markdown
+<div class="my-card">自定义区块</div>
+
+<style>
+.my-card { padding: 16px; border-radius: 10px; background: var(--card-bg); }
+</style>
+```
+
+想让样式单独成文件：写到 `source/css/xxx.css`，再在 `_config.fomalhaut.yml` 的 `inject.head` 里加一行 `<link rel="stylesheet" href="/css/xxx.css?v=1">`。
+
+### 9.4 图片怎么放
+
+| 方式 | 写法 | 适用 |
+| --- | --- | --- |
+| 站内相对路径 | `![描述](/assets/pic.jpg)` | 图片放 `source/assets/` |
+| 同目录相对路径 | `![描述](./pic.jpg)` | 需要在 `_config.yml` 打开 `post_asset_folder: true`，图片与文章同目录 |
+| 外链 / 图床 | `![描述](https://your-cdn.com/pic.jpg)` | 图片多时推荐 |
+
+### 9.5 本地预览与发布
+
+```bash
+npx hexo server            # http://localhost:4000，改完自动刷新
+npx hexo clean             # 清缓存（改了配置或模板后建议先 clean）
+npx hexo generate && npx gulp   # 出产物到 public/
+npx hexo deploy            # 按 _config.yml 的 deploy 段推送
+```
+
+### 9.6 分类与标签
+
+- 分类与标签**不用提前创建**，Front-matter 里写了就会自动生成 `/categories/xxx/`、`/tags/xxx/`；
+- 分类页与标签页的版式由 `_config.fomalhaut.yml` 的 `category_ui` / `tag_ui` 控制（留空为默认，填 `index` 为卡片式）；
+- 首页的「小冰分类磁贴」由根 `_config.yml` 的 `magnet` 段控制，`display` 列表里的 `name` 必须与文章分类名一致。
+
+---
+
+## 十、最常改的地方（速查）
+
+| 我想改…… | 去哪改 |
+| --- | --- |
+| 站点名 / 作者 / 域名 / 部署仓库 | 根 `_config.yml` 的 `title` / `author` / `url` / `deploy` |
+| 首页标题下的副标题 | `_config.fomalhaut.yml` 的 `subtitle` |
+| 主题色 | `_config.fomalhaut.yml` 的 `theme_color.main`，或让访客用面板自己选 |
+| 头像 | `_config.fomalhaut.yml` 的 `avatar.img`（默认 `/assets/avatar.webp`） |
+| 首页大图 | `_config.fomalhaut.yml` 的 `index_img`；全站背景改 `inject.head` 里 `#defineBg` 那行的 `--default-bg` |
+| 文章默认封面池 | `_config.fomalhaut.yml` 的 `cover.default_cover` |
+| 顶部导航 | `_config.fomalhaut.yml` 的 `menu` |
+| 页脚文案 / 版权 / 徽章 | `themes/fomalhaut/layout/includes/footer.pug`（改完要重启 server）+ `footer.owner` / `footer.custom_text` |
+| 侧栏卡片开关 | `_config.fomalhaut.yml` 的 `aside` 段 |
+| 评论区 | `_config.fomalhaut.yml` 的 `comments.use` + 对应系统的段（如 `twikoo.envId`） |
+| 统计 ID | `_config.fomalhaut.yml` 的 `baidu_analytics` 等；51LA 在 `source/js/51la.js` |
+| AI 助手 | `_config.fomalhaut.yml` 的 `ai_chat` 段（详见 8.10） |
+| 字体 | `themes/fomalhaut/source/css/_custom/custom.css` 的「字体引入」一节 + `source/js/modules/settings.js` 的 `FONT_LIST` |
+| 社交图标 | `_config.fomalhaut.yml` 的 `social`（格式：`名称: 链接 || 图标类名 || 动画类名`） |
+| 首页轮播 | 根 `_config.yml` 的 `swiper` 段 |
+| 首屏加载动画 | `_config.fomalhaut.yml` 的 `preloader`（样式文件在 `themes/fomalhaut/layout/includes/loading/load_style/`） |
+| 文章置顶 | 文章 Front-matter 写 `sticky: 1` |
+| 页面里的自定义样式 | 写进 `source/css/*.css`，再在 `inject.head` 里 `<link>` 引入 |
+
+---
+
+## 十一、外挂标签速查
+
+主题注册的全部标签（实现都在 `themes/fomalhaut/scripts/tag/`）：
+
+| 标签 | 用法 | 说明 |
+| --- | --- | --- |
+| `note` | `{% note info flat %}文字{% endnote %}` | 提示块。样式：`default/primary/success/info/warning/danger`；形状：`flat/modern/simple/disabled` |
+| `tabs` | `{% tabs 组名 %}` + `<!-- tab 标题 -->` | 标签页，支持 `subtabs` / `subsubtabs` 嵌套 |
+| `timeline` | `{% timeline 标题 %}` + `<!-- timeline 日期 -->` | 时间线 |
+| `btn` | `{% btn 链接, 文字, 图标, 选项 %}` | 按钮。选项：`color outline center block larger` |
+| `label` | `{% label 文字 颜色 %}` | 行内小标签 |
+| `gallery` | `{% gallery %}` … `{% endgallery %}` | 相册（带灯箱） |
+| `galleryGroup` | `{% galleryGroup '名称' '描述' '/链接' 封面图 %}` | 相册分组入口 |
+| `mermaid` | `{% mermaid %}graph LR; A-->B;{% endmermaid %}` | Mermaid 图表 |
+| `flink` | `{% flink %}` | 读取 `source/_data/link.yml` 渲染友人帐 |
+| `hideToggle` | `{% hideToggle 标题 %}内容{% endhideToggle %}` | 折叠块，另有 `hideInline` / `hideBlock` |
+| `inlineImg` | `{% inlineImg 图片链接 宽度 %}` | 行内小图 |
+
+> ⚠️ 注意标签名：是 **`btn`** 不是 `button`，也没有 `span`，写错会报 `unknown block tag`。
+
+现成的例子见 `source/_posts/2026-10-02-外挂标签速查.md`。
+
+---
+
+## 十二、部署
+
+### 方案 A：GitHub Pages + GitHub Actions（推荐，仓库已带工作流）
+
+1. 把仓库推到你自己的 GitHub 账号；
+2. 在仓库 `Settings → Secrets and variables → Actions` 里按需添加密钥；
+3. 修改 `.github/workflows/autodeploy.yml` 里的 `repository-name` 为 `你的用户名/你的用户名.github.io`；
+4. 推送到 `main` 分支，或在 Actions 页面手动 Run workflow。
+
+工作流做的事：`npm ci` → `hexo clean && hexo generate` → `gulp` → 写构建时间戳 → 推到 Pages 仓库。
+
+### 方案 B：Vercel
+
+```bash
+npx vercel            # 首次会引导你关联项目
+```
+
+仓库根目录的 `vercel.json` 已声明 AI 代理函数的超时与内存。若要用 AI 助手，在 Vercel 项目的环境变量里加 `DEEPSEEK_API_KEY`。
+
+### 方案 C：Cloudflare Pages
+
+构建命令 `hexo clean && hexo generate && gulp`，输出目录 `public`。
+Cloudflare Pages 认根目录的 `functions/` 作为函数目录（Vercel 认 `api/`），仓库里两份都在，构建时 `scripts/vercel-api-copy.js` 会自动把它们拷进产物。
+
+### 方案 D：本地生成 + 手动推送
+
+```bash
+npx hexo clean && npx hexo generate && npx gulp
+# 把 public/ 推到任意静态托管
+```
+
+---
+
+## 十三、常见问题
+
+**Q：执行 `hexo server` 报找不到主题？**
+确认 `_config.yml` 里的 `theme:` 值与 `themes/` 下的目录名一致（默认 `fomalhaut`）。
+
+**Q：改了 `themes/` 下的 `.pug` 文件没生效？**
+重启 `hexo server`。Hexo 只在启动时读取模板；改样式（`.styl` / `.css`）与文章则不需要重启。
+
+**Q：`_config.fomalhaut.yml` 和 `themes/fomalhaut/_config.yml` 改哪个？**
+改**根目录**的 `_config.fomalhaut.yml`。主题目录里那份只是默认值模板，会被根目录那份覆盖。
+
+**Q：首页文章列表没有封面图？**
+在文章 Front-matter 写 `cover: 图片链接`，或在 `_config.fomalhaut.yml` 的 `cover.default_cover` 里配置封面池。
+
+**Q：字体 / 图片挂了？**
+默认走公共 CDN（`cdn.jsdelivr.net` 的 `@fontsource/*` 与 `picsum.photos`）。若所在网络访问不畅，把 `themes/fomalhaut/source/css/_custom/custom.css` 里的 `@font-face` 换成你自己的字体，把 `cover.default_cover` 换成你自己的图床即可。
+
+**Q：想彻底不用某个页面？**
+删掉 `source/` 下对应目录，并把 `_config.fomalhaut.yml` 的 `menu:` 与其面板配置一并去掉。
+
+**Q：构建很慢？**
+`node_modules` 首次安装最慢；之后增量构建约 2–3 秒，`gulp` 压缩约 16–20 秒。
+
+**Q：美化面板的颜色/字体改了，下次打开又变回默认？**
+设置存在浏览器 `localStorage`。换了域名、清了浏览器数据或改了 `storage_key` 就会重置，这属于正常行为。
+
+---
+
+## 十四、授权与致谢
+
+- 本项目基于 [hexo-theme-butterfly](https://github.com/jerryc127/hexo-theme-butterfly)（Apache-2.0，作者 [Jerry](https://butterfly.js.org/)）二次开发，**继续沿用 Apache-2.0 协议**，`themes/fomalhaut/LICENSE` 保留了上游许可证；
+- 部分美化思路参考了 Hexo 社区的公开方案（[akilar](https://akilar.top/)、[anzhiyu](https://blog.anheyu.com/) 等），在此致谢；
+- 示例图片来自 [picsum.photos](https://picsum.photos/)，字体来自 [jsDelivr](https://www.jsdelivr.com/) 上的 `@fontsource/*` 开源字体包（全部为 SIL OFL 许可）；
+- 站点里的示例数据（域名、邮箱、友链、统计 ID）均为占位内容，请替换为你自己的。
+
+如果这个项目帮到了你，欢迎点个 ⭐。
 

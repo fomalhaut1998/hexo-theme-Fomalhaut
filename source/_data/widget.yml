@@ -1,13 +1,49 @@
 # top: 创建的 widget 会出现在非 sticky 区域（即所有页面都会显示)
 # bottom: 创建的 widget 会出现在 sticky 区域（除了文章页都会显示)
-# top:
-#   - class_name:
-#     id_name: newYear
-#     name:
-#     icon:
-#     order: 1
-#     html: '<div id="newYear-main"><div class="mask"></div>
-#       <p class="title"></p>
-#       <div class="newYear-time"></div>
-#       <p class="today" style="text-align: right;"></p>
-#       </div>'
+#
+# ── 侧栏日历 / 倒计时（2026-10-01 新增）──────────────────────────────
+# 卡片内容由 /js/aside-calendar.js 渲染，样式在 /css/aside-calendar.css（都在 source 下，自托管）。
+# 下面两个 <link>/<script> 只写一份，放在第一张卡里；如果以后要删「日历」这张卡，
+# 记得把这两行挪到还留着的那张卡的 html 里，否则样式和脚本就没人引了。
+# 想临时关掉：把 top: 下这两项整段注释掉即可，js/css 文件留着不影响别的页面。
+# 两个文件都带了 ?v= 版本号：改完 js/css 记得把这个日期串改一下，免得访客/浏览器吃旧缓存。
+#
+# ── 卡片顺序（2026-10-01）────────────────────────────────────────────
+# 需求：这两张卡要排在「公告栏」(.card-announcement) 上方，并且顺序恒为「日历 → 倒计时」。
+# 顺序由 /js/aside-calendar.js 的 layoutCards() 统一保证（幂等）：解析期、DOMContentLoaded、
+# pjax:complete、以及下面这段内联脚本都会调它一次。早先各自调 hoistCard 时，
+# pjax 换页会出现两张卡顺序颠倒（谁最后搬谁在上），所以改成统一走 layoutCards。
+# 主题模板 themes/fomalhaut/layout/includes/widget/index.pug 里公告栏写在自定义卡
+# 前面，而运行中的 hexo server 不会重新读取 layout 下的 pug（实测改顺序 + 塞 HTML
+# 注释标记，十几秒后页面里既无标记也无变化；同一主题 source/ 下的 css 却秒生效），
+# 所以顺序放在 source/ 侧解决：日历卡由 /js/aside-calendar.js 在解析期自己上移，
+# 倒计时卡用下面一小段内联脚本调同一个函数上移。模板顺序本来就对时会自动跳过。
+top:
+  - class_name: card-calendar
+    id_name: aside-calendar
+    name: 日历
+    icon: icon-rili
+    html: |
+      <div class="cal-skeleton">日历加载中…</div>
+      <link rel="stylesheet" href="/css/aside-calendar.css?v=20261002">
+      <script src="/js/aside-calendar.js?v=20261002"></script>
+  - class_name: card-countdown
+    id_name: aside-countdown
+    name: 倒计时
+    icon: icon-shijian
+    html: |
+      <div class="cal-skeleton">倒计时加载中…</div>
+      <script>
+        (function () {
+          function up() {
+            var f = window.fomalAsideCalendar;
+            if (!f) return;
+            // 用 layoutCards 而不是只搬自己：pjax 换页时本内联脚本可能比
+            // /js/aside-calendar.js（外部脚本，要等异步加载）先跑，只搬自己会把两张卡顺序弄反。
+            if (f.layoutCards) f.layoutCards();
+            else if (f.hoistCard) f.hoistCard('aside-countdown');
+          }
+          up();   // 解析期就能摆（本卡在公告栏之后解析）
+          document.addEventListener('DOMContentLoaded', up);
+        })();
+      </script>

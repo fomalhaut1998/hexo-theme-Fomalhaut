@@ -1,11 +1,17 @@
 {
-  "name": "hexo-site",
-  "version": "0.0.0",
+  "name": "hexo-theme-fomalhaut",
+  "version": "1.0.0",
   "private": true,
+  "description": "Fomalhaut —— 基于 Butterfly 深度二次开发的 Hexo 卡片式博客主题与站点模板",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "build": "hexo generate",
     "clean": "hexo clean",
     "deploy": "hexo deploy",
+    "deploy:vercel": "node tools/deploy-vercel.js",
     "server": "hexo server"
   },
   "hexo": {
@@ -39,7 +45,6 @@
     "hexo-magnet-fomal": "^1.0.0",
     "hexo-pdf": "^1.1.1",
     "hexo-renderer-ejs": "^2.0.0",
-    "hexo-renderer-kramed": "^0.1.4",
     "hexo-renderer-markdown-it": "^6.0.1",
     "hexo-renderer-pug": "^3.0.0",
     "hexo-renderer-stylus": "^2.1.0",

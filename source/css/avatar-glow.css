@@ -1,0 +1,182 @@
+@charset "UTF-8";
+/*!
+ * 头像呼吸灯 · 跟随主题色（avatar-glow.css）
+ * ============================================================================
+ * 改的是什么
+ *   全站 .avatar-img 的呼吸灯动画。主题里这两条写死在
+ *   themes/fomalhaut/source/css/_custom/custom.css:1442-1470：
+ *     [data-theme="light"] .avatar-img { animation: huxi_light 4s ease-in-out infinite }
+ *     [data-theme="dark"]  .avatar-img { animation: huxi_dark  4s ease-in-out infinite }
+ *     @keyframes huxi_light { 0%/100% { box-shadow: 0 0 1px 1px #9ff2d2 } 50% { box-shadow: 0 0 5px 5px #9ff2d2 } }
+ *     @keyframes huxi_dark  { 结构同上，颜色 #39c5bb }
+ *   两个颜色都是硬编码的：默认主题色恰好也是 #39c5bb，所以深色看着还行；一旦在右下角
+ *   美化面板换成别的主题色，呼吸灯还是原来的绿/薄荷，跟主题对不上。
+ *
+ * 为什么是「新增文件」而不是改主题
+ *   @keyframes 是「同名取文档顺序里最后一条」生效的，只要在主题样式之后重新声明同名
+ *   @keyframes 就能覆盖，完全不用动 themes/ 下的 custom.css。本文件因此放在
+ *   inject.head 里 /css/site-inject.css 之后（主题 /css/index.css 是最前一条）。
+ *
+ * 引入了什么
+ *   · --ag-ring / --ag-halo 两个变量，从 var(--theme-color) 派生：浅色往白里调
+ *     （压在白卡片上才看得见），深色直接用原色。
+ *   · @keyframes 里每个 var() 都带兜底值 —— 不支持 color-mix() 的老浏览器会让自定义
+ *     属性变成 guaranteed-invalid，var() 自动回落，整套 box-shadow 不会因此失效，
+ *     观感退回原来的 #9ff2d2 / #39c5bb。
+ *   · 峰值从原来一层紧贴光晕，扩成「紧贴环 + 外围柔光」两层：110px 的电脑端作者卡
+ *     和 96px 的手机抽屉头像都更像"呼吸灯"，而不是一圈描边。
+ *   · 时长/缓动维持主题的 4s ease-in-out infinite，节奏不变。
+ *
+ * 影响范围
+ *   所有 .avatar-img：#aside-content 作者卡、#sidebar-menus 手机抽屉头像。
+ *   （手机抽屉的尺寸/圆角/白边仍归 /css/mobile-drawer.css，动画共用这一套。）
+ *
+ * 回滚
+ *   删掉 _config.fomalhaut.yml inject.head 里那行 <link>，呼吸灯立刻变回主题写死的颜色。
+ *   配置备份：bak/20261007-avatar-glow/before/_config.fomalhaut.yml
+ *
+ * 2026-10-04 更新（第二轮性能修复）
+ *   桌面作者卡的呼吸灯动画属性从 box-shadow 换成 opacity（原理与取舍见文件末尾那一大段），
+ *   时间轴 4s ease-in-out infinite 与颜色配方不变；手机抽屉那颗保留 box-shadow 版，
+ *   但改成只在抽屉 .open（真的拉出来）时才呼吸。回滚：还原这一段的改动即可。
+ * ========================================================================== */
+
+:root {
+  --ag-ring: #9ff2d2;
+  --ag-ring: color-mix(in srgb, var(--theme-color, #39c5bb) 58%, #ffffff);
+  --ag-halo: rgba(57, 197, 187, 0.3);
+  --ag-halo: color-mix(in srgb, var(--theme-color, #39c5bb) 30%, transparent);
+}
+
+[data-theme="dark"] {
+  --ag-ring: #39c5bb;
+  --ag-ring: var(--theme-color, #39c5bb);
+  --ag-halo: rgba(57, 197, 187, 0.42);
+  --ag-halo: color-mix(in srgb, var(--theme-color, #39c5bb) 42%, transparent);
+}
+
+/* 同名 @keyframes 后声明者胜 → 这两条盖掉 custom.css:1449-1469 的写死版本 */
+@keyframes huxi_light {
+  0%, 100% {
+    box-shadow:
+      0 0 1px 1px var(--ag-ring, #9ff2d2),
+      0 0 6px 1px var(--ag-halo, rgba(57, 197, 187, 0.3));
+  }
+  50% {
+    box-shadow:
+      0 0 5px 5px var(--ag-ring, #9ff2d2),
+      0 0 18px 7px var(--ag-halo, rgba(57, 197, 187, 0.3));
+  }
+}
+
+@keyframes huxi_dark {
+  0%, 100% {
+    box-shadow:
+      0 0 1px 1px var(--ag-ring, #39c5bb),
+      0 0 6px 1px var(--ag-halo, rgba(57, 197, 187, 0.42));
+  }
+  50% {
+    box-shadow:
+      0 0 5px 5px var(--ag-ring, #39c5bb),
+      0 0 18px 7px var(--ag-halo, rgba(57, 197, 187, 0.42));
+  }
+}
+
+/* ============================================================================
+ * 2026-10-04 性能修复（第二轮）：把呼吸灯从 box-shadow 搬到合成层
+ * ----------------------------------------------------------------------------
+ * 【问题】huxi_light / huxi_dark 动的是 box-shadow —— 这是「非合成属性」，
+ *   浏览器每一帧都要给头像重新描一圈 1~18px 的高斯柔光并上传图层。首页有 2 个
+ *   .avatar-img 一直挂着这条动画，于是页面永远进不了空闲状态（笔记本上表现为
+ *   风扇不停、滚动发涩）。
+ * 【做法】把「暗的那一帧」和「亮的那一帧」做成两个静态光晕，分别挂在
+ *   .card-info-avatar 的 ::before / ::after 上，只让两个 opacity 交叉淡入淡出 ——
+ *   opacity 是合成属性，浏览器只改合成参数、不重绘。时间轴 4s ease-in-out infinite
+ *   与原来逐字一致，观感是同一条呼吸曲线（原来的「小光晕胀大成大柔光」由两层叠加
+ *   近似出来）。
+ * 【为什么挂在 .card-info-avatar 上】.avatar-img 自带 overflow: hidden（要把方形头像
+ *   裁成圆），挂在它自己或它的子元素上，外发光会被裁掉；也不能把 overflow 改掉 ——
+ *   .avatar-img img:hover 的 360° 旋转正是靠这层裁剪切圆的。而 .card-info-avatar 是
+ *   主题给的定位父层（.card-widget .card-info-avatar { display:inline-block;
+ *   position: relative }），在侧栏作者卡里它正好就是头像那 110×110
+ *   （.author-status-box 是 absolute，不占位），所以 inset: 0 就是头像圆本身。
+ * 【代价 / 已一并处理】动画一关，主题里那条「一直被动画盖住」的静态阴影
+ *   （index.css:10286-10288 的白环 + 投影）就会露出来 —— 它不是现在的外观，
+ *   所以下面用同特异性选择器把它压成 none，外观完全交给两个光晕伪元素。
+ * 【手机抽屉头像】#sidebar-menus > .avatar-img 没有可用的定位父层（父层就是它自己，
+ *   且同样 overflow: hidden），保持原 box-shadow 版本；但改成只在抽屉 .open 时呼吸——
+ *   关着的时候它在屏幕外（#sidebar-menus 是 position: fixed; right: -300px 而不是
+ *   display: none），跑了也没人看得见。
+ * 【回滚】删掉下面这一段、并把文件末尾那块 reduced-motion 还原即可；
+ *   改动前备份：bak/20261004-perf-idle-frame/before/source/css/avatar-glow.css
+ * ========================================================================== */
+
+/* 1) 关掉全站的 box-shadow 呼吸灯（桌面作者卡改用下面两个光晕伪元素） */
+[data-theme="light"] .avatar-img,
+[data-theme="dark"] .avatar-img {
+  animation: none;
+}
+
+/* 2) 动画关掉后本来会被动画盖住的静态阴影会露出来 → 压掉，保持现状外观 */
+#aside-content > .card-widget.card-info .card-info-avatar .avatar-img {
+  box-shadow: none;
+}
+
+/* 3) 桌面作者卡：一暗一亮的两个静态光晕交叉淡入淡出（只动 opacity，走合成层） */
+.card-widget .card-info-avatar::before,
+.card-widget .card-info-avatar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  /* -1：压在头像图片下面，但仍在 .author_top（custom.css 给了 z-index: 1）这一层里，
+     所以不会被卡片自己的玻璃层盖住 */
+  z-index: -1;
+}
+.card-widget .card-info-avatar::before {
+  box-shadow:
+    0 0 1px 1px var(--ag-ring, #9ff2d2),
+    0 0 6px 1px var(--ag-halo, rgba(57, 197, 187, 0.3));
+  animation: ag-breathe-out 4s ease-in-out infinite;
+}
+.card-widget .card-info-avatar::after {
+  box-shadow:
+    0 0 5px 5px var(--ag-ring, #9ff2d2),
+    0 0 18px 7px var(--ag-halo, rgba(57, 197, 187, 0.3));
+  animation: ag-breathe-in 4s ease-in-out infinite;
+}
+@keyframes ag-breathe-in {
+  0%, 100% { opacity: 0; }
+  50%      { opacity: 1; }
+}
+@keyframes ag-breathe-out {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
+
+/* 4) 手机抽屉头像：只在抽屉真的打开时呼吸 */
+[data-theme="light"] #sidebar-menus.open > .avatar-img {
+  animation: huxi_light 4s ease-in-out infinite;
+}
+[data-theme="dark"] #sidebar-menus.open > .avatar-img {
+  animation: huxi_dark 4s ease-in-out infinite;
+}
+
+/* 系统开了"减少动态效果"时停掉呼吸，但保留一圈常亮光晕，别让头像看着掉在背景里 */
+@media (prefers-reduced-motion: reduce) {
+  .card-widget .card-info-avatar::before { animation: none; opacity: 1; }
+  .card-widget .card-info-avatar::after { animation: none; opacity: 0; }
+  [data-theme="light"] #sidebar-menus.open > .avatar-img {
+    animation: none !important;
+    box-shadow:
+      0 0 5px 5px var(--ag-ring, #9ff2d2),
+      0 0 18px 7px var(--ag-halo, rgba(57, 197, 187, 0.3));
+  }
+  [data-theme="dark"] #sidebar-menus.open > .avatar-img {
+    animation: none !important;
+    box-shadow:
+      0 0 5px 5px var(--ag-ring, #39c5bb),
+      0 0 18px 7px var(--ag-halo, rgba(57, 197, 187, 0.42));
+  }
+}

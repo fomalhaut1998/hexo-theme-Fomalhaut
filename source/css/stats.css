@@ -1,0 +1,268 @@
+/* ======================================================================
+ * 文章统计页（/tags/，即 网站 › 文章统计）专属样式
+ * ----------------------------------------------------------------------
+ * 1) 这一页没有 markdown 正文：页面主体由主题布局生成
+ *    themes/fomalhaut/layout/includes/page/echarts.pug
+ *      <center><font size="4">标题</font></center>
+ *      <div id="posts-echart" style="height:360px">…</div><br>
+ *      <div class="tag-cloud-list is-center">…</div>
+ *    为了不改主题源码，卡片、分节标题、标签胶囊这些「设计」全部在浏览器里补齐：
+ *    本文件负责外观，/js/stats.js 负责把 emoji 标题拆成图标胶囊 + 标题 + 说明。
+ * 2) 所有选择器都挂在 #page:has(#posts-echart) 之下——只有这一页存在该 id，
+ *    所以整站注入也只有这一页会命中；浏览器不支持 :has() 时整块失效、页面退回原样。
+ * 3) 配色从主题色 --theme-color 派生（跟随右上角调色盘实时变化），深色模式只覆盖
+ *    变量；每个自定义属性第一行是不支持 color-mix() 的老浏览器的回退值。
+ * 4) 回滚：删掉本文件与 /js/stats.js，并还原
+ *    bak/20261005-stats-redesign/_config.fomalhaut.yml.bak。
+ * ====================================================================== */
+
+#page:has(#posts-echart) {
+  --stats-accent: var(--theme-color, #39c5bb);
+
+  --stats-line: rgba(57, 197, 187, 0.16);
+  --stats-line: color-mix(in srgb, var(--stats-accent) 16%, transparent);
+  --stats-line-strong: rgba(57, 197, 187, 0.34);
+  --stats-line-strong: color-mix(in srgb, var(--stats-accent) 34%, transparent);
+
+  --stats-soft: rgba(57, 197, 187, 0.07);
+  --stats-soft: color-mix(in srgb, var(--stats-accent) 7%, transparent);
+  --stats-soft-2: rgba(57, 197, 187, 0.14);
+  --stats-soft-2: color-mix(in srgb, var(--stats-accent) 14%, transparent);
+
+  --stats-card-bg: var(--card-bg, #fff);
+  --stats-text: var(--font-color, #1f1f1f);
+  --stats-muted: rgba(31, 31, 31, 0.58);
+  --stats-muted: color-mix(in srgb, var(--font-color, #1f1f1f) 60%, transparent);
+
+  --stats-shadow: 0 1px 2px rgba(7, 17, 27, 0.03), 0 12px 28px -18px rgba(7, 17, 27, 0.28);
+  --stats-shadow-hover: 0 2px 6px rgba(7, 17, 27, 0.05), 0 18px 34px -18px rgba(7, 17, 27, 0.34);
+
+  color: var(--stats-text);
+}
+
+[data-theme="dark"] #page:has(#posts-echart) {
+  --stats-line: color-mix(in srgb, var(--stats-accent) 26%, transparent);
+  --stats-line-strong: color-mix(in srgb, var(--stats-accent) 46%, transparent);
+  --stats-soft: color-mix(in srgb, var(--stats-accent) 11%, transparent);
+  --stats-soft-2: color-mix(in srgb, var(--stats-accent) 20%, transparent);
+  --stats-muted: rgba(255, 255, 255, 0.52);
+  --stats-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 12px 28px -18px rgba(0, 0, 0, 0.85);
+  --stats-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.40), 0 18px 34px -18px rgba(0, 0, 0, 0.95);
+}
+
+/* 布局模板里的 <br> 只是占位符，间距改由下面各节的 margin 控制 */
+#page:has(#posts-echart) > br {
+  display: none;
+}
+
+/* ---------------------------------------------------------------- 分节标题 */
+/* 原来是居中加粗的 <font size="4">（18px、带一个尾巴 emoji），改成
+ * 「图标胶囊 + 标题 + 说明 + 渐变细线」的左对齐分节头，和网站统计页一套语言。 */
+#page:has(#posts-echart) > center {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 40px 0 16px;
+  text-align: left;
+}
+
+#page:has(#posts-echart) > center:first-of-type {
+  margin-top: 4px;
+}
+
+#page:has(#posts-echart) > center > font {
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.2px;
+  color: var(--stats-text);
+  white-space: nowrap;
+}
+
+#page:has(#posts-echart) > center > .stats-ico {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  font-size: 15px;
+  line-height: 1;
+  border-radius: 9px;
+  background: var(--stats-soft-2);
+  border: 1px solid var(--stats-line);
+  box-shadow: inset 0 0 0 1px var(--stats-soft);
+}
+
+#page:has(#posts-echart) > center > .stats-desc {
+  position: relative;
+  flex: none;
+  padding-left: 12px;
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--stats-muted);
+  white-space: nowrap;
+}
+
+#page:has(#posts-echart) > center > .stats-desc::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 1px;
+  height: 12px;
+  margin-top: -6px;
+  background: var(--stats-line-strong);
+}
+
+/* 标题右侧延伸到边缘的渐变细线 */
+#page:has(#posts-echart) > center::after {
+  content: '';
+  flex: 1 1 auto;
+  height: 1px;
+  min-width: 20px;
+  background: linear-gradient(90deg, var(--stats-line-strong), transparent);
+}
+
+/* ------------------------------------------------------------ 图表卡片 */
+#page:has(#posts-echart) > #posts-echart,
+#page:has(#posts-echart) > #tag-echarts,
+#page:has(#posts-echart) > #categories-echarts {
+  position: relative;
+  box-sizing: border-box; /* 主题全局就是 border-box，这里只是写明：内联的 height:360px 仍是卡片总高 */
+  margin: 0 0 4px;
+  padding: 10px 8px 4px;
+  border: 1px solid var(--stats-line);
+  border-radius: 16px;
+  background: var(--stats-soft);
+  box-shadow: var(--stats-shadow);
+  transition: box-shadow 0.3s, border-color 0.3s;
+}
+
+#page:has(#posts-echart) > #posts-echart:hover,
+#page:has(#posts-echart) > #tag-echarts:hover,
+#page:has(#posts-echart) > #categories-echarts:hover {
+  border-color: var(--stats-line-strong);
+  box-shadow: var(--stats-shadow-hover);
+}
+
+/* 卡片右上角的一层柔光，和 KPI 卡片同款 */
+#page:has(#posts-echart) > #posts-echart::after,
+#page:has(#posts-echart) > #tag-echarts::after,
+#page:has(#posts-echart) > #categories-echarts::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 190px;
+  height: 190px;
+  border-radius: 0 16px 0 190px;
+  background: radial-gradient(circle at 100% 0, var(--stats-soft-2), transparent 68%);
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------ 标签 / 分类云 */
+/* 原来是随机颜色 + 随机字号的 inline 文本流，改成一行行胶囊标签（字号统一，
+ * 文章数由右上角的小角标给出）。 */
+#page:has(#posts-echart) > .tag-cloud-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+  padding: 14px 16px 16px;
+  border: 1px solid var(--stats-line);
+  border-radius: 16px;
+  background: var(--stats-soft);
+  box-shadow: var(--stats-shadow);
+  text-align: left;
+}
+
+#page:has(#posts-echart) > .tag-cloud-list::before {
+  content: '全部标签';
+  flex: 0 0 100%;
+  margin-bottom: 2px;
+  font-size: 12px;
+  line-height: 1.2;
+  letter-spacing: 0.4px;
+  color: var(--stats-muted);
+}
+
+#page:has(#posts-echart) > .tag-cloud-list:last-of-type::before {
+  content: '全部分类';
+}
+
+#page:has(#posts-echart) > .tag-cloud-list a {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 11px;
+  font-size: 13px !important;              /* 覆盖 cloudTags 写死的 1.2em~2.1em */
+  line-height: 1;
+  color: var(--stats-text) !important;     /* 覆盖 cloudTags 写死的随机颜色 */
+  border: 1px solid var(--stats-line);
+  border-radius: 999px;
+  background: var(--stats-card-bg);
+  transition: color 0.25s, background 0.25s, border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+}
+
+#page:has(#posts-echart) > .tag-cloud-list a:hover {
+  color: var(--stats-accent) !important;
+  border-color: var(--stats-line-strong);
+  background: var(--stats-soft-2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px -10px var(--stats-line-strong);
+}
+
+#page:has(#posts-echart) > .tag-cloud-list a sup {
+  top: 0;
+  margin-left: 6px;
+  padding: 0 5px;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.6;
+  vertical-align: middle;
+  border-radius: 999px;
+  background: var(--stats-soft-2);
+  color: var(--stats-accent);
+}
+
+/* ------------------------------------------------------------ 窄屏 */
+@media screen and (max-width: 768px) {
+  #page:has(#posts-echart) > center {
+    margin: 28px 0 12px;
+  }
+
+  #page:has(#posts-echart) > center > font {
+    font-size: 17px;
+  }
+
+  #page:has(#posts-echart) > center > .stats-ico {
+    width: 26px;
+    height: 26px;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+
+  #page:has(#posts-echart) > center > .stats-desc {
+    display: none;                          /* 窄屏放不下，只留标题 */
+  }
+
+  #page:has(#posts-echart) > #posts-echart,
+  #page:has(#posts-echart) > #tag-echarts,
+  #page:has(#posts-echart) > #categories-echarts {
+    padding: 6px 4px 2px;
+    border-radius: 14px;
+  }
+
+  #page:has(#posts-echart) > .tag-cloud-list {
+    gap: 6px;
+    padding: 12px 12px 14px;
+    border-radius: 14px;
+  }
+
+  #page:has(#posts-echart) > .tag-cloud-list a {
+    padding: 6px 10px;
+    font-size: 12px !important;
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "hexo-theme-fomalhaut",
+  "version": "1.0.0",
+  "description": "Fomalhaut —— 基于 Butterfly 深度二次开发的 Hexo 主题（卡片式 UI / 多线路分流 / PWA / 美化面板 / 全站自定义注入）",
+  "main": "package.json",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "hexo",
+    "theme",
+    "fomalhaut",
+    "butterfly",
+    "card ui",
+    "hexo-theme-fomalhaut"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourname/hexo-theme-Fomalhaut.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourname/hexo-theme-Fomalhaut/issues"
+  },
+  "dependencies": {
+    "hexo-renderer-stylus": "^2.1.0",
+    "hexo-renderer-pug": "^3.0.0"
+  },
+  "homepage": "https://github.com/yourname/hexo-theme-Fomalhaut",
+  "author": "Demo",
+  "license": "Apache-2.0"
+}

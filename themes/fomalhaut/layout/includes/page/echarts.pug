@@ -1,0 +1,42 @@
+script(src='https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js')
+
+//- 【2026-10-01 改】本布局现用于「文章统计」页（/tags/）：原 网站>文章统计 页 + 文章>标签 页 + 文章>分类 页 三页合并
+//- 图表标题统一写在图表外面（写法同「网站统计」页），图表内部不再画标题：titlePosition: 'outside'
+center
+  font(size=4 style="font-weight:bold") 文章发布统计📃
+#posts-echart(style="height:360px")
+  !=posts_echarts({title:'文章发布统计📃',id:'posts-echart',seriesName:'文章篇数',titlePosition:'outside'})
+
+br
+br
+br
+
+//- 标签统计图表
+center
+  font(size=4 style="font-weight:bold") Top 10 标签统计图📌
+#tag-echarts(style="height:360px")
+  !=tag_ranking_bar({type:'tag',id:'tag-echarts',topNum:10,title:'Top 10 标签统计图📌',color:theme.theme_color.main,yAxisName:'文章篇数',seriesName:'标签统计',titlePosition:'outside'})
+
+br
+
+//- 标签云（原「文章>标签」页内容）
+.tag-cloud-list.is-center
+  !=cloudTags({source: site.tags, minfontsize: 1.2, maxfontsize: 2.1, limit: 0, unit: 'em'})
+
+br
+br
+
+//- 分类统计图表
+center
+  font(size=4 style="font-weight:bold") 文章分类统计图📇
+#categories-echarts(style="height:400px")
+  !=categories_pic({id:'categories-echarts',title:'文章分类统计图📇',seriesName:'分类统计',titlePosition:'outside'})
+
+br
+
+//- 分类云（原「文章>分类」页内容）
+//- 【2026-10-01 改】原为 list_categories()，渲染成朴素横排列表，用户反馈太单调；改为复用上方标签云的 cloudTags（分类与标签同为 Hexo Query，均有 length/path/name，可直接套用）
+.tag-cloud-list.is-center
+  !=cloudTags({source: site.categories, minfontsize: 1.2, maxfontsize: 2.1, limit: 0, unit: 'em'})
+//- 回滚：删掉上面两行，恢复下面这行
+//- .category-lists!= list_categories()

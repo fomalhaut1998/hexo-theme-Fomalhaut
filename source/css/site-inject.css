@@ -1,0 +1,597 @@
+/* ============================================================================
+ * source/css/site-inject.css —— 站点注入样式合集
+ * ----------------------------------------------------------------------------
+ * 本文件由 _config.fomalhaut.yml 的 inject.head 段抽出（2026-10-03 屎山重构）。
+ * 抽出来的原因：在 YAML 里写 CSS 没有语法高亮、没有补全、缩进错一位就会被静默吞掉；
+ * 在一个两千行的配置文件里翻样式更是折磨。现在样式集中在这个文件里，配置里只留一行 <link>。
+ *
+ * 【层叠顺序 = 本文件从上到下的顺序，与抽取前完全一致，不要随意重排】
+ *   配置里那条 <link> 的位置，就是原先第一个 <style> 块的位置，所以它相对于
+ *   主题样式表 / 其它注入块的优先级没有变。
+ *
+ * 【唯一的位置变化（已评估，无影响）】
+ *   原 scroll-gap-css（锚点 scroll-padding-top:70px）在 YAML 里排在 aside-show /
+ *   aside-pos 两个「运行时空槽」之前，现在排到了它们之后。两者管的属性完全不搭界
+ *   （滚动容器锚点定位 vs 侧栏显隐/左右位置），不会互相覆盖。
+ *
+ * 【注意】配置里那些空标签 <style id="themeColor"></style>、#rightSide、#transPercent、
+ *   #bgFilterParam、#defineBg、#menu_shadow、#nav-display、#aside-show、#aside-pos
+ *   是「运行时空槽」：由右下角美化面板的 JS 在运行时写入内容，不能删、不能挪。
+ *
+ * 【本文件目录】共 15 块（后面的优先级更高）
+ *    1. scroll-gap-css     ← 原 _config.fomalhaut.yml:1209-1212
+ *    2. annoV2             ← 原 _config.fomalhaut.yml:1216-1295
+ *    3. pcLightTheme       ← 原 _config.fomalhaut.yml:1306-1344
+ *    4. asideWider         ← 原 _config.fomalhaut.yml:1364-1379
+ *    5. listPagination     ← 原 _config.fomalhaut.yml:1437-1437
+ *    6. pageWidthLimit     ← 原 _config.fomalhaut.yml:1438-1438
+ *    7. rightMenuState     ← 原 _config.fomalhaut.yml:1444-1452
+ *    8. webinfoCard        ← 原 _config.fomalhaut.yml:1492-1518
+ *    9. ft-hide-self       ← 原 _config.fomalhaut.yml:1522-1526
+ *   10. aplayerVolumeFix   ← 原 _config.fomalhaut.yml:1538-1542
+ *   11. readModeIconGuard  ← 2026-10-04 新增（阅读模式标题风车兜底）
+ *   12. letterBoard        ← 2026-10-04 新增（留言板 / 信封页改版）
+ *   13. cardAnimPerf       ← 2026-10-04 新增（首页卡片箭头 / 置顶角标流光改走 transform）
+ *   14. loadingIdle        ← 2026-10-04 新增（加载动画在遮罩隐藏后停掉）
+ * ========================================================================== */
+
+/* ── 1/12  #scroll-gap-css  ← 原 _config.fomalhaut.yml:1209-1212 ── */
+/* 锚点跳转兜底：给常驻顶栏留出高度。scroll-padding-top 作用于滚动容器的锚点定位， */
+/* 使得「JS 完全没跑 / pjax 换页后点击处理丢失」时，原生锚点跳转也不会把标题顶到常驻顶栏底下。 */
+/* 实测注意：不要再给目标元素加 scroll-margin-top，两者会叠加（70+70=140px）造成偏移过大。 */
+/* JS 版补偿见 inject.bottom 的 scroll-gap-fix（实测落点 70px）。 */
+html { scroll-padding-top: 70px !important; }
+
+/* ── 2/12  #annoV2  ← 原 _config.fomalhaut.yml:1216-1295 ── */
+/* 公告栏 · 信息板改版样式（配合 card_announcement.content 的新结构，纯 CSS + 变量） */
+/* 公告栏 · 信息板改版（配合 _config.fomalhaut.yml 的 card_announcement.content）
+ * 只作用于侧栏 .card-announcement 这一张卡；配色跟着 --theme-color 走，
+ * 由它派生三档，每个变量第一行是「不支持 color-mix() 的老浏览器」回退值：
+ *   --anno-accent  主题色原色
+ *   --anno-strong  原色压深(浅色)/提亮(深色)一档 → 当文字用的胶囊、下载按钮、欢迎信息里的高亮
+ *   --anno-chip-* / --anno-soft-*  胶囊与软底的底色/描边
+ * 深色适配只覆盖变量，规则本体一套。
+ */
+.card-announcement {
+  --anno-accent: var(--theme-color, #39c5bb);
+
+  --anno-strong: #25706b;
+  --anno-strong: color-mix(in srgb, var(--anno-accent) 62%, #000);
+
+  --anno-muted: rgba(60, 60, 67, .55);
+  --anno-muted: color-mix(in srgb, var(--font-color, #1f2937) 55%, transparent);
+
+  --anno-chip-bg: rgba(57, 197, 187, .075);
+  --anno-chip-bg: color-mix(in srgb, var(--anno-accent) 7.5%, transparent);
+  --anno-chip-bd: rgba(57, 197, 187, .22);
+  --anno-chip-bd: color-mix(in srgb, var(--anno-accent) 22%, transparent);
+
+  --anno-soft-bg: rgba(57, 197, 187, .06);
+  --anno-soft-bg: color-mix(in srgb, var(--anno-accent) 6%, transparent);
+  --anno-soft-bd: rgba(57, 197, 187, .16);
+  --anno-soft-bd: color-mix(in srgb, var(--anno-accent) 16%, transparent);
+}
+[data-theme="dark"] .card-announcement {
+  --anno-strong: #7fe3da;
+  --anno-strong: color-mix(in srgb, var(--anno-accent) 78%, #fff);
+  --anno-chip-bg: rgba(57, 197, 187, .14);
+  --anno-chip-bg: color-mix(in srgb, var(--anno-accent) 14%, transparent);
+  --anno-chip-bd: rgba(57, 197, 187, .32);
+  --anno-chip-bd: color-mix(in srgb, var(--anno-accent) 32%, transparent);
+  --anno-soft-bg: rgba(57, 197, 187, .12);
+  --anno-soft-bg: color-mix(in srgb, var(--anno-accent) 12%, transparent);
+  --anno-soft-bd: rgba(57, 197, 187, .26);
+  --anno-soft-bd: color-mix(in srgb, var(--anno-accent) 26%, transparent);
+}
+.card-announcement .anno2 { font-size: 13.5px; line-height: 1.75; text-align: left; }
+.card-announcement .anno2 a { text-decoration: none; }
+.card-announcement .a-row { display: flex; align-items: center; gap: 6px; padding: 7px 0; flex-wrap: nowrap;}
+.card-announcement .a-row + .a-row { border-top: 1px dashed rgba(127, 127, 127, .18); flex-wrap: nowrap;}
+.card-announcement .a-row.a-sub { border-top: 0; padding-top: 0; }
+.card-announcement .a-row.a-flat { border-top: 0; padding: 0; }
+.card-announcement .a-lb { flex: 0 0 56px; font-size: 12px; letter-spacing: .4px; color: var(--anno-muted); font-weight: 700; white-space: nowrap; }
+.card-announcement .a-chip { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 13px;
+  color: var(--anno-strong); background: var(--anno-chip-bg); border: 1px solid var(--anno-chip-bd);
+  border-radius: 999px; padding: 4px 9px; line-height: 1.7; transition: .25s; flex: 0 0 auto;}
+.card-announcement .a-chip:hover { background: var(--anno-accent); border-color: var(--anno-accent); color: #fff; }
+.card-announcement .a-chip .a-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: .75; }
+.card-announcement .a-note { font-size: 12.5px; color: var(--anno-muted); font-weight: 500; margin-left: auto;
+  white-space: nowrap; flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis;}
+/* 排版规则（2026-10-04 修正）：.a-row 一律 flex-wrap:nowrap —— 一行装不下时只允许两种结果：
+   ① .a-note 自己省略成「Cloudfl…」（flex:0 1 auto + min-width:0 + text-overflow:ellipsis）；
+   ② 容器查询按宽度逐档收起注记/徽标。绝不把注记挤到第二行把行撑高（用户实测反馈过）。
+   胶囊与徽标是 flex:0 0 auto，不会被压缩，保证域名与延时完整可读。 */
+/* ── 线路延时徽标（2026-10-04 新增）────────────────────────────────────────
+   由 source/js/inject/ping-route.js 在每条线路胶囊后面插入 <span class="a-ms">，
+   显示「本机 → 该线路」的一次网络往返（如 82ms）。等宽数字 + 最小宽度锁死，
+   状态：wait/load → ok（主题色）/ slow ≥400ms（琥珀）/ bad ≥1s（红）/ fail（—，删除线）。
+   从 — → ··· → 82ms 的长度变化都不会引起布局位移（min-width 锁住）；ok 的配色由主题色派生。
+   位置说明：徽标在 DOM 里紧跟胶囊，靠 .a-note 的 margin-left:auto 被推到右侧、与「Vercel」
+   这类注记相邻（用户圈的是「线路名后面那块空位」）。宽 42px 是内测值：narrow 断点下
+   「胶囊 + 82ms」仍能排在同一行，超时最长显示「999ms」也不会撑宽。 */
+.card-announcement .a-ms { flex: 0 0 auto; min-width: 42px; text-align: center;
+  font-size: 11.5px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .2px;
+  color: var(--anno-muted); background: transparent; border: 1px solid transparent;
+  border-radius: 999px; padding: 2px 6px; line-height: 1.6; cursor: pointer;
+  transition: color .25s, background .25s, border-color .25s; user-select: none; }
+.card-announcement .a-ms:hover { border-color: var(--anno-chip-bd); }
+.card-announcement .a-ms[data-state="load"] { color: var(--anno-muted); opacity: .7; }
+.card-announcement .a-ms[data-state="ok"] { color: var(--anno-strong);
+  background: var(--anno-chip-bg); border-color: var(--anno-chip-bd); }
+.card-announcement .a-ms[data-state="slow"] { color: #e8a33d; border-color: rgba(232, 163, 61, .34);
+  background: rgba(232, 163, 61, .10); }
+/* ≥1s：红色（很慢）。浅色卡片用深一点的红，深色卡片覆盖成亮红 —— 与 slow 同一种写法 */
+.card-announcement .a-ms[data-state="bad"] { color: #d23b3b; border-color: rgba(210, 59, 59, .34);
+  background: rgba(210, 59, 59, .10); }
+[data-theme="dark"] .card-announcement .a-ms[data-state="bad"] { color: #ff7a7a; border-color: rgba(255, 122, 122, .38);
+  background: rgba(255, 122, 122, .12); }
+.card-announcement .a-ms[data-state="fail"] { color: var(--anno-muted); text-decoration: line-through;
+  text-decoration-thickness: 1px; opacity: .6; }
+/* 卡片更窄时（窗口变小 / 侧栏收窄）用容器查询自动降一档，保证「Cloudflare」这类注记永远排在同一行。 */
+/* 降档只收「行间距 + 标签列 + 胶囊内边距 + 胶囊内圆点间距」这四种尺寸，字号一律不动 —— */
+/* 用户两次要求过胶囊/线路注记的字要更大（13px / 12px 就是这个结论），这里绝不能再缩回去。 */
+.card-announcement .anno2 { container-type: inline-size; }
+@container (max-width: 320px) {
+  .card-announcement .a-row { gap: 3px; }
+  /* 标签列改成「按内容、最小 44px」并禁止换行：「手机 App」在 48px 定宽里会折成两行（用户反馈）。
+     主线路/备用线路内容约 38px，被 min-width 抬到 44px，三行胶囊仍对齐。 */
+  .card-announcement .a-lb { flex: 0 0 auto; min-width: 44px; font-size: 12px; }
+  .card-announcement .a-chip { padding: 3px 6px; gap: 4px; font-size: 13px; }
+  .card-announcement .a-ms { min-width: 34px; padding: 2px 4px; font-size: 11.5px; }
+}
+/* 320 这一档同时收四处（行间距 6→3、标签列 56→48、胶囊内边距 9→6、徽标 min-width 42→32），
+   字号一律不动。阈值必须是 320 而不是 285：线上桌面卡片内容宽正好 272px，
+   而「备用线路 + github.example.com + 999ms + Github」在原尺寸下要 279px —— 286-320 这段
+   如果不收，注记就会掉到第二行。收完之后最宽的一行 ≈269px，272px 下仍有 3px 余量。 */
+/* 卡片再窄时先让出「线路注记」，保住延时徽标（用户要的是能看见延时）。
+   268 是实测值：最宽的「netlify.example.com + 999ms + Netlify + 标签」在容器 269px 时刚好 266px。 */
+@container (max-width: 268px) { .card-announcement .a-note { display: none; } }
+/* 最窄一档：放不下徽标，连同它一起收起，绝不换行。
+   230 是实测值：容器 231px 时「标签 48 + 最长胶囊 120 + 徽标 44 + 间距」= 223px 刚好排下。 */
+@container (max-width: 230px) { .card-announcement .a-ms { display: none; } }
+/* 再窄（手机抽屉等）：注记与徽标都已收起，只剩「标签 + 胶囊」，此时恢复换行兜底，避免横向裁切。 */
+@container (max-width: 230px) { .card-announcement .a-row { flex-wrap: wrap; } }
+.card-announcement .a-sect { margin-top: 11px; padding-bottom: 18px; }
+.card-announcement .a-approw { display: flex; align-items: center; gap: 8px; margin-top: 7px; }
+.card-announcement .a-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-weight: 700;
+  font-size: 13.5px; color: #fff; background: linear-gradient(135deg, var(--anno-accent), var(--anno-strong));
+  border-radius: 10px; padding: 8px 16px; line-height: 1.6; transition: .25s;
+  box-shadow: 0 3px 10px rgba(57, 197, 187, .35);
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--anno-accent) 35%, transparent); flex: 0 0 auto;}
+.card-announcement .a-btn:hover { color: #fff; filter: brightness(1.06); transform: translateY(-1px);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--anno-accent) 45%, transparent); }
+.card-announcement .a-btn svg { width: 13px; height: 13px; fill: currentColor; }
+/* 欢迎信息块：改成左对齐的「小标签 + 正文」，并让 fomal.js 写死的内联蓝色跟随主题色 */
+.card-widget.card-announcement #welcome-info { background: var(--anno-soft-bg); border: 1px solid var(--anno-soft-bd);
+  border-radius: 14px; padding: 10px 13px; margin-top: 0; text-align: left; font-weight: 500; line-height: 1.9; font-size: 13.5px; }
+.card-widget.card-announcement #welcome-info b { font-weight: 500; }
+.card-widget.card-announcement #welcome-info center { text-align: left; margin: 0 0 2px; font-size: 12px;
+  letter-spacing: .5px; color: var(--anno-muted); font-weight: 700; }
+.card-widget.card-announcement #welcome-info span { color: var(--anno-strong) !important; font-weight: 800; }
+
+/* ── 3/12  #pcLightTheme  ← 原 _config.fomalhaut.yml:1306-1344 ── */
+/* 版权卡片 · 白天配色（2026-10-05）：原文那套粉-青-米渐变是主题作者写死的固定值，跟主题色无关； */
+/* 更要紧的是两处彩色小字白天几乎看不见：文章链接 #99a9bf 只有 1.89:1、值行用主题色原色只有 1.71:1 */
+/* （实测自用户截图，WCAG AA 小字要 4.5:1）。注意 #39c5bb 放在纯白上也只有 2.13:1 —— 所以光换底色没用， */
+/* 必须把文字按同色系压深一档，才有现在这套： */
+/*   值行/许可协议  color-mix(主题色 50%, #0d1f22) → 5.1~5.5:1（13 种主题色全验过，最差的黄色 4.69:1） */
+/*   文章链接        保留它那支灰蓝压深 → ≈6:1 */
+/*   卡片底色        主题色 14% / 3% / 18% 混白的三档渐变，跟着右下角主题色选择器联动 */
+/* 只作用于 html[data-theme="light"]；暗色模式的 #07080a + flashlight 观感完全不动。 */
+/* 每处 color-mix() 的上一行是不支持它的老浏览器回退值（沿用上方 annoV2 的写法）。 */
+/* 主题源码 post.styl 里的原渐变仍在，这里按「优先改配置」的约定从配置层覆盖。 */
+/* 版权卡片 · 白天配色（主题色系淡渐变 + 同色系深墨字） */
+html[data-theme="light"] #post .post-copyright {
+  background: linear-gradient(45deg, #e3f7f5, #f9fdfd, #d1eeef) !important;
+  background: linear-gradient(45deg,
+      color-mix(in srgb, var(--theme-color, #39c5bb) 14%, #fff),
+      color-mix(in srgb, var(--theme-color, #39c5bb) 3%, #fff),
+      color-mix(in srgb, var(--theme-color, #39c5bb) 18%, #f2f7fa)) !important;
+  border-color: #c9e7e8 !important;
+  border-color: color-mix(in srgb, var(--theme-color, #39c5bb) 18%, #e9eef2) !important;
+  /* 原 box-shadow 是 currentColor（深灰实心偏移影），浅底上会显得脏，压到 10% 黑 */
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, .1) !important;
+}
+/* 值行（作者 / 发表日期 / 更新日期 / 许可协议）：主题色压深一档当墨色用 */
+html[data-theme="light"] #post .post-copyright .post-copyright-cc-info,
+html[data-theme="light"] #post .post-copyright .post-copyright-cc-info a {
+  color: #23726f !important;
+  color: color-mix(in srgb, var(--theme-color, #39c5bb) 50%, #0d1f22) !important;
+}
+/* 文章链接：保留它自己那支灰蓝，只压深（1.89:1 → ≈6:1） */
+html[data-theme="light"] #post .post-copyright__type .post-copyright-info a {
+  color: #586575 !important;
+  color: color-mix(in srgb, #99a9bf 50%, #16202b) !important;
+}
+/* 白天别再用主题色原色当悬停色（浅底上同样看不清）：改成压深 + 下划线 */
+html[data-theme="light"] #post .post-copyright-info a:hover,
+html[data-theme="light"] #post .post-copyright-cc-info a:hover {
+  color: #23726f !important;
+  color: color-mix(in srgb, var(--theme-color, #39c5bb) 50%, #0d1f22) !important;
+  text-decoration: underline !important;
+  text-underline-offset: 3px;
+}
+/* 右下角那枚 CC 水印：由原来的灰改成跟着主题色染一点（仍由 opacity 保持很淡） */
+html[data-theme="light"] #post .post-copyright:before {
+  color: #61a0a4;
+  color: color-mix(in srgb, var(--theme-color, #39c5bb) 40%, #7b8794);
+}
+
+/* ── 4/12  #asideWider  ← 原 _config.fomalhaut.yml:1364-1379 ── */
+/* 侧栏宽度（第三轮，2026-10-04）：第二轮把侧栏顶到 .layout 最右边，结果撞上了右侧悬浮工具条， */
+/* 所以这一轮同时处理「宽度」和「右边留够工具条的位置」两件事。 */
+/* 两个必须知道的上游事实： */
+/*  1) 站点自定义 CSS `.aside-content { max-width: 318px; min-width: 300px }`（类选择器）会把侧栏锁死在 318px； */
+/*     元素本身是 #aside-content.aside-content（themes/fomalhaut/layout/includes/widget/index.pug:1）， */
+/*     所以要用 ID+类 的选择器才压得住它。站点还有 `.layout { max-width: 1400px }`（覆盖主题的 1200px）。 */
+/*  2) 右侧悬浮工具条 #rightside 是 position: fixed（themes/fomalhaut/source/css/_layout/rightside.styl:1-4 */
+/*     是 right: -48px，custom.css:2284-2288 再 translateX(-58px)，按钮宽 38px，见 custom.css:1087-1096）—— */
+/*     换算下来按钮左边缘大约在「窗口右边 −48px」处，所以布局内容必须在它左边收住，不能贴到窗口最右。 */
+/* 第三轮做法：① 压缩整个布局宽度（max-width 取 min(1400px, 100vw - 140px)）；② 侧栏固定 380px， */
+/* 主列 flex-grow 吃满剩余。结果：卡片确实离开按钮了，但左右两侧被压出两条空隙，看着没铺满 —— 已废弃。 */
+/* 第四轮做法（当前，2026-10-04）：**不压缩布局宽度**，只把 .layout 的右侧内边距加大到 78px， */
+/* 让右列内容在工具条左边收住、左列仍然贴到窗口左边（左右都铺满）；窗口比 1400px 布局上限更宽时， */
+/* 布局居中本身就会离右边越来越远，所以右侧内边距按 (100vw - 1400px)/2 逐步回收，最少 15px。 */
+/* 宽度上限测算（窗口 1440 CSS、扣 15px 滚动条）：布局 1400、右内边距 58 → 内容区 ≈ [27.5, 1354.5]， */
+/* 卡片右边缘 1349.5，工具条按钮左边缘 1377 → 留约 27px 间隙。 */
+/* 只在小屏以上生效：901px 以下主题自己的 +maxWidth900() 会把两者都设成 100%，不能被覆盖（见 aside.styl:10-11）。 */
+/* 用 :not(.hide-aside) 避开「收纳侧栏」时主题的 `.layout.hide-aside > div { width: 100% !important }`。 */
+/* 样式自 2026-10-03 起集中在 source/css/site-inject.css（配置里只留一行 <link>），不动主题源码； */
+/* 本块的上一版备份 bak/announcement-20261004-v8-fill/before/，本次备份 bak/announcement-20261004-v9-narrow340/before/。 */
+/* 左右都铺满：不动布局宽度，只把右侧内边距加大，让内容在悬浮工具条左边收住 */
+@media screen and (min-width: 901px) and (max-width: 1400px) {
+  .layout:not(.hide-aside) { padding-right: 78px; }
+}
+/* 窗口比布局上限 1400px 更宽时，布局居中已自带右侧余量，内边距按差额逐步收回（最少 15px） */
+@media screen and (min-width: 1401px) {
+  .layout:not(.hide-aside) { padding-right: max(15px, calc(78px - (100vw - 1400px) / 2)); }
+}
+/* 第五轮（2026-10-04 晚）：侧栏 360 → 340px —— 用户原话「侧栏又有点太宽了，稍微弄窄一点点」。 */
+/* 340px 时卡片内容宽 = 340 − 20（#aside-content padding 0 5px 0 15px）− 48（.card-widget padding 20px 24px）= 272px； */
+/* 最紧的是「cloudflare.example.com + Cloudflare」那行（衬底值约 265px），靠上面 @container ≤285px 的降档刚好排得下。 */
+/* 再往下窄（≤335px 左右）这行就要换行，那时必须继续降档或改行结构。 */
+@media screen and (min-width: 1200px) {
+  #aside-content.aside-content { width: 340px; max-width: 340px; flex: 0 0 auto; }
+  .layout:not(.hide-aside) > div:first-child { flex: 1 1 auto; width: auto; min-width: 0; }
+}
+
+/* ── 5/12  #listPagination  ← 原 _config.fomalhaut.yml:1437-1437 ── */
+/* 归档 / 标签 / 分类等列表页的翻页按钮：样式对齐首页（卡片圆角 + 悬浮反馈 + 统一尺寸） */
+.layout > div:not(.recent-posts) #pagination .pagination > *{display:inline-block;margin:0 6px;width:2.5em;height:2.5em;line-height:2.5em;text-align:center}.layout > div:not(.recent-posts) #pagination .pagination > *:not(.space){border-radius:8px;background:var(--card-bg);box-shadow:var(--card-box-shadow);transition:all .3s}.layout > div:not(.recent-posts) #pagination .pagination > *:not(.space):hover{background:var(--btn-hover-color);color:var(--btn-color);box-shadow:var(--card-hover-box-shadow)}
+
+/* ── 6/12  #pageWidthLimit  ← 原 _config.fomalhaut.yml:1438-1438 ── */
+.layout:has(#page),.layout:has(#archive),.layout:has(#tag),.layout:has(#category){max-width:1200px}
+
+/* ── 7/12  #rightMenuState  ← 原 _config.fomalhaut.yml:1444-1452 ── */
+/*  */
+/* 侧边栏「右键模式」按钮：显示"站点自定义右键"当前是开还是关 */
+/*   开 = 跟随主题色（主题默认外观，不动）；关 = 灰色 + 图标上一道斜杠 */
+/*   状态源与 source/js/fomal.js 的 mouseMode 完全一致（localStorage 键 "mouse"，缺省视为开） */
+/*   纯 HTML/CSS/JS 注入实现，不改主题源码（rightside.pug 的 button 原样保留） */
+html[data-rm="off"] #rightside button:has(> i.fa-mouse){position:relative;background-color:#909090 !important;color:#fff !important;}
+html[data-rm="off"] #rightside button:has(> i.fa-mouse):hover{background-color:#a8a8a8 !important;}
+html[data-theme="dark"][data-rm="off"] #rightside button:has(> i.fa-mouse){background-color:#787878 !important;}
+html[data-theme="dark"][data-rm="off"] #rightside button:has(> i.fa-mouse):hover{background-color:#8d8d8d !important;}
+html[data-rm="off"] #rightside button:has(> i.fa-mouse) > i{opacity:.4;}
+html[data-rm="off"] #rightside button:has(> i.fa-mouse)::after{content:"";position:absolute;left:50%;top:50%;width:20px;height:2px;border-radius:2px;background:#fff;opacity:.95;transform:translate(-50%,-50%) rotate(-45deg);}
+
+/* ── 8/12  #webinfoCard  ← 原 _config.fomalhaut.yml:1492-1518 ── */
+/* （2026-10-03）不蒜子已弃用，统计源改为 Vercount（见 additional-js.pug）。 */
+/* 原先这两段（bsz-guard 拦截器 / bsz-lazy 延迟兜底）是专为 busuanzi.ibruce.info 写的； */
+/* 其中 bsz-lazy 的 6 秒超时会把 Vercount 已经写好的数字覆盖成「—」，故整段删除。 */
+/* 原文与备份见 bak/20261003-webinfo/。 */
+/* 小站资讯卡（2026-10-03 改版）样式 */
+/* 小站资讯卡 2026-10-03 改版 */
+.card-webinfo .wi{margin-top:2px;container-type:inline-size}
+.card-webinfo .wi-kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 12px}
+.card-webinfo .wi-kpi-item{display:block;text-align:center;border-radius:10px;padding:10px 2px 8px;color:inherit;text-decoration:none;background:rgba(128,128,128,.09);background:color-mix(in srgb,var(--theme-color) 9%,transparent);transition:background .3s,transform .3s}
+.card-webinfo a.wi-kpi-item:hover{transform:translateY(-2px);background:rgba(128,128,128,.16);background:color-mix(in srgb,var(--theme-color) 16%,transparent)}
+.card-webinfo .wi-kpi-num{font-size:22px;line-height:1.1;font-weight:700;color:var(--theme-color);font-variant-numeric:tabular-nums}
+.card-webinfo .wi-kpi-label{font-size:11px;opacity:.6;margin-top:4px;letter-spacing:.3px}
+.card-webinfo .wi-time{display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap;font-size:12px;padding:8px 0 2px;border-top:1px solid rgba(128,128,128,.2)}
+.card-webinfo .wi-time-item{display:inline-flex;align-items:baseline;gap:3px}
+.card-webinfo .wi-time-k{opacity:.55}
+.card-webinfo .wi-time-v{font-weight:600;color:var(--theme-color);font-variant-numeric:tabular-nums}
+.card-webinfo .wi-time-sep{opacity:.3}
+/* 「更新」= 站点最后更新时间（最近一次部署）。构建时先渲染 MM-DD 兜底，
+   页面加载后由 source/js/inject/webinfo-card.js 换成「N 分钟前 / N 小时前 / N 天前」。 */
+.card-webinfo .wi-deploy{cursor:default}
+/* 三项一行（已运行 / 距上次发文 / 更新）。实测（2026-10-04，无头 Chrome）：
+   · 侧栏 340px → 卡片内容宽 288px，12px 字号下三项 + 4 个 5px 间距 ≈ 280px，刚好一行；
+   · 901~1199px 侧栏只有 300px → 内容宽 248px（两栏布局下的地板值，再窄就没有了，
+     <901px 时侧栏变整列反而更宽），12px 会挤成两行，故 ≤284px 时降字号一档。
+   284 这个界值是算出来的：12px 档最少要 280px 才不换行，界值必须大于它、又要小于 288。 */
+@container (max-width: 284px) {
+  .card-webinfo .wi-time{font-size:10.5px;gap:4px}
+  .card-webinfo .wi-time-item{gap:2px}
+}
+.card-webinfo .wi-chart{margin-top:10px;border-top:1px solid rgba(128,128,128,.2);padding-top:9px}
+.card-webinfo .wi-chart-head{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;opacity:.6;margin-bottom:6px}
+.card-webinfo .wi-bars{display:flex;align-items:flex-end;gap:6px;height:50px}
+.card-webinfo .wi-bar{flex:1 1 0;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
+.card-webinfo .wi-bar-n{font-size:10px;opacity:.5;line-height:1.2;margin-bottom:2px;font-variant-numeric:tabular-nums}
+.card-webinfo .wi-bar-fill{width:100%;max-width:22px;border-radius:4px 4px 2px 2px;background:var(--theme-color);background:linear-gradient(180deg,var(--theme-color),color-mix(in srgb,var(--theme-color) 30%,transparent))}
+.card-webinfo .wi-years{display:flex;gap:6px;margin-top:4px}
+.card-webinfo .wi-year{flex:1 1 0;min-width:0;text-align:center;font-size:10px;opacity:.45}
+.card-webinfo .wi-visit{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;border-top:1px solid rgba(128,128,128,.2);padding-top:9px}
+.card-webinfo .wi-visit-item{text-align:center}
+.card-webinfo .wi-visit-num{font-size:16px;font-weight:600;line-height:1.3;font-variant-numeric:tabular-nums}
+.card-webinfo .wi-visit-label{font-size:11px;opacity:.55;margin-top:2px}
+
+/* ── 9/12  #ft-hide-self  ← 原 _config.fomalhaut.yml:1522-1526 ── */
+/* 页脚「推荐友链⌛」隐藏本站自己那一项（2026-10-03） */
+/* 该列表硬编码在 themes/fomalhaut/layout/includes/footer.pug:33-58，没有任何配置项可管； */
+/* 按 href 精准隐藏（:has() 现代 Chrome 生效，老浏览器不支持时优雅降级为仍显示）。 */
+/* 页脚推荐友链：去掉指向本站（example.com）的那一项 */
+.ft-img-group .img-group-item:has(> a[href*="example.com"]) { display: none !important; }
+
+/* ── 10/12  #aplayerVolumeFix  ← 原 _config.fomalhaut.yml:1538-1542 ── */
+/* 八音盒 APlayer 音量条「点了看不出变化」修复（2026-10-03） */
+/* 根因：APlayer 渲染出的 .aplayer-volume 自带内联 style="background:<data-theme 的颜色>"， */
+/*   内联样式优先级高于样式表，于是 themes/fomalhaut/source/css/_custom/custom.css:1492 那句 */
+/*   不带 !important 的 background: var(--theme-color) 从来没生效过——填充色一直是 */
+/*   source/life/music/index.md 里 data-theme="#e3f2f5" 的浅灰蓝； */
+/*   而槽色（custom.css:1488）是 color-mix(--theme-color 18%, #fff)，也是接近白的浅色， */
+/*   两段肉眼几乎同色 → 拖动/点击音量条、点喇叭静音时只有声音变，看不出任何变化。 */
+/* 修法照主题对 .aplayer-played / .aplayer-thumb 的既有做法（custom.css 里那两句都带 !important）， */
+/*   这里补 !important 把填充色拉回主题色；再补夜间模式的槽色（custom.css 只给 */
+/*   .aplayer-bar / .aplayer-loaded 写了夜间色，漏了音量条）。 */
+/* 回滚：删掉下面这一整段即可（纯样式，不碰播放逻辑）。 */
+#article-container .aplayer .aplayer-volume { background: var(--theme-color) !important; }
+[data-theme="dark"] #article-container .aplayer .aplayer-volume-bar { background: color-mix(in srgb, var(--theme-color) 25%, #242424); }
+
+/* ── 11/12  #readModeIconGuard  ← 2026-10-04 新增（站点级兜底） ── */
+/* 阅读模式下的标题小风车兜底。
+ * 主题在阅读模式里会把标题内边距整个清空（编译产物 public/css/index.css 里）：
+ *   .read-mode #article-container h1 ~ h6 { padding: 0 }   —— 还有一份 :hover 版
+ * 但标题前风车图标的负 margin 依然生效（themes/fomalhaut/source/css/_custom/custom.css:925-960，
+ *   h1~h6 依次是 -1.55 / -1.35 / -1.22 / -1.05 / -0.9 / -0.9rem），
+ * 于是图标被顶到标题盒左侧：桌面端卡片左右各有 40px 内边距还能兜住，
+ * 窄屏卡片只剩 14px（.layout > div:first-child:not(.recent-posts) { padding: 36px 14px }），
+ * 图标就会顶出卡片、在手机视口边缘被裁掉 —— 和友人帐 / 网址导航那两页是同一个毛病。
+ * 这里只在窄屏补回左内边距（= 该级负 margin + 约 0.25rem 间隙），图标就稳定落在标题盒内；
+ * 桌面端阅读模式保持原样，不改观感。
+ * 特异性：#content-inner.layout #article-container h2 = (2,0,1) ＞ 主题的 .read-mode #article-container h2 = (1,1,1)，
+ *   所以不需要 !important 也能压过（本文件在 /css/index.css 之后加载，顺序上也占优）。
+ * 回滚：删掉下面这一整段即可（纯样式，不涉及任何 JS / 模板 / 主题源码）。 */
+@media screen and (max-width: 768px) {
+  .read-mode #content-inner.layout #article-container h1 { padding-left: 1.8rem; }
+  .read-mode #content-inner.layout #article-container h2 { padding-left: 1.6rem; }
+  .read-mode #content-inner.layout #article-container h3 { padding-left: 1.5rem; }
+  .read-mode #content-inner.layout #article-container h4 { padding-left: 1.3rem; }
+  .read-mode #content-inner.layout #article-container h5,
+  .read-mode #content-inner.layout #article-container h6 { padding-left: 1.15rem; }
+}
+
+/* ── 12/12  #letterBoard  ← 2026-10-04 新增（留言板 / 信封页改版） ── */
+/* /comments/ 页面由 hexo-butterfly-envelope 插件生成，主题源码 themes/ 不动，样式按站点约定放这里。
+ * 为什么不能只靠配置：插件把信封构图写死在 node_modules/hexo-butterfly-envelope/lib/html.pug 的内联
+ *   <style> 里（#form-wrap 447px 裁剪、hover 才展开、#beforeimg/#afterimg 绝对定位），配置项只能换图片与文案。
+ * 做法：
+ *   ① 解除 447px 裁剪与 hover 联动 → 4 条留言提示默认可见（原来要悬停才露出来）；
+ *   ② 给插件内容套一层主题色「信笺台」#maincontent（点阵 + 顶部主题色渐变）；
+ *   ③ 信封正面口袋 after.png 从绝对定位改回正常流元素 + 负 margin，让信纸底边稳定插进袋口；
+ *      #beforeimg（信封背页）隐藏，避免它的白/蓝底与信纸的白底在袋口透明区打架；
+ *   ④ 重排标题 / 提示面板 / 签名，并把评论区上方分隔线、评论图标改成主题色。
+ * 作用域 #page:has(#maincontent)：只有这个插件页生效；:has() 不支持时整块失效，页面回落到插件原样。
+ * 回滚：删掉本块即可（纯样式，不涉及 JS / 模板 / 主题源码）。 */
+#page:has(#maincontent) {
+  --lt-accent: var(--theme-color, #39c5bb);
+  --lt-soft: rgba(57, 197, 187, .07);
+  --lt-soft: color-mix(in srgb, var(--lt-accent) 7%, transparent);
+  --lt-soft2: rgba(57, 197, 187, .15);
+  --lt-soft2: color-mix(in srgb, var(--lt-accent) 15%, transparent);
+  --lt-line: rgba(57, 197, 187, .22);
+  --lt-line: color-mix(in srgb, var(--lt-accent) 22%, transparent);
+  --lt-ink: #1f6b67;
+  --lt-ink: color-mix(in srgb, var(--lt-accent) 52%, #10201f);
+  --lt-muted: rgba(60, 60, 67, .55);
+  --lt-muted: color-mix(in srgb, var(--font-color, #1f2937) 55%, transparent);
+  --lt-pocket: 680px;
+}
+[data-theme="dark"] #page:has(#maincontent) {
+  --lt-soft: rgba(57, 197, 187, .12);
+  --lt-soft: color-mix(in srgb, var(--lt-accent) 12%, transparent);
+  --lt-soft2: rgba(57, 197, 187, .22);
+  --lt-soft2: color-mix(in srgb, var(--lt-accent) 22%, transparent);
+  --lt-line: rgba(57, 197, 187, .32);
+  --lt-line: color-mix(in srgb, var(--lt-accent) 32%, transparent);
+  --lt-ink: #7fe3da;
+  --lt-ink: color-mix(in srgb, var(--lt-accent) 78%, #fff);
+  --lt-muted: color-mix(in srgb, var(--font-color, #e6e6e6) 62%, transparent);
+}
+/* ① 解除插件折叠 */
+#page:has(#maincontent) #form-wrap,
+#page:has(#maincontent) #form-wrap:hover {
+  height: auto !important; top: 0 !important;
+  overflow: visible !important; transition: none !important;
+}
+/* ② 信笺台 */
+#page:has(#maincontent) #maincontent {
+  width: 100%; max-width: 100%; box-sizing: border-box;
+  margin: 0 auto; padding: 27px 22px 0;
+  position: relative; border-radius: 20px;
+  border: 1px solid var(--lt-line);
+  background-image:
+    radial-gradient(rgba(57, 197, 187, .26) 1px, transparent 1px),
+    radial-gradient(120% 70% at 50% -8%, rgba(57, 197, 187, .15), transparent 62%),
+    linear-gradient(180deg, rgba(57, 197, 187, .07), transparent 58%);
+  background-image:
+    radial-gradient(color-mix(in srgb, var(--lt-accent) 34%, transparent) 1px, transparent 1px),
+    radial-gradient(120% 70% at 50% -8%, var(--lt-soft2), transparent 62%),
+    linear-gradient(180deg, var(--lt-soft), transparent 58%);
+  background-size: 16px 16px, auto, auto;
+  animation: lt-board-in .55s ease-out both;
+}
+@keyframes lt-board-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #page:has(#maincontent) #maincontent { animation: none; }
+}
+/* ③ 信纸 */
+#page:has(#maincontent) #beforeimg { display: none !important; }
+#page:has(#maincontent) #envelope { width: 600px; max-width: 100%; padding-top: 4px; position: relative; z-index: 2; }
+#page:has(#maincontent) .formmain {
+  background: var(--card-bg, #fff); width: 100% !important; max-width: none !important;
+  border: 1px solid var(--lt-line) !important; border-radius: 14px !important;
+  box-shadow: 0 22px 46px -26px rgba(0, 0, 0, .5) !important;
+  overflow: hidden !important;
+}
+#page:has(#maincontent) img.headerimg {
+  display: block; width: 100% !important; height: 214px; margin: 0 !important;
+  object-fit: cover; object-position: center 16%;
+  -webkit-mask-image: linear-gradient(180deg, #000 74%, transparent);
+  mask-image: linear-gradient(180deg, #000 74%, transparent);
+}
+#page:has(#maincontent) #maincontent .comments-main { padding: 8px 30px 28px; }
+#page:has(#maincontent) #maincontent h3.title3 {
+  margin: 0 0 15px !important; padding: 0 0 12px !important; position: relative;
+  font-size: 19px !important; font-weight: 700; letter-spacing: 1px;
+  color: var(--lt-ink) !important; text-align: center !important;
+}
+#page:has(#maincontent) #maincontent h3.title3::after {
+  content: ""; position: absolute; left: 50%; bottom: 0; width: 46px; height: 3px;
+  border-radius: 3px; transform: translateX(-50%);
+  background: linear-gradient(90deg, var(--lt-accent), color-mix(in srgb, var(--lt-accent) 28%, transparent));
+}
+#page:has(#maincontent) #maincontent .comments {
+  margin: 15px 0 0 !important; padding: 14px 22px !important;
+  background: var(--lt-soft) !important; border: 1px solid var(--lt-line) !important;
+  border-radius: 14px !important; text-align: left !important;
+}
+#page:has(#maincontent) #maincontent .comments > div {
+  display: flex; gap: 10px; align-items: baseline;
+  font-size: 14.5px; line-height: 2; color: var(--font-color, #1f2937);
+}
+#page:has(#maincontent) #maincontent .comments > div::before {
+  content: "✦"; flex: 0 0 auto; font-size: 11px; color: var(--lt-accent); opacity: .9;
+}
+#page:has(#maincontent) #maincontent .comments > div + div { border-top: 1px dashed var(--lt-line); }
+#page:has(#maincontent) #maincontent .bottomcontent { margin-top: 20px !important; }
+#page:has(#maincontent) #maincontent .bottomcontent img.bottomimg {
+  display: block; width: auto !important; max-width: 100%; height: auto; max-height: 54px;
+  margin: 0 auto !important; opacity: .85;
+}
+#page:has(#maincontent) #maincontent p.bottomhr {
+  margin: 2px 6px 0 0 !important; text-align: right !important;
+  font-size: 12.5px !important; font-style: italic; letter-spacing: .5px;
+  color: var(--lt-muted) !important;
+}
+#page:has(#maincontent) #maincontent p.bottomhr::before { content: "—— "; }
+/* ④ 信封口袋 after.png：脱离绝对定位，用负 margin 咬住信纸底边 */
+#page:has(#maincontent) #afterimg {
+  position: relative !important; left: auto !important; right: auto !important;
+  top: auto !important; bottom: auto !important;
+  display: block !important; z-index: 3 !important;
+  width: var(--lt-pocket) !important; max-width: 100%; height: auto !important;
+  margin: -38px auto 0 !important; pointer-events: none;
+  filter: drop-shadow(0 14px 20px rgba(0, 0, 0, .16));
+  /* after.png 的左上 / 右上被硬切成平口（原设计靠 #beforeimg 背页压住，本块把背页隐藏了），
+   * 顶部 20px 渐隐后平口没入信笺台点阵，不再出现两条横向断线。 */
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 20px);
+  mask-image: linear-gradient(180deg, transparent 0, #000 20px);
+}
+/* ⑤ 评论区 */
+#page:has(#maincontent) #article-container + hr {
+  border: 0 !important; height: 1px !important; max-width: 460px; margin: 30px auto !important;
+  background: linear-gradient(90deg, transparent, var(--lt-line), transparent) !important;
+}
+#page:has(#maincontent) #post-comment .comment-headline { letter-spacing: 1px; }
+#page:has(#maincontent) #post-comment .comment-headline i { color: var(--lt-accent); }
+@media screen and (max-width: 768px) {
+  #page:has(#maincontent) #maincontent { padding: 16px 10px 20px; border-radius: 16px; }
+  #page:has(#maincontent) #envelope { width: 100%; padding-top: 0; }
+  #page:has(#maincontent) img.headerimg { height: 148px; }
+  #page:has(#maincontent) #maincontent .comments-main { padding: 6px 16px 20px; }
+  #page:has(#maincontent) #maincontent .comments { padding: 12px 15px !important; }
+  #page:has(#maincontent) #maincontent .comments > div { font-size: 13.5px; }
+  #page:has(#maincontent) #afterimg { display: none !important; }
+}
+
+/* ── 13/13  cardAnimPerf  ← 2026-10-04 新增（首页卡片动画改走合成层）────────────
+ * 背景：首页每张卡片里的小箭头 .recent-post-arrow 用 @keyframes ddd 动 top，
+ *   置顶角标的流光 .post-sticky-shine 动 left。top / left 都是「非合成属性」，
+ *   浏览器每帧要重算布局 + 重绘：首页 9 个箭头 + 3 个角标 = 每帧 12 次布局失效，
+ *   页面静止不动也一直在跑 —— 属于「静置帧率不高 / 机身发热」的直接来源。
+ * 做法：同名重声明 @keyframes（后声明者胜，主题 /css/index.css 在本文件之前），
+ *   把动画属性换成 transform（合成层动画，不触发布局）；箭头原来的 top 静态值
+ *   补上（动画在跑时 top 恒为 20~30px，见 custom.css 的 ddd 关键帧），位移交给
+ *   translateY，观感与原来逐帧一致。
+ * 注意：.recent-post-arrow 是 position: absolute + top: auto，必须显式补 top，
+ *   否则动画一撤它会掉回 static 位置。主题里没有任何规则给这个元素设过 top
+ *   （只有 @keyframes ddd 设过），因此补 top 不会跟别的规则打架。
+ * 回滚：删掉本块即可（备份 bak/20261004-perf-idle-frame/before/source/css/site-inject.css）。
+ * ──────────────────────────────────────────────────────────────────────────── */
+.recent-post-arrow {
+  top: 20px;
+}
+
+@keyframes ddd {
+  0%   { transform: translateY(10px); }
+  10%  { transform: translateY(0); }
+  20%  { transform: translateY(10px); }
+  30%  { transform: translateY(0); }
+  60%  { transform: translateY(2px); }
+  90%  { transform: translateY(0); }
+  100% { transform: translateY(0); }
+}
+
+/* 置顶角标流光：left -60% → 118% 换成 translateX。
+   元素自身宽度是角标宽度的 45%，所以 178% 的角标宽度 = 178/45 ≈ 395% 的元素宽度；
+   角标是 overflow: hidden，多出来的部分本来也看不见。 */
+@keyframes post-sticky-shine {
+  0%,
+  62% {
+    transform: skewX(-18deg) translateX(0);
+  }
+  86%,
+  100% {
+    transform: skewX(-18deg) translateX(395%);
+  }
+}
+
+/* ── 14/14  loadingIdle  ← 2026-10-04 新增（加载遮罩隐藏后停掉内部动画）────────
+ * 背景：#loading-box（heo 版加载遮罩）加载完只是被加上 .loaded，让 .loading-bg
+ *   变成 opacity: 0 / z-index: -1000 —— 元素并没有离开渲染树。里面的 .loading-img
+ *   还挂着 animation: loadingAction 0.3s infinite（动的是 opacity），于是首页
+ *   永远有一条「看不见但在跑」的动画，浏览器也就永远有活干。
+ * 做法：只在 .loaded 状态下停掉内部动画。遮罩真正显示时（加载中 / pjax 换页，
+ *   preloader 会移除 .loaded）规则不生效，动画照常。隐藏后的 0.3s 淡出是父层
+ *   opacity 过渡，与本条无关，观感零变化。
+ * 回滚：删掉本块即可（备份 bak/20261004-perf-idle-frame/before/source/css/site-inject.css）。
+ * ──────────────────────────────────────────────────────────────────────────── */
+#loading-box.loaded .loading-img {
+  animation: none;
+}
+
+/* ── 15/15  cardGlassOff  ← 2026-10-04 新增（作者卡去掉实时背景模糊）─────────────
+ * 背景：themes/fomalhaut/source/css/_custom/custom.css:3787-3793 在 ≥1200px 给作者卡
+ *   的 ::before 加了 backdrop-filter: blur(11px) saturate(1.45)。卡片本身是随页面滚动的，
+ *   而它背后的 #web_bg 是 position: fixed 不动的 —— 于是浏览器每一帧都要对「卡片此刻
+ *   盖住的那块背景」重做一次高斯模糊。这是侧栏滚动时最贵的一项，弱 GPU 上直接掉帧。
+ * 做法：用同样特异性的选择器（本文件在 /css/index.css 之后加载，后声明者胜）把
+ *   backdrop-filter 置 none。渐变一个字没动 → 卡片的白色罩层、顶部渐隐、整体明度
+ *   完全不变；唯一差别是卡片上半部分背后的背景图不再是磨砂的，而是清晰原图。
+ * 如果觉得清晰背景图太花、压不住文字：把下面「备用」那段注释取消即可
+ *   （整体比原渐变白 8% 左右，只影响 ≥1200px 的桌面端），一行就能调。
+ * 想恢复玻璃拟态：删掉本块即可。
+ * 回滚备份：bak/20261004-perf-idle-frame/before/source/css/site-inject.css
+ * ──────────────────────────────────────────────────────────────────────────── */
+#aside-content > .card-widget.card-info::before,
+[data-theme="dark"] #aside-content > .card-widget.card-info::before {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* 备用：觉得背景图太抢时启用（取消这行的注释符号即可）
+@media (min-width: 1200px) {
+  #aside-content > .card-widget.card-info::before {
+    background: linear-gradient(180deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,.56) 30%, rgba(255,255,255,.82) 64%, rgba(255,255,255,.92) 100%);
+  }
+  [data-theme="dark"] #aside-content > .card-widget.card-info::before {
+    background: linear-gradient(180deg, rgba(6,22,30,.14) 0%, rgba(6,22,30,.56) 30%, rgba(6,22,30,.82) 64%, rgba(6,22,30,.92) 100%);
+  }
+}
+*/

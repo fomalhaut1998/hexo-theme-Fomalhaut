@@ -1,0 +1,204 @@
+#git_container {
+  text-align: center;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  display: -webkit-flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.gitcalendar-graph text.wday, .gitcalendar-graph text.month {
+  font-size: 10px;
+  fill: #aaa;
+}
+
+.contrib-legend {
+  text-align: right;
+  padding: 0 14px 10px 0;
+  display: inline-block;
+  float: right;
+}
+
+.contrib-legend .legend {
+  display: inline-block;
+  list-style: none;
+  margin: 0 5px;
+  position: relative;
+  bottom: -1px;
+  padding: 0;
+}
+
+.contrib-legend .legend li {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.text-small {
+  font-size: 12px;
+  color: #767676;
+}
+
+.gitcalendar-graph {
+  padding: 15px 0 0;
+  text-align: center;
+}
+
+.contrib-column {
+  text-align: center;
+  border-left: 1px solid #ddd;
+  border-top: 1px solid #ddd;
+  font-size: 11px;
+}
+
+.contrib-column-first {
+  border-left: 0;
+}
+
+.table-column {
+  padding: 10px;
+  display: table-cell;
+  flex: 1;
+  vertical-align: top;
+}
+
+.contrib-number {
+  font-weight: 300;
+  line-height: 1.3em;
+  font-size: 24px;
+  display: block;
+}
+
+.gitcalendar img.spinner {
+  width: 70px;
+  margin-top: 50px;
+  min-height: 70px;
+}
+
+.monospace {
+  text-align: center;
+  color: #000;
+  font-family: monospace;
+}
+
+.monospace a {
+  color: #1D75AB;
+  text-decoration: none;
+}
+
+.contrib-footer {
+  font-size: 11px;
+  padding: 0 10px 12px;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+  height: 26px;
+}
+
+.left.text-muted {
+  float: left;
+  margin-left: 9px;
+  color: #767676;
+}
+
+.left.text-muted a {
+  color: #4078c0;
+  text-decoration: none;
+}
+
+.left.text-muted a:hover, .monospace a:hover {
+  text-decoration: underline;
+}
+
+h2.f4.text-normal.mb-3 {
+  display: none;
+}
+
+.float-left.text-gray {
+  float: left;
+}
+
+#user-activity-overview {
+  display: none;
+}
+
+.day-tooltip {
+  white-space: nowrap;
+  position: absolute;
+  z-index: 99999;
+  padding: 10px;
+  font-size: 12px;
+  color: #959da5;
+  text-align: center;
+  background: rgba(0, 0, 0, .85);
+  border-radius: 3px;
+  display: none;
+  pointer-events: none;
+}
+
+.day-tooltip strong {
+  color: #dfe2e5;
+}
+
+.day-tooltip.is-visible {
+  display: block;
+}
+
+.day-tooltip:after {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  box-sizing: border-box;
+  margin: 0 0 0 -5px;
+  content: " ";
+  border: 5px solid transparent;
+  border-top-color: rgba(0, 0, 0, .85)
+}
+
+.position-relative {
+  width: 100%;
+}
+
+@media screen and (max-width:650px) {
+  .contrib-column {
+    display: none
+  }
+}
+
+.angle-wrapper {
+  z-index: 9999;
+  display: inline;
+  width: 200px;
+  height: 40px;
+  position: relative;
+  padding: 5px 0;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 8px;
+  text-align: center;
+  color: white;
+}
+
+.angle-box {
+  position: fixed;
+  padding: 10px
+}
+
+.angle-wrapper span {
+  padding-bottom: 1em;
+}
+
+.angle-wrapper:before {
+  content: "";
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.8);
+  position: absolute;
+  left: 47.5%;
+  top: 100%;
+}

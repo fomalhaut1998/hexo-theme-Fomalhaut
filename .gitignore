@@ -1,11 +1,29 @@
 .DS_Store
 Thumbs.db
-db.json
+db.json*
 *.log
 node_modules/
 public/
 .deploy*/
 .deploy_git*/
 .idea
-themes/butterfly/.git
-package-lock.json
+themes/fomalhaut/.git
+.ai-chat-key
+
+# ===== 2026-10-04 追加：本地调试残留与备份，不进仓库 =====
+# DSH 调试会话产生的临时文件、日志、浏览器 profile
+.dsh-*
+.tmp-*
+tmp-*
+%SystemDrive%/
+undefined/
+probe*.txt
+_probe_node.txt
+bak_probe_out.txt
+# 本地备份（bak/ 目录、*.bak、*.bak-before-* 等）
+bak/
+*.bak
+*.bak-*
+# 本地素材、检查产物
+images/
+cdn-check/

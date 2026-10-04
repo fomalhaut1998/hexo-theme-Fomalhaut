@@ -3,22 +3,22 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Fomalhaut🥝
-subtitle: 
-description: 'Future is now 🍭🍭🍭'
-keywords: 'Java,MySQL,算法,代码,博客,Butterfly,Hexo,Fomalhaut🥝,Fomalhaut'
-author: Fomalhaut🥝
+title: Demo
+subtitle:
+description: "一个基于 Hexo + Fomalhaut 主题的演示站点"
+keywords: "Hexo,Butterfly,Fomalhaut,博客,主题,卡片式UI"
+author: Demo
 language: zh-CN
-timezone: ''
+timezone: ""
 
 # abbrlink config
 abbrlink:
-  alg: crc32      #support crc16(default) and crc32
-  rep: hex        #support dec(default) and hex
+  alg: crc32 #support crc16(default) and crc32
+  rep: hex #support dec(default) and hex
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
-url: https://www.fomal.cc/
+url: https://example.com/
 permalink: posts/:abbrlink.html
 permalink_defaults:
 pretty_urls:
@@ -34,7 +34,10 @@ category_dir: categories
 code_dir: downloads/code
 i18n_dir: :lang
 # 指定不渲染某些页面
-skip_render: 
+skip_render:
+  - 'js/tag-map/*' # leaflet / proj4 第三方库原文件，原样复制，不做 Nunjucks 渲染
+  - 'js/ai-chat.js' # AI 助手前端本体（含大段 CSS/JS 字面量），原样复制，不做 Nunjucks 渲染
+  - 'box/astronomy/voyager.html' # 旅行者号交互星图，是完整独立页面（自带样式与脚本），由 index.md 用 iframe 引入，原样复制
 
 # Writing
 new_post_name: :year-:month-:day-:title.md # File name of new posts
@@ -43,7 +46,7 @@ titlecase: false # Transform title into titlecase
 external_link:
   enable: true # Open external links in new tab
   field: site # Apply to the whole site
-  exclude: ''
+  exclude: ""
 filename_case: 0
 render_drafts: false
 post_asset_folder: false
@@ -60,30 +63,27 @@ prismjs:
   enable: false
   preprocess: true
   line_number: true
-  tab_replace: ''
+  tab_replace: ""
 
 math:
-  engine: 'mathjax'
+  engine: "mathjax"
   mathjax:
     src: custom_mathjax_source
     config:
-      # MathJax config   
-   
-  
+      # MathJax config
+
 # 音乐插件
-aplayer: 
+aplayer:
   meting: true
   asset_inject: false
-               
-                    
 
 # Home page setting
 # path: Root path for your blogs index page. (default = '')
 # per_page: Posts displayed per page. (0 = disable pagination)
 # order_by: Posts order. (Order by date descending by default)
 index_generator:
-  path: ''
-  per_page: 12
+  path: ""
+  per_page: 9
   order_by: -date
 
 # Category & Tag
@@ -102,7 +102,7 @@ meta_generator: true
 date_format: YYYY-MM-DD
 time_format: HH:mm:ss
 ## updated_option supports 'mtime', 'date', 'empty'
-updated_option: 'mtime'
+updated_option: "mtime"
 
 # Pagination
 ## Set per_page to 0 to disable pagination
@@ -118,33 +118,33 @@ ignore:
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
-theme: butterfly
+theme: fomalhaut
 
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
   - type: git
-    repository:  # 这里写上你的Github地址
+    repository: https://github.com/yourname/yourname.github.io.git # 这个Github仓库用自动部署即可
     branch: main
-  # - type: baidu_url_submitter
+  - type: baidu_url_submitter
   # - type: git
   #   #repo改为repo: git@域名:/var/repo/hexo.git
-  #   repo: git@43.249.9.21:/var/repo/hexo.git
+  #   repo: git@127.0.0.1:/var/repo/hexo.git
   #   branch: main
 
 # hexo-algolia(匹配标题)
 # algolia:
-#   applicationID: 78BL6ZB8EC
-#   apiKey: 980d4a6ff043d026e5d9bf53e18c533a
-#   indexName: index_1
+#   applicationID: YOUR_ALGOLIA_APP_ID
+#   apiKey: YOUR_ALGOLIA_SEARCH_KEY
+#   indexName: your_index_name
 
 # hexo-algoliasearch(可以匹配内容)
 algolia:
-  appId: ""
-  apiKey: ""
-  adminApiKey: ""
-  chunkSize: 
-  indexName: ""
+  appId: "YOUR_ALGOLIA_APP_ID"
+  apiKey: "YOUR_ALGOLIA_SEARCH_KEY"
+  adminApiKey: "YOUR_ALGOLIA_ADMIN_KEY"
+  chunkSize: 5000
+  indexName: "your_index_name"
   fields:
     - content:strip:truncate,0,30000
     - excerpt:strip
@@ -155,12 +155,11 @@ algolia:
     - tags
     - title
 
-
 # 首页轮播图
 # hexo-butterfly-swiper
 # see https://akilar.top/posts/8e1264d1/
 swiper:
-  enable: true # 开关
+  enable: false # 开关（需要自建 gitcalendar 数据仓库，见 README「GitHub 贡献日历」）
   priority: 1 #过滤器优先权
   enable_page: / # 应用页面
   timemode: date #date/updated
@@ -191,27 +190,23 @@ type: atom
 path: atom.xml
 limit: 20
 
-
 # 站点地图
 sitemap:
   path: sitemap.xml
 baidusitemap:
   path: baidusitemap.xml
 
-  
 # 主动推送百度，被百度收录
 baidu_url_submit:
   count: 10 # 提交最新的10个链接
-  host:  # 百度站长平台中注册的域名
-  token:  # 秘钥，百度站长平台 > 推送接口 > 接口调用地址中token字段
-  path:  # 文本文档的地址， 新链接会保存在此文本文档里，不用改
-
+  host: https://example.com # 百度站长平台中注册的域名
+  token: YOUR_BAIDU_TOKEN # 秘钥，百度站长平台 > 推送接口 > 接口调用地址中token字段
+  path: baidu_urls.txt # 文本文档的地址， 新链接会保存在此文本文档里，不用改
 
 nofollow:
   enable: false
   field: site
-  exclude: ''
-
+  exclude: ""
 
 # github提交日志
 # hexo-filter-gitcalendar
@@ -241,8 +236,9 @@ gitcalendar:
   #   name: content
   #   index: 0
   # simplemode: true
-  user:  #git用户名
-  apiurl: ''
+  user: yourname # git用户名
+  apiurl: "https://gitcalendar.example.com" # 你的 gitcalendar 服务地址
+  jsonurl: "https://cdn.jsdelivr.net/gh/yourname/gitcalendar-data@main/data.json" # 方案B：GitHub Action 定时更新的数据
   minheight:
     pc: 320px #桌面端最小高度
     mibile: 0px #移动端最小高度
@@ -255,8 +251,8 @@ gitcalendar:
   # color: "['#ebedf0', '#f0fff4', '#dcffe4', '#bef5cb', '#85e89d', '#34d058', '#28a745', '#22863a', '#176f2c', '#165c26', '#144620']" #翠绿色调
   # color: "['#ebedf0', '#f1f8ff', '#dbedff', '#c8e1ff', '#79b8ff', '#2188ff', '#0366d6', '#005cc5', '#044289', '#032f62', '#05264c']" #天青色调
   container: .recent-post-item(style='width:100%;height:auto;padding:10px;') #父元素容器，需要使用pug语法
-  gitcalendar_css: https://npm.elemecdn.com/hexo-filter-gitcalendar/lib/gitcalendar.css
-  gitcalendar_js: https://npm.elemecdn.com/hexo-filter-gitcalendar/lib/gitcalendar.js
+  gitcalendar_css: /css/gitcalendar.css #自托管，勿改回 CDN（2026-10-01）
+  gitcalendar_js: /js/gitcalendar.js #自托管 + 已打「失败也摘转圈」补丁
 
 # 新版的搜索插件
 plugins:
@@ -271,23 +267,26 @@ magnet:
   devide: 3
   display:
     - name: 算法
-      display_name: 小Fの算法学习笔记
+      display_name: 算法学习笔记
       icon: 🍡
     - name: 计算机基础
-      display_name: 小Fの计算机基础笔记
+      display_name: 计算机基础笔记
       icon: 🍼
     - name: 魔改教程
-      display_name: 小Fの博客魔改教程
+      display_name: 博客魔改教程
       icon: 🍉
     - name: Java基础
-      display_name: 小FのJava基础笔记
+      display_name: Java基础笔记
       icon: 🍟
     - name: 数据库
-      display_name: 小Fの数据库笔记
+      display_name: 数据库笔记
       icon: 🍨
-    - name: 演示
-      display_name: 小Fの案例演示笔记
-      icon: 🍥
+    # - name: 演示
+    #   display_name: 案例演示笔记
+    #   icon: 🍥
+    - name: 嵌入式知识点总结
+      display_name: 嵌入式知识总结
+      icon: 🧀
   color_setting:
     text_color: black # 文字默认颜色
     text_hover_color: white # 文字鼠标悬浮颜色
@@ -299,3 +298,8 @@ magnet:
     index: 0
   temple_html: '<div class="recent-post-item" style="width:100%;height: auto"><div id="catalog_magnet">${temple_html_item}</div></div>'
   plus_style: ""
+
+# 目录一级标题跳转
+markdown:
+  anchors:
+    level: 1

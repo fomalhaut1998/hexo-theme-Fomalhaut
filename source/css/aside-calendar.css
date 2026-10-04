@@ -1,0 +1,309 @@
+/*!
+ * aside-calendar.css —— 侧栏「日历卡 + 倒计时卡」样式（配合 source/js/aside-calendar.js）
+ * ==================================================================
+ * 只作用于 #aside-calendar / #aside-countdown 两个卡片，不动主题其它部分。
+ *
+ * 配色跟着站点主题色走：--theme-color 由主题在运行期注入（换主题配色时两张卡自动跟着变），
+ * 由它派生三档，每个变量第一行是「不支持 color-mix() 的老浏览器」回退值：
+ *   --cal-accent              主题色原色                    → 进度条轨道/填充
+ *   --cal-strong              原色压深(浅色)/提亮(深色)一档 → 大数字、百分比等当文字用的地方
+ *   --cal-solid + --cal-solid-ink  实心块底色 + 上面的字色  → 今日圆
+ */
+#aside-calendar,
+#aside-countdown {
+  --cal-accent: var(--theme-color, #39c5bb);
+
+  --cal-strong: #25706b;
+  --cal-strong: color-mix(in srgb, var(--cal-accent) 62%, #000);
+
+  --cal-track: rgba(57, 197, 187, 0.15);
+  --cal-track: color-mix(in srgb, var(--cal-accent) 15%, transparent);
+
+  --cal-fill: rgba(57, 197, 187, 0.34);
+  --cal-fill: color-mix(in srgb, var(--cal-accent) 34%, transparent);
+
+  --cal-solid: #25706b;
+  --cal-solid: color-mix(in srgb, var(--cal-accent) 62%, #000);
+  --cal-solid-ink: #fff;
+
+  --cal-ink: var(--font-color, #1f2937);
+  --cal-muted: rgba(60, 60, 67, 0.55);
+}
+
+[data-theme="dark"] #aside-calendar,
+[data-theme="dark"] #aside-countdown {
+  --cal-strong: #7ad7cf;
+  --cal-strong: color-mix(in srgb, var(--cal-accent) 78%, #fff);
+
+  --cal-track: rgba(57, 197, 187, 0.22);
+  --cal-track: color-mix(in srgb, var(--cal-accent) 22%, transparent);
+
+  --cal-fill: rgba(57, 197, 187, 0.44);
+  --cal-fill: color-mix(in srgb, var(--cal-accent) 44%, transparent);
+
+  --cal-solid: #7ad7cf;
+  --cal-solid: color-mix(in srgb, var(--cal-accent) 78%, #fff);
+  --cal-solid-ink: #10131a;
+
+  --cal-muted: rgba(235, 235, 245, 0.6);
+}
+
+/* 卡片内边距比主题默认的 20px 收一圈（两个 id 是为了压过 #aside-content .card-widget） */
+#aside-content #aside-calendar,
+#aside-content #aside-countdown {
+  padding: 14px 15px;
+}
+
+/* 这两张卡挨着，间距也从 20px 收到 12px */
+#aside-content #aside-countdown {
+  margin-top: 12px;
+}
+
+/* widget.yml 里的 name / icon 只是备用（想显示标题就把这两行删掉） */
+#aside-calendar .item-headline,
+#aside-countdown .item-headline {
+  display: none;
+}
+
+#aside-calendar .cal-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* ── 卡片一：今天 + 当月迷你月历 ─────────────────────────── */
+#aside-calendar .cal-left {
+  flex: 0 0 44%;
+  min-width: 0;
+  text-align: center;
+  /* 右栏月历比左栏高，左栏垂直居中才不显得“吊在顶上” */
+  align-self: center;
+}
+
+#aside-calendar .cal-week {
+  font-weight: 600;
+  font-size: 0.95em;
+  line-height: 1.3;
+  color: var(--cal-ink);
+}
+
+#aside-calendar .cal-daynum {
+  margin: 0;
+  font-weight: 700;
+  font-size: 2.45em;
+  line-height: 1.08;
+  color: var(--cal-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+#aside-calendar .cal-solar {
+  font-size: 0.76em;
+  line-height: 1.45;
+  color: var(--cal-ink);
+  white-space: nowrap;
+  /* 盒子按文字宽度收窄，居中更稳（也方便量宽度） */
+  width: max-content;
+  margin: 0 auto;
+}
+
+#aside-calendar .cal-lunar {
+  font-size: 0.76em;
+  line-height: 1.45;
+  color: var(--cal-muted);
+  white-space: nowrap;
+  width: max-content;
+  margin: 0 auto;
+}
+
+#aside-calendar .cal-grid {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  min-width: 0;
+  font-size: 0.73em;
+  text-align: center;
+}
+
+#aside-calendar .cal-hd {
+  padding-bottom: 1px;
+  font-size: 0.92em;
+  color: var(--cal-muted);
+}
+
+#aside-calendar .cal-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.68em;
+  color: var(--cal-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+#aside-calendar .cal-cell.is-today {
+  justify-self: center;
+  align-self: center;
+  width: 1.52em;
+  height: 1.52em;
+  border-radius: 50%;
+  background: var(--cal-solid);
+  color: var(--cal-solid-ink);
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(57, 197, 187, 0.35);
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--cal-accent) 40%, transparent);
+}
+
+/* ── 卡片二：倒计时 + 年/月/周进度 ───────────────────────── */
+/* 版式照参考站那张：左边一列「距离春节 / 127 / 2027-02-06」（整列居中），右边三条进度条。
+   侧栏卡片只有 ~340px 宽，所以左列压到 30%，进度条里的百分比靠左、还剩 N 天靠右，
+   两边都不换行，中间留得下空隙（再窄也不会叠字）。 */
+#aside-countdown .cd {
+  display: flex;
+  align-items: center;
+  gap: 0 10px;
+}
+
+#aside-countdown .cd-left {
+  flex: 0 0 30%;
+  min-width: 0;
+  display: block;
+  text-align: center;
+  margin-bottom: 0;
+}
+
+#aside-countdown .cd-title {
+  font-weight: 600;
+  font-size: 0.95em;
+  color: var(--cal-ink);
+}
+
+#aside-countdown .cd-num {
+  margin: 0;
+  font-weight: 700;
+  font-size: 2em;
+  line-height: 1.05;
+  color: var(--cal-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 用户要求去掉数字后面的「天」字：想恢复单位就删掉 display: none 这一行 */
+#aside-countdown .cd-unit {
+  display: none;
+  margin-left: 1px;
+  font-size: 0.42em;
+  font-weight: 500;
+}
+
+#aside-countdown .cd-date {
+  font-size: 0.76em;
+  color: var(--cal-muted);
+  white-space: nowrap;
+}
+
+#aside-countdown .cd-rows {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+#aside-countdown .cd-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.74em;
+  white-space: nowrap;
+}
+
+#aside-countdown .cd-label {
+  flex: 0 0 2.25em;
+  font-size: 1.14em;
+  color: var(--cal-ink);
+  font-weight: 500;
+}
+
+#aside-countdown .cd-bar {
+  position: relative;
+  flex: 1 1 auto;
+  height: 1.8em;
+  min-width: 0;
+  border-radius: 0.45em;
+  background: var(--cal-track);
+  overflow: hidden;
+}
+
+#aside-countdown .cd-bar i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 0.45em;
+  background: var(--cal-fill);
+  transition: width 0.6s ease;
+}
+
+#aside-countdown .cd-bar em {
+  position: relative;
+  z-index: 1;
+  display: block;
+  padding-left: 0.55em;
+  line-height: 1.8em;
+  font-style: normal;
+  font-weight: 600;
+  text-align: left;
+  color: var(--cal-strong);
+}
+
+#aside-countdown .cd-bar b {
+  position: absolute;
+  z-index: 1;
+  right: 0.55em;
+  top: 0;
+  line-height: 1.8em;
+  font-weight: 500;
+  color: var(--cal-muted);
+}
+
+/* 日历卡底部那一行：x 天后是<节气> + ☀️日出 🌙日落 */
+#aside-calendar .cal-extra {
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px dashed var(--cal-track);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 5px 12px;
+  font-size: 0.9em;
+  color: var(--cal-muted);
+  white-space: nowrap;
+}
+
+/* 节气名：跟着主题色走（--cal-strong 是主题色压深那一档，浅色下才够对比度，深色下会自动提亮） */
+#aside-calendar .cal-extra-term em.cal-term {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--cal-strong);
+}
+
+#aside-calendar .cal-extra-sun span + span {
+  margin-left: 11px;
+}
+
+/* 窄屏（手机）侧栏是整宽，内容别拉太散 */
+@media (max-width: 900px) {
+  #aside-calendar .cal-main,
+  #aside-countdown .cd {
+    max-width: 380px;
+    margin: 0 auto;
+  }
+}
+
+/* ── 隐藏「通讯录」卡片（2026-10-01 用户要求去掉）──────────────────
+   开关在 _config.fomalhaut.yml 的 aside.card_friend_link.enable，但 hexo server
+   只在启动时读主题配置，运行期改成 false 不会重新渲染 —— 这条先兜底隐藏；
+   重启 server（或 hexo generate）后卡片本身不再输出，这条自动变成空转。 */
+#aside-content .card-friend-link {
+  display: none;
+}
+

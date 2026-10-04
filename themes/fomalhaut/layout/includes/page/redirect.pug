@@ -1,0 +1,9 @@
+//- 【2026-10-01 新增】通用跳转页：在页面 front-matter 里写 type: "redirect" 和 redirect_to: /目标路径/
+- var redirectTo = url_for(page.redirect_to || '/')
+meta(http-equiv="refresh" content='0;url=' + redirectTo)
+script.
+  location.replace("!{redirectTo}");
+#redirect-tip(style="text-align:center;padding:1.5rem 0;line-height:2")
+  p 该页面已合并到「文章统计」，正在自动跳转……
+  p
+    a(href=redirectTo) 如果没有自动跳转，请点这里

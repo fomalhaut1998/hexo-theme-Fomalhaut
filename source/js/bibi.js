@@ -3,7 +3,7 @@ let total = 0
 let nowNum = 0
 let items = []
 let page = 1
-let Url = 'https://kkapi.fomal.cc/api/ispeak?author=6319fedef46fae97dcfa5ee2&page=' // 记住替换为你的API链接
+let Url = 'https://kkapi.example.com/api/ispeak?author=6319fedef46fae97dcfa5ee2&page=' // 修改api，记得带参数page
 
 
 window.addEventListener('DOMContentLoaded', () => {

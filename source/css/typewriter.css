@@ -1,0 +1,72 @@
+/* ============================================================================
+ * source/css/typewriter.css —— 首页副标题打字机的「丝滑」外观
+ * ----------------------------------------------------------------------------
+ * 配合 source/js/inject/typewriter.js（同名 window.Typed 接管主题的 Typed.js）。
+ * 只有 #subtitle 被 JS 打上 .st-type 时才生效；美化面板关掉打字效果、
+ * 或脚本没加载，整块不命中，页面退回主题原样。
+ * 配色不写死：光标用 currentColor，跟随 #site-subtitle 的 --light-grey。
+ * 回滚：删掉 _config.fomalhaut.yml inject.head 里的这一行 <link> 即可。
+ * ========================================================================== */
+
+/* 每个字符一个 inline-block 小盒子，才能做 transform；空格用 white-space:pre 保住 */
+#subtitle.st-type .st-ch {
+  display: inline-block;
+  white-space: pre;
+  /* backwards：动画播完就回到静态值（opacity 1 / transform none / 无 filter），
+   * 不长期占着合成层，长句也不会攒出一堆常驻图层 */
+  animation: stChIn .34s cubic-bezier(.22, .61, .36, 1) backwards;
+}
+
+@keyframes stChIn {
+  from {
+    opacity: 0;
+    transform: translateY(.18em) scale(.96);
+    filter: blur(3px);
+  }
+  60% { filter: blur(0); }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+/* 退格：逐字柔化淡出（JS 在 190ms 后摘掉节点） */
+#subtitle.st-type .st-ch.st-out {
+  animation: stChOut .19s ease-in forwards;
+}
+
+@keyframes stChOut {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(-.14em) scale(.97); }
+}
+
+/* 光标：一条圆角细杠，柔和呼吸，不再是硬闪方块 */
+#subtitle.st-type .st-cur {
+  display: inline-block;
+  width: .1em;
+  min-width: 2px;
+  height: 1.05em;
+  margin-left: .1em;
+  border-radius: 2px;
+  background: currentColor;
+  vertical-align: -.16em;
+  opacity: .8;
+  animation: stCurPulse 1.15s ease-in-out infinite;
+}
+
+@keyframes stCurPulse {
+  0%, 100% { opacity: .15; }
+  50% { opacity: .8; }
+}
+
+/* 整句打完（驻留）时，光标呼吸得更明显一点，暗示「还在等」 */
+#subtitle.st-type.st-done .st-cur { animation-duration: .95s; }
+
+@media (prefers-reduced-motion: reduce) {
+  #subtitle.st-type .st-ch,
+  #subtitle.st-type .st-ch.st-out,
+  #subtitle.st-type .st-cur { animation: none !important; }
+  #subtitle.st-type .st-ch { opacity: 1; transform: none; filter: none; }
+  #subtitle.st-type .st-cur { opacity: .5; }
+}

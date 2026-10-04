@@ -1,0 +1,147 @@
+//- ============================================================
+//- 小站资讯卡（2026-10-03 改版）
+//-   新版：一行三个 KPI（总字数 / 篇均字 / 友链）+ 时间条 + 年度产出柱状 + 访客位
+//-   注：文章数已从卡片移除（个人信息卡片里已有），故不再单列
+//-   回滚：_config.fomalhaut.yml → aside.card_webinfo.classic: true（恢复旧版式）
+//-        或直接还原 bak/20261003-webinfo/card_webinfo.pug
+//-   样式：inject.head 的 #webinfoCard    脚本：inject.bottom 的 #webinfoCardJs
+//- ============================================================
+if theme.aside.card_webinfo.enable
+  -
+    var __classic = theme.aside.card_webinfo.classic
+    var __nPosts = 0, __links = 0
+    var __wNum = 0, __wordsText = '0', __avg = 0, __writeDays = 0
+    var __sinceRun = 0, __sinceWrite = 0, __runISO = '', __lastPostISO = ''
+    var __buildISO = '', __buildDate = ''
+    var __bars = [], __maxBar = 1
+    var __num = function (v) {
+      if (typeof v === 'number') { return v }
+      var m = String(v).match(/^([\d.]+)/)
+      return m ? parseFloat(m[1]) * (/w/i.test(String(v)) ? 10000 : 1) : 0
+    }
+    var __fmt = function (n) { return n >= 10000 ? (n / 10000).toFixed(1) + 'w' : (n >= 1000 ? (n / 1000).toFixed(1) + 'k' : '' + n) }
+    if (!__classic) {
+      var __all = site.posts.toArray ? site.posts.toArray() : site.posts
+      var __first = null, __lastPost = 0, __years = {}, __days = {}
+      for (var __i = 0; __i < __all.length; __i++) {
+        var __d = __all[__i].date ? new Date(__all[__i].date) : null
+        if (__d && !isNaN(__d.getTime())) {
+          var __t = __d.getTime()
+          var __y = __d.getFullYear()
+          __years[__y] = (__years[__y] || 0) + 1
+          __days[__y + '-' + (__d.getMonth() + 1) + '-' + __d.getDate()] = 1
+          if (!__first || __t < __first.getTime()) { __first = __d }
+          if (__t > __lastPost) { __lastPost = __t }
+        }
+      }
+      __nPosts = site.posts.length
+      var __lg = site.data.link || []
+      for (var __j = 0; __j < __lg.length; __j++) {
+        __links += ((__lg[__j] && __lg[__j].link_list) || []).length
+      }
+      __wordsText = String(totalcount(site))
+      __wNum = __num(__wordsText)
+      __avg = (__nPosts && __wNum) ? Math.round(__wNum / __nPosts) : 0
+      __writeDays = Object.keys(__days).length
+      __lastPostISO = __lastPost ? new Date(__lastPost).toISOString() : ''
+      var __runBase = theme.runtimeshow.publish_date ? new Date(theme.runtimeshow.publish_date) : null
+      if (!__runBase || isNaN(__runBase.getTime())) { __runBase = __first }
+      __runISO = (__runBase && !isNaN(__runBase.getTime())) ? __runBase.toISOString() : ''
+      if (__runISO) { __sinceRun = Math.max(0, Math.floor((Date.now() - new Date(__runISO).getTime()) / 86400000)) }
+      if (__lastPost) { __sinceWrite = Math.max(0, Math.floor((Date.now() - __lastPost) / 86400000)) }
+      var __yList = Object.keys(__years).map(Number).sort(function (a, b) { return a - b })
+      var __yMin = __yList.length ? __yList[0] : (new Date()).getFullYear()
+      var __yMax = __yList.length ? __yList[__yList.length - 1] : __yMin
+      if (__yMax - __yMin > 7) { __yMin = __yMax - 7 }
+      for (var __y2 = __yMin; __y2 <= __yMax; __y2++) {
+        var __c = __years[__y2] || 0
+        if (__c > __maxBar) { __maxBar = __c }
+        __bars.push({ y: __y2, n: __c })
+      }
+      // 「更新」的兜底值 = 本次构建时刻；页面加载后由 source/js/inject/webinfo-card.js
+      // 用 GitHub 部署仓库 yourname.github.io 的最近一次提交时间校正成真实部署时间。
+      __buildISO = new Date().toISOString()
+      __buildDate = (new Date().getMonth() + 1) + '-' + new Date().getDate()
+    }
+  .card-widget.card-webinfo
+    .item-headline
+      a.faa-parent.animated-hover
+        svg.faa-tada.icon(style="height:25px;width:25px;fill:currentColor;position:relative;top:5px" aria-hidden="true")
+          use(xlink:href='#icon-shujutongji2')
+      span(style="font-weight:bold")= _p('小站资讯')
+    if __classic
+      .webinfo
+        if theme.aside.card_webinfo.post_count
+          .webinfo-item
+            .item-name= _p('aside.card_webinfo.article_name') + " :"
+            .item-count= site.posts.length
+        if theme.runtimeshow.enable
+          .webinfo-item
+            .item-name= _p('aside.card_webinfo.runtime.name') + " :"
+            .item-count#runtimeshow(data-publishDate=date_xml(theme.runtimeshow.publish_date))
+              i.fa-solid.fa-spinner.fa-spin
+        if theme.wordcount.enable && theme.wordcount.total_wordcount
+          .webinfo-item
+            .item-name=_p('aside.card_webinfo.site_wordcount') + " :"
+            .item-count=totalcount(site)
+        if theme.busuanzi.site_uv
+          .webinfo-item
+            .item-name= _p('aside.card_webinfo.site_uv_name') + " :"
+            .item-count#busuanzi_value_site_uv
+              i.fa-solid.fa-spinner.fa-spin
+        if theme.busuanzi.site_pv
+          .webinfo-item
+            .item-name= _p('aside.card_webinfo.site_pv_name') + " :"
+            .item-count#busuanzi_value_site_pv
+              i.fa-solid.fa-spinner.fa-spin
+        if theme.aside.card_webinfo.last_push_date
+          .webinfo-item
+            .item-name= _p('aside.card_webinfo.last_push_date.name') + " :"
+            .item-count#last-push-date(data-lastPushDate=date_xml(Date.now()))
+              i.fa-solid.fa-spinner.fa-spin
+    else
+      .wi
+        .wi-kpi
+          .wi-kpi-item
+            .wi-kpi-num(data-countup=__wNum data-format="w")= __wordsText
+            .wi-kpi-label 总字数
+          .wi-kpi-item
+            .wi-kpi-num(data-countup=__avg data-format="k")= __fmt(__avg)
+            .wi-kpi-label 篇均字
+          a.wi-kpi-item(href=url_for('/social/link/'))
+            .wi-kpi-num(data-countup=__links)= __links
+            .wi-kpi-label 友链
+        .wi-time
+          span.wi-time-item
+            span.wi-time-k 已运行
+            span.wi-time-v.wi-run(data-run-since=__runISO)= __sinceRun + ' 天'
+          span.wi-time-sep ·
+          span.wi-time-item
+            span.wi-time-k 距上次发文
+            span.wi-time-v.wi-last(data-last-post=__lastPostISO)= __sinceWrite + ' 天'
+          span.wi-time-sep ·
+          span.wi-time-item.wi-deploy(title='博客最近一次部署时间（部署产物里的 deploy.json）')
+            span.wi-time-k 更新
+            span.wi-time-v.wi-deploy-v(data-deploy-build=__buildISO data-deploy-api=url_for('/deploy.json'))= __buildDate
+        .wi-chart
+          .wi-chart-head
+            span 年度产出
+            span.wi-chart-sub 共 #{__writeDays} 个写作日
+          .wi-bars
+            each __b in __bars
+              .wi-bar
+                .wi-bar-n= __b.n
+                .wi-bar-fill(style='height:' + (__b.n ? Math.max(12, Math.round(__b.n / __maxBar * 68)) : 4) + '%' + (__b.n ? '' : ';opacity:.25'))
+          .wi-years
+            each __b2 in __bars
+              .wi-year= __b2.y
+        if theme.busuanzi.site_uv || theme.busuanzi.site_pv
+          .wi-visit
+            if theme.busuanzi.site_uv
+              .wi-visit-item
+                .wi-visit-num#busuanzi_value_site_uv —
+                .wi-visit-label 本站访客数
+            if theme.busuanzi.site_pv
+              .wi-visit-item
+                .wi-visit-num#busuanzi_value_site_pv —
+                .wi-visit-label 本站总访问量
