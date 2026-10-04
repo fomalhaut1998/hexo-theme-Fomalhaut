@@ -59,7 +59,7 @@
     "markdown-it-mark": "^3.0.1",
     "save": "^2.5.0",
     "vanilla-lazyload": "^17.8.3",
-    "workbox-build": "^6.5.4"
+    "workbox-build": "^7.4.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.5",
