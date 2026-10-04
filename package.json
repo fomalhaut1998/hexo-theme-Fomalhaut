@@ -67,7 +67,7 @@
     "gulp-babel": "^8.0.0",
     "gulp-clean-css": "^4.3.0",
     "gulp-fontmin": "^0.7.4",
-    "gulp-html-minifier-terser": "^7.1.0",
+    "gulp-html-minifier-terser": "^8.0.0",
     "gulp-htmlclean": "^2.7.22",
     "gulp-terser": "^2.1.0"
   }
