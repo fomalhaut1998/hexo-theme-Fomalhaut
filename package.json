@@ -23,7 +23,7 @@
     "gulp-htmlmin": "^5.0.1",
     "hexo": "^6.2.0",
     "hexo-abbrlink": "^2.2.1",
-    "hexo-algoliasearch": "^1.0.0",
+    "hexo-algoliasearch": "^2.0.1",
     "hexo-baidu-url-submit": "0.0.6",
     "hexo-blog-encrypt": "^3.1.6",
     "hexo-butterfly-clock-anzhiyu": "^1.1.8",
