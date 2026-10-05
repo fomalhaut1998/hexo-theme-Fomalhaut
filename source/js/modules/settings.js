@@ -206,12 +206,8 @@ setColor(localStorage.getItem("themeColor"));
 function setColor(c) {
   document.getElementById("themeColor").innerText = `:root{--theme-color:` + map.get(c) + ` !important}`;
   localStorage.setItem("themeColor", c);
-  /* 刷新鼠标颜色。
-   * 2026-10-04 性能修复：CURSOR.refresh() 会对全站元素做一次
-   * getElementsByTagName('*') + getComputedStyle 扫描（3000+ 元素实测 ~37ms），
-   * 而启动时 setColor 必然执行一次，此时 CURSOR 刚在 cursor.js 里用同一个
-   * localStorage.themeColor 建过列表 —— 这一次扫描纯属白干。
-   * 现在只有主题色真的换了才重扫。 */
+  /* 只有主题色变化才刷新鼠标颜色；Cursor.refresh 原地更新样式，
+   * 按当前目标识别交互状态，不再遍历全页元素。 */
   if (window.__cursorColor !== c) {
     window.__cursorColor = c;
     CURSOR.refresh();
@@ -295,22 +291,24 @@ if (localStorage.getItem("fpson") == undefined) {
 // 初始化
 // 2026-10-04 性能修复：帧率计数本身是一条常驻 requestAnimationFrame 循环，
 // 面板里把「帧率监测」关掉后不该还在跑 —— 改成开着才启动（fpssw 重新打开会补启动）。
+var fpsPanel = document.getElementById("fps");
 if (localStorage.getItem("fpson") == 1) {
   startFps();
-  document.getElementById("fps").style.display = "block";
+  if (fpsPanel) fpsPanel.style.display = "block";
 } else {
-  document.getElementById("fps").style.display = "none";
+  stopFps();
+  if (fpsPanel) fpsPanel.style.display = "none";
 }
-// 切换
+// 切换：显示节点暂时缺失也不能阻止取消采样和保存偏好。
 function fpssw() {
-  if (document.getElementById("fpson").checked) {
-    document.getElementById("fps").style.display = "block";
-    localStorage.setItem("fpson", "1");
-    startFps(); // 之前关过就重新起循环（startFps 内部有单例保护，不会叠加）
-  } else {
-    document.getElementById("fps").style.display = "none";
-    localStorage.setItem("fpson", "0");
-  }
+  var toggle = document.getElementById("fpson");
+  if (!toggle) return;
+  var enabled = toggle.checked;
+  localStorage.setItem("fpson", enabled ? "1" : "0");
+  if (enabled) startFps();
+  else stopFps();
+  var panel = document.getElementById("fps");
+  if (panel) panel.style.display = enabled ? "block" : "none";
 }
 
 // 刷新窗口
@@ -527,10 +525,10 @@ function changeBgColor() {
 let bingDayBg = "url(https://bing.biturl.top/?resolution=1920&format=image&index=0&mkt=zh-CN)";
 // 必应历史/随机壁纸API（2026-09-30 修复：原 bing.img.run 已全站失效）
 let bingHistoryBg = "url(https://bing.biturl.top/?resolution=1920&format=image&index=random&mkt=zh-CN)";
-// 二次元随机（2026-09-30 修复：原 api.yimian.xyz 已超时失效）
-let EEEDog = "url(https://www.loliapi.com/acg/)";
-// 随机美图（2026-09-30 修复：原 cdn.seovx.com 已失效）
-let seovx = "url(https://api.dujin.org/pic/)";
+// 二次元随机（2026-09-30 换到 loliapi；2026-10-06 改走同站横屏库 /acg/pc/ —— 原 /acg/ 每 3 次请求就有 1 次 404）
+let EEEDog = "url(https://www.loliapi.com/acg/pc/)";
+// 随机美图（2026-09-30 换到 api.dujin.org/pic/；2026-10-06 该接口开始返回 0 字节空图，改用 moe.jitsu.top 萌图）
+let seovx = "url(https://moe.jitsu.top/api?sort=pc)";
 // picsum随机
 let picsum = "url(https://picsum.photos/id/1043/1920/1080.webp)";
 // 小歪二次元
@@ -1148,6 +1146,7 @@ function reset() {
 
   document.getElementById("rightSide").innerText = `:root{--rightside-display: block}`;
   document.getElementById("fps").style.display = "block";
+  startFps(); // 恢复默认也恢复被真正停止的采样循环。
 
   curTransNum = 98;
   curTransMini = curTransNum * 0.95;

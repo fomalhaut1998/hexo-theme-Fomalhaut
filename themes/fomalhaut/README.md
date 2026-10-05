@@ -1,6 +1,6 @@
 # hexo-theme-fomalhaut
 
-> [hexo-theme-Fomalhaut](https://github.com/yourname/hexo-theme-Fomalhaut) 的主题本体 · **v1.0.0**
+> [hexo-theme-Fomalhaut](https://github.com/yourname/hexo-theme-Fomalhaut) 的主题本体 · **v1.0.1**
 > 基于 [hexo-theme-butterfly](https://github.com/jerryc127/hexo-theme-butterfly) 4.3.1 的二次开发，沿用 Apache-2.0 协议。
 
 ## 这个目录里有什么

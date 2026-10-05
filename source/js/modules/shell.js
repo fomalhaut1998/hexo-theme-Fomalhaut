@@ -232,47 +232,92 @@ function searchSize() {
 (function () {
   var TRACK_ID = "mscrollbar", THUMB_ID = "mscrollbar-thumb";
   var MIN_THUMB = 30;
-  var track = null, thumb = null;
+  var track = null, thumb = null, frame = null;
+  var lastHeight = null, lastTransform = null, shown = false;
 
-  function ensure() {
-    if (track && document.body && document.body.contains(track)) return true;
-    if (!document.body) return false;
+  function ensure(body) {
+    // PJAX 可能替换整条轨道，也可能只替换滑块；不能只验证 track。
+    if (track && thumb && body.contains(track) && track.contains(thumb)) return;
     track = document.getElementById(TRACK_ID);
-    if (!track) {
+    if (!track || !body.contains(track)) {
       track = document.createElement("div");
       track.id = TRACK_ID;
-      document.body.appendChild(track);
+      body.appendChild(track);
     }
     thumb = document.getElementById(THUMB_ID);
-    if (!thumb) {
+    if (!thumb || !track.contains(thumb)) {
       thumb = document.createElement("div");
       thumb.id = THUMB_ID;
       track.appendChild(thumb);
+    }
+    // 新绑定节点以当前值为基准，不继承旧 DOM 的写入缓存。
+    lastHeight = thumb.style.height;
+    lastTransform = thumb.style.transform;
+    shown = track.classList.contains("mscrollbar-on");
+  }
+
+  function setVisible(visible) {
+    if (shown === visible) return;
+    track.classList[visible ? "add" : "remove"]("mscrollbar-on");
+    shown = visible;
+  }
+
+  function skipDesktop() {
+    // 桌面必须在任何高度/滚动布局读取以及节点创建之前退出。
+    if (window.innerWidth <= 768) return false;
+    if (frame !== null) window.cancelAnimationFrame(frame);
+    frame = null;
+    if (track && document.body && document.body.contains(track)) {
+      setVisible(false);
+    } else {
+      track = thumb = null;
     }
     return true;
   }
 
   function update() {
-    if (!ensure()) return;
+    frame = null;
+    if (skipDesktop()) return;
+    var body = document.body;
+    if (!body) return;
     var doc = document.documentElement;
+    // 读阶段：所有滚动/布局值先采样，随后创建节点和写样式，避免读写交错。
     var vh = window.innerHeight || doc.clientHeight;
-    var total = Math.max(document.body.scrollHeight, doc.scrollHeight, document.body.offsetHeight, doc.offsetHeight);
-    if (window.innerWidth > 768 || total <= vh + 1) {
-      track.classList.remove("mscrollbar-on");
-      return;
+    var total = Math.max(body.scrollHeight, doc.scrollHeight, body.offsetHeight, doc.offsetHeight);
+    var visible = total > vh + 1;
+    var height, transform;
+    if (visible) {
+      var h = Math.max(MIN_THUMB, Math.round(vh * vh / total));
+      var ratio = (window.pageYOffset || doc.scrollTop || 0) / (total - vh);
+      if (ratio < 0) ratio = 0;
+      if (ratio > 1) ratio = 1;
+      height = h + "px";
+      transform = "translateY(" + Math.round(ratio * (vh - h)) + "px)";
     }
-    var h = Math.max(MIN_THUMB, Math.round(vh * vh / total));
-    var ratio = (window.pageYOffset || doc.scrollTop || 0) / (total - vh);
-    if (ratio < 0) ratio = 0;
-    if (ratio > 1) ratio = 1;
-    thumb.style.height = h + "px";
-    thumb.style.transform = "translateY(" + Math.round(ratio * (vh - h)) + "px)";
-    track.classList.add("mscrollbar-on");
+    // 写阶段：节点替换时重绑；相同的像素值和可见状态不重复写入。
+    ensure(body);
+    if (visible) {
+      if (lastHeight !== height) {
+        thumb.style.height = height;
+        lastHeight = height;
+      }
+      if (lastTransform !== transform) {
+        thumb.style.transform = transform;
+        lastTransform = transform;
+      }
+    }
+    setVisible(visible);
   }
 
-  window.addEventListener("scroll", update, { passive: true });
-  window.addEventListener("resize", update);
-  document.addEventListener("DOMContentLoaded", update);
-  document.addEventListener("pjax:complete", update);
+  function schedule() {
+    if (skipDesktop() || frame !== null) return;
+    frame = window.requestAnimationFrame(update);
+  }
+
+  window.addEventListener("scroll", schedule, { passive: true });
+  window.addEventListener("resize", schedule);
+  document.addEventListener("DOMContentLoaded", schedule);
+  document.addEventListener("pjax:complete", schedule);
+  if (document.readyState !== "loading") schedule();
 })();
 /* 手机端自绘滚动条 end */

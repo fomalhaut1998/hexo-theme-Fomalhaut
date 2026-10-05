@@ -186,7 +186,7 @@ date: 2022-08-10 16:05:11
   <div class="ab2-note">
     <b>数据口径</b>：上表三列全部是 <b>2026-10-04</b> 在<b>站长本机（中国大陆家庭宽带）</b>上用原始套接字分阶段计时得到的 —— DNS 解析 → TCP 三次握手 → TLS 握手 → 发出 <code>GET /</code> 直到收到第一个字节，每条线路采样 4 次后取区间。单位毫秒，<b>是参考值不是承诺值</b>：不同运营商、不同省份、不同时段的差异可以很大，跨国线路尤其明显（相邻两次采样差出一秒很常见，所以只写区间）。<br>
     线路卡右下角的<b>「实时延迟」徽标</b>才是属于你自己的数字 —— 它是浏览器用 <code>fetch(mode:"no-cors")</code> 打一次带随机参数的请求量出来的往返耗时，点一下即可单独重测，页面静置五分钟也会自动静默复测一轮。<br>
-    另外：主域 <code>example.com</code> 还通过 Service Worker 把主域链接劫持到缤纷云对象存储，国内访问时会进一步走更快的国内线路。
+    另外：主域 <code>example.com</code> 还通过 Service Worker 把主域链接劫持到对象存储，国内访问时会进一步走更快的国内线路。
   </div>
 </div>
 <br>
@@ -251,7 +251,7 @@ date: 2022-08-10 16:05:11
       <div class="ab2-layer-h"><span class="ab2-layer-idx">L6</span><span class="ab2-layer-name">工程规范与授权</span><span class="ab2-layer-en">Engineering / License</span></div>
       <ul class="ab2-layer-body">
         <li><b>开发语言</b>HTML5 · CSS3 · JavaScript · <a href="https://pugjs.org/" target="_blank" rel="noopener">Pug</a> · <a href="https://stylus-lang.com/" target="_blank" rel="noopener">Stylus</a> · YAML · Node.js</li>
-        <li><b>AI 辅助</b><a href="https://www.deepseek.com/" target="_blank" rel="noopener">DeepSeek V4.1 Flash</a> 模型 + DeepSeek Harness 终端智能体（本次全站重构的代码改写、样式排查与文案润色均由它协助完成）</li>
+        <li><b>AI 辅助</b><a href="https://www.deepseek.com/" target="_blank" rel="noopener">DeepSeek V4.1 Flash</a> 与 GPT 6.1 Sol 模型 + DeepSeek Harness 终端智能体（本次全站重构的代码改写、样式排查与文案润色均由它协助完成）</li>
         <li><b>站点增强</b><code>hexo-butterfly-swiper</code>（首页轮播） · <code>hexo-butterfly-clock-anzhiyu</code> · <code>hexo-butterfly-envelope</code> · <code>hexo-butterfly-tag-plugins-plus</code> · <code>hexo-magnet-fomal</code> · <code>hexo-pdf</code> · <code>hexo-tag-map</code></li>
         <li><b>版权声明</b>见 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>（署名 · 非商业性使用 · 相同方式共享）</li>
         <li><b>维护日志</b>见 <a href="/site/time/">旧时光</a> 栏目；<b>鸣谢</b>：Hexo、Butterfly、以及所有开源作者。</li>
@@ -278,7 +278,7 @@ date: 2022-08-10 16:05:11
   </div>
   <div class="ab2-kv">
     <div class="ab2-kv-row"><span class="ab2-kv-k">站点名称</span><span class="ab2-kv-v">Demo</span></div>
-    <div class="ab2-kv-row"><span class="ab2-kv-k">主题</span><span class="ab2-kv-v">hexo-theme-Fomalhaut v1.0.0（基于 Butterfly 4.3.1 二次开发）</span></div>
+    <div class="ab2-kv-row"><span class="ab2-kv-k">主题</span><span class="ab2-kv-v">hexo-theme-Fomalhaut v1.0.1（基于 Butterfly 4.3.1 二次开发）</span></div>
     <div class="ab2-kv-row"><span class="ab2-kv-k">邮箱</span><span class="ab2-kv-v"><a href="mailto:you@example.com">you@example.com</a></span></div>
     <div class="ab2-kv-row"><span class="ab2-kv-k">源码</span><span class="ab2-kv-v"><a href="https://github.com/yourname/hexo-theme-Fomalhaut" target="_blank" rel="noopener">github.com/yourname/hexo-theme-Fomalhaut</a></span></div>
     <div class="ab2-kv-row"><span class="ab2-kv-k">技术栈</span><span class="ab2-kv-v"><span class="ab2-chips"><i>Hexo 6.3.0</i><i>Pug</i><i>Stylus</i><i>gulp</i><i>Vercel</i><i>Cloudflare Pages</i></span></span></div>
@@ -292,5 +292,5 @@ date: 2022-08-10 16:05:11
     <li>本页的样式在 <code>source/css/about-page.css</code>，想换版式改那一个文件就够。</li>
   </ol>
   <div class="ab2-coda">这份源码的全部意义，是让你少走一遍前人在美化博客路上踩过的坑。祝你搭站顺利 🍭</div>
-  <div class="ab2-coda-s">hexo-theme-Fomalhaut v1.0.0｜Apache-2.0｜基于 Butterfly 4.3.1 二次开发</div>
+  <div class="ab2-coda-s">hexo-theme-Fomalhaut v1.0.1｜Apache-2.0｜基于 Butterfly 4.3.1 二次开发</div>
 </div>

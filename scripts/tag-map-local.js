@@ -22,9 +22,7 @@ const LOCAL_PREFIX = '/js/tag-map/';
 const FILE_MAP = {
   'leaflet@1.7.1.css': 'leaflet-1.7.1.css',
   'leaflet@1.7.1.js': 'leaflet-1.7.1.js',
-  'leaflet.ChineseTmsProviders@1.0.4.js': 'leaflet.ChineseTmsProviders-1.0.4.js',
-  'proj4@2.4.3.js': 'proj4-2.4.3.js',
-  'proj4leaflet@1.0.1.min.js': 'proj4leaflet-1.0.1.min.js'
+  'leaflet.ChineseTmsProviders@1.0.4.js': 'leaflet.ChineseTmsProviders-1.0.4.js'
 };
 
 hexo.extend.filter.register('after_render:html', function (html) {

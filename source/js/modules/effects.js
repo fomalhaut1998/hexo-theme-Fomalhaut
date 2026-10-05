@@ -49,30 +49,35 @@ if ((navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobi
       s = [];
     i.width = window.innerWidth,
       i.height = window.innerHeight;
-    /* ---- 2026-10-04 性能修复：画布不可见就不画 ----
+    /* ---- 画布不可见就不画 → 2026-10-05 起改为「不可见就彻底停掉 rAF」----
      * 和星空（dark()）同一套思路。美化面板关掉雪花后，settings.js 只是把 #snow 的
      * style.display 设成 none；深色模式（[data-theme="dark"] #snow）和手机端也只在
-     * CSS 里隐藏。而这里的 rAF 循环依旧每帧对 50 个雪花做 sqrt + arc + fill ——
-     * 默认设置（雪花关闭）下这就是纯白干的常驻开销。
-     * 现在每帧先看计算样式，不可见直接跳过绘制；结果缓存进 snowOn，靠
-     * MutationObserver(style / data-theme / class) + resize + pjax:complete 失效，
-     * 并每 45 帧复核一次兜底（避免出现「开了也不下雪」）。
+     * CSS 里隐藏。
+     * 2026-10-04 的第一版只是「不可见就跳过绘制」，rAF 仍然每帧回到这里一次
+     * （每帧一次 getComputedStyle + 一个闭包调用），默认设置（雪花关闭）下仍属白干。
+     * 2026-10-05 改成：一旦发现不可见，直接 return 且不再排下一帧，循环真正归零；
+     * 恢复不靠轮询，而是靠下面 snowInvalidate 挂的那些回调（MutationObserver /
+     * resize / pjax:complete）——状态一变就重新问一次可见性，可见就重新起循环。
+     * 注意不要在这里加「锁 30fps」之类的降频：雪花的观感全靠 60fps，降帧会明显卡顿。
      * 判定用 getComputedStyle 而不是 offsetParent：#snow 是 position: fixed，
      * offsetParent 恒为 null。
      */
-    let snowOn = null, snowFrames = 0;
+    let snowOn = null, snowRunning = false, startSnow = null;
     const snowVisible = () => {
       if (snowOn === null) snowOn = window.getComputedStyle(i).display !== "none";
       return snowOn;
     };
-    const snowInvalidate = () => { snowOn = null; };
+    const snowInvalidate = () => {
+      snowOn = null;
+      if (!snowRunning && startSnow) startSnow();
+    };
     new MutationObserver(snowInvalidate).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "class", "style"] });
     new MutationObserver(snowInvalidate).observe(i, { attributes: true, attributeFilter: ["style"] });
     window.addEventListener("resize", snowInvalidate, false);
     document.addEventListener("pjax:complete", snowInvalidate);
     const h = () => {
-      if (++snowFrames >= 45) { snowFrames = 0; snowInvalidate(); }
-      if (!snowVisible()) { t(h); return; }
+      if (!snowVisible()) { snowRunning = false; return; }
+      snowRunning = true;
       n.clearRect(0, 0, i.width, i.height);
       const r = e.minDist;
       for (let t = 0; t < o; t++) {
@@ -143,6 +148,7 @@ if ((navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobi
             opacity: d
           })
         }
+        startSnow = h;
         h()
       }
       )()
@@ -211,15 +217,21 @@ function dark() {
      * 重绘整页 canvas —— 纯属白干的重绘。现在加一层可见性判断，不可见时直接跳过 u()。
      * 判定用计算样式而不是 offsetParent：#universe 是 position:fixed，offsetParent 恒为 null。
      * 结果缓存进 starOn，靠 MutationObserver（data-theme / class / style）+ resize + pjax:complete
-     * 失效，并额外每 45 帧（约 0.75s）复核一次兜底，避免出现「星空冻住不动」。
-     * 主题判断（dark）保留，与原逻辑完全一致。
+     * 失效。主题判断（dark）保留，与原逻辑完全一致。
+     *
+     * 2026-10-05 第二轮：把「不可见就跳过绘制」再升级成「不可见就彻底退出循环」。
+     * 原来 rAF 永远在排下一帧、每帧回来问一次「暗色吗 / 可见吗」；而本站 CSS 只在
+     * [data-theme="dark"] 下显示 #universe，浅色主题（很多人常驻的状态）下这一问一答
+     * 每秒要发生 60~90 次，纯空转。现在条件不成立就 return 且不再排帧，循环归零；
+     * 状态一变（切主题 / 开关星空 / resize / pjax）由 starInvalidate 重新起循环，
+     * 与上面雪花那段是同一套路。停/起都不降频：暗色下的重绘间隔仍由 STAR_DRAW_INTERVAL 控制。
      */
-    var starOn = null, starFrames = 0
+    var starOn = null, starRunning = false, startStar = null
     function starVisible() {
       if (starOn === null) starOn = window.getComputedStyle(s).display !== "none"
       return starOn
     }
-    function starInvalidate() { starOn = null }
+    function starInvalidate() { starOn = null; if (!starRunning && startStar) startStar() }
     new MutationObserver(starInvalidate).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "class", "style"] })
     new MutationObserver(starInvalidate).observe(s, { attributes: true, attributeFilter: ["style"] })
     window.addEventListener("resize", starInvalidate, !1)
@@ -234,14 +246,16 @@ function dark() {
      */
     var STAR_DRAW_INTERVAL = 1000 / 30
     var starLastDraw = -1e9   // 初值取负无穷：切到暗色后第一帧就立刻画，不用等 33ms
-    ;(function t(ts) {
-      if (++starFrames >= 45) { starFrames = 0; starInvalidate() }
-      if (document.documentElement.getAttribute("data-theme") == "dark" && starVisible()) {
-        if (ts === undefined) ts = (window.performance && performance.now) ? performance.now() : Date.now()
-        if (ts - starLastDraw >= STAR_DRAW_INTERVAL) { starLastDraw = ts; u() }
-      }
-      window.requestAnimationFrame(t)
-    })()
+    function starLoop(ts) {
+      /* 2026-10-05：条件不满足就整条循环退出（不再排下一帧），由 starInvalidate 重新拉起 */
+      if (!(document.documentElement.getAttribute("data-theme") == "dark" && starVisible())) { starRunning = false; return }
+      starRunning = true
+      if (ts === undefined) ts = (window.performance && performance.now) ? performance.now() : Date.now()
+      if (ts - starLastDraw >= STAR_DRAW_INTERVAL) { starLastDraw = ts; u() }
+      window.requestAnimationFrame(starLoop)
+    }
+    startStar = starLoop
+    starLoop()
   }()
 };
 dark()

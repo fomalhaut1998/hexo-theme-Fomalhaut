@@ -29,228 +29,172 @@
  * ========================================================================== */
 
 /* ------------------------------ 小猫咪 ------------------------------ */
-/* 原 fomal.js 529-752 行，原样搬运，未改逻辑 */
-/* 小猫咪 start */
+/* 高频输入只记录最新值；统一在下一帧先读几何、再增量写入。 */
 if (document.body.clientWidth > 992) {
+  var nekoState = { raf: null, geometryDirty: true, rectDirty: true, pointer: null,
+    cat: null, rope: null, rect: null, info: null, top: null, setting: null, styles: new WeakMap() };
+
   function getBasicInfo() {
-    /* 窗口高度 */
     var ViewH = $(window).height();
-    /* document高度 */
-    var DocH = $("body")[0].scrollHeight;
-    /* 滚动的高度 */
+    var DocH = document.body.scrollHeight;
     var ScrollTop = $(window).scrollTop();
-    /* 可滚动的高度 */
-    var S_V = DocH - ViewH;
-    var Band_H = ScrollTop / (DocH - ViewH) * 100;
-    return {
-      ViewH: ViewH,
-      DocH: DocH,
-      ScrollTop: ScrollTop,
-      Band_H: Band_H,
-      S_V: S_V
-    }
-  };
-  function show(basicInfo) {
-    if (basicInfo.ScrollTop > 0.001) {
-      $(".neko").css('display', 'block');
-    } else {
-      $(".neko").css('display', 'none');
-    }
+    var S_V = Math.max(0, DocH - ViewH);
+    return { ViewH: ViewH, DocH: DocH, ScrollTop: ScrollTop, S_V: S_V,
+      Band_H: S_V > 0 ? Math.max(0, Math.min(100, ScrollTop / S_V * 100)) : 0 };
   }
-  /* 报时 start */
-  // 当前时间 HH:MM:SS：小猫咪是「报时猫」，气泡文字由 .neko::after 的 content: attr(data-msg) 渲染
+  function nekoElement() {
+    if (!nekoState.cat || !nekoState.cat.isConnected) {
+      nekoState.cat = document.querySelector('.neko');
+      nekoState.rect = null;
+      nekoState.rectDirty = true;
+    }
+    return nekoState.cat;
+  }
+  function nekoStyle(el, name, value) {
+    if (!el) return;
+    var values = nekoState.styles.get(el);
+    if (!values) { values = Object.create(null); nekoState.styles.set(el, values); }
+    // CSSOM 会规范化小数和单位，缓存目标值而不是反复比较序列化后的 style。
+    if (values[name] === value) return;
+    if (el.style[name] !== value) el.style[name] = value;
+    values[name] = value;
+  }
+  function nekoClass(el, name, enabled) {
+    if (el && el.classList.contains(name) !== enabled) el.classList.toggle(name, enabled);
+  }
+  function show(basicInfo) {
+    nekoStyle(nekoElement(), 'display', basicInfo.ScrollTop > 0.001 ? 'block' : 'none');
+  }
   function nekoTimeMsg() {
     var d = new Date();
-    var pad = function (n) { return (n < 10 ? "0" : "") + n; };
-    return pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds());
+    var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+    return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
   }
-  // 写时间进 data-msg：悬停 / 滚到底部（showMsg）显示的都是它，每秒刷新一次即可走秒
   function nekoClockTick() {
-    var $neko = $(".neko");
-    if (!$neko.length || document.hidden) return;
-    var msg = nekoTimeMsg();
-    if ($neko.attr("data-msg") !== msg) $neko.attr("data-msg", msg);
+    if (document.hidden) return;
+    var cat = nekoElement(), msg = nekoTimeMsg();
+    if (cat && cat.getAttribute('data-msg') !== msg) cat.setAttribute('data-msg', msg);
   }
-  // window 上留标记，脚本若被重复执行也不会叠加多个定时器
-  if (!window.__nekoClockTimer) {
-    window.__nekoClockTimer = setInterval(nekoClockTick, 1000);
+  function nekoQueue(geometry, rect) {
+    nekoState.geometryDirty = nekoState.geometryDirty || !!geometry;
+    nekoState.rectDirty = nekoState.rectDirty || !!rect;
+    if (nekoState.raf !== null || document.hidden) return;
+    nekoState.raf = requestAnimationFrame(nekoFlush);
   }
-  // 猫咪在 CSS 里是 pointer-events:none（这样压在它下面的图标/按钮/链接才能正常点），代价是 :hover 不再触发。
-  // 这里用 mousemove 自己算指针有没有落在猫咪身上：命中就加 .hoverOn 亮出报时气泡，离开就摘掉。
   function nekoHoverTick(clientX, clientY) {
-    var $neko = $(".neko");
-    if (!$neko.length) return;
-    var el = $neko[0];
-    if (el.style.display === "none") {
-      $neko.removeClass("hoverOn");
-      return;
-    }
-    var r = el.getBoundingClientRect();
-    var inside = clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom;
-    if (inside) {
-      nekoClockTick();
-      $neko.addClass("hoverOn");
-    } else {
-      $neko.removeClass("hoverOn");
-    }
+    nekoState.pointer = { x: clientX, y: clientY };
+    nekoQueue(false, false);
   }
-  // mousemove 频率很高，用 rAF 合流：一帧最多判定一次
-  var __nekoHoverQueued = false;
-  $(document).on("mousemove", function (e) {
-    if (__nekoHoverQueued) return;
-    __nekoHoverQueued = true;
-    var x = e.clientX, y = e.clientY;
-    window.requestAnimationFrame(function () {
-      __nekoHoverQueued = false;
-      nekoHoverTick(x, y);
-    });
+  function nekoFlush() {
+    nekoState.raf = null;
+    if (document.hidden) return;
+    var cat = nekoElement(), setting = nekoState.setting;
+    if (!cat || !setting) return;
+    // 读阶段：mousemove 不重读 scrollHeight，也不每次重读猫咪矩形。
+    var info = nekoState.geometryDirty || !nekoState.info ? getBasicInfo() : nekoState.info;
+    var rect = nekoState.rect;
+    if (nekoState.rectDirty && cat.style.display === 'block') {
+      var measured = cat.getBoundingClientRect();
+      rect = { left: measured.left, right: measured.right, top: measured.top, bottom: measured.bottom };
+      nekoState.rectDirty = false;
+    }
+    var height = info.Band_H * setting.zoom * info.ViewH * 0.01;
+    var top = height - 50;
+    if (rect && nekoState.top !== null) {
+      var delta = top - nekoState.top;
+      rect = { left: rect.left, right: rect.right, top: rect.top + delta, bottom: rect.bottom + delta };
+    }
+    var visible = info.ScrollTop > 0.001;
+    var p = nekoState.pointer;
+    var hover = !!(visible && rect && p && p.x >= rect.left && p.x <= rect.right && p.y >= rect.top && p.y <= rect.bottom);
+    // 写阶段：静态样式只在插件初始化时写，滚动仅更新高度、位置和状态。
+    nekoStyle(nekoState.rope, 'height', height + 'px');
+    nekoStyle(cat, 'top', top + 'px');
+    show(info);
+    nekoClass(cat, 'showMsg', visible && info.S_V > 0 && info.ScrollTop >= info.S_V - 1);
+    nekoClass(cat, 'hoverOn', hover);
+    if (hover) nekoClockTick();
+    nekoState.info = info;
+    nekoState.top = top;
+    nekoState.rect = visible ? rect : null;
+    nekoState.geometryDirty = false;
+    // 从 display:none 恢复后的真实 CSS 矩形在下一帧读，避免强制同步布局。
+    if (visible && !rect) nekoQueue(false, true);
+  }
+  if (!window.__nekoClockTimer) window.__nekoClockTimer = setInterval(nekoClockTick, 1000);
+  document.addEventListener('mousemove', function (e) { nekoHoverTick(e.clientX, e.clientY); });
+  window.addEventListener('scroll', function () { nekoQueue(true, false); }, { passive: true });
+  window.addEventListener('resize', function () { nekoQueue(true, true); }, { passive: true });
+  window.addEventListener('mouseout', function (e) {
+    if (!e.relatedTarget) { nekoState.pointer = null; nekoQueue(false, false); }
   });
-  // 指针移出整个窗口后不会再有 mousemove，补一个兜底把气泡收起来
-  window.addEventListener("mouseout", function (e) {
-    if (!e.relatedTarget) $(".neko").removeClass("hoverOn");
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+      if (nekoState.raf !== null) cancelAnimationFrame(nekoState.raf);
+      nekoState.raf = null;
+    } else { nekoClockTick(); nekoQueue(true, true); }
   });
-  // 点猫回顶部：猫咪 pointer-events:none，click 落不到它身上，所以在 document 上兜底判断。
-  // 只在这个位置「底下没有可点控件」时才回顶部 —— 被猫咪压住的图标/链接/按钮优先响应它们自己。
+  if (typeof ResizeObserver !== 'undefined') {
+    nekoState.observer = new ResizeObserver(function () { nekoQueue(true, true); });
+    nekoState.observer.observe(document.body);
+  }
+  // 猫咪不挡下方按钮；点击只有在下方没有控件时才回顶部。
   var nekoHitSelector = "a, button, input, select, textarea, label, summary, [onclick], [role='button'], [role='link'], #rightside, .search-mask, .search-dialog, #local-search, .neko, #myscoll";
-  $(document).on("click", function (e) {
-    var $neko = $(".neko");
-    if (!$neko.length) return;
-    var el = $neko[0];
-    if (el.style.display === "none") return;
-    var r = el.getBoundingClientRect();
+  function nekoToTop() {
+    if (window.btf && typeof btf.scrollToDest === 'function') btf.scrollToDest(0, 500);
+    else $('html, body').animate({ scrollTop: 0 }, 500);
+  }
+  document.addEventListener('click', function (e) {
+    var cat = nekoElement();
+    if (!cat || cat.style.display !== 'block') return;
+    var r = cat.getBoundingClientRect();
     if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
     var hit = document.elementFromPoint(e.clientX, e.clientY);
     if (hit && $(hit).closest(nekoHitSelector).length) return;
-    if (window.btf && typeof btf.scrollToDest === "function") {
-      btf.scrollToDest(0, 500);
-    } else {
-      $("html, body").animate({ scrollTop: 0 }, 500);
-    }
+    nekoToTop();
   });
-  /* 报时 end */
-
   (function ($) {
     $.fn.nekoScroll = function (option) {
-      var defaultSetting = {
-        top: '0',
-        scroWidth: 6 + 'px',
-        z_index: 9999,
-        zoom: 0.9,
-        borderRadius: 5 + 'px',
-        right: 55.6 + 'px',
-        nekoImg: "https://bu.dusays.com/2022/07/20/62d812db74be9.png",
-        // 报时：气泡文字不再写死，由 nekoClockTick() 每秒写入当前时间，这里只作兜底
-        hoverMsg: "报时中…",
-        color: "var(--theme-color)",
-        during: 500,
-        blog_body: "body",
-      };
-      var setting = $.extend(defaultSetting, option);
-      var getThis = this.prop("className") !== "" ? "." + this.prop("className") : this.prop("id") !== "" ? "#" +
-        this.prop("id") : this.prop("nodeName");
-      if ($(".neko").length == 0) {
-        this.after("<div class=\"neko\" id=" + setting.nekoname + " data-msg=\"" + nekoTimeMsg() + "\"></div>");
+      var setting = $.extend({ top: '0', scroWidth: '6px', z_index: 9999, zoom: 0.9,
+        borderRadius: '5px', right: '55.6px',
+        nekoImg: 'https://bu.dusays.com/2022/07/20/62d812db74be9.png' }, option);
+      if (!this.length) return this;
+      var cat = nekoElement();
+      if (!cat) {
+        cat = document.createElement('div');
+        cat.className = 'neko';
+        if (setting.nekoname) cat.id = setting.nekoname;
+        cat.setAttribute('data-msg', nekoTimeMsg());
+        this.after(cat);
       }
-      let basicInfo = getBasicInfo();
-      $(getThis)
-        .css({
-          'position': 'fixed',
-          'width': setting.scroWidth,
-          'top': setting.top,
-          'height': basicInfo.Band_H * setting.zoom * basicInfo.ViewH * 0.01 + 'px',
-          'z-index': setting.z_index,
-          'background-color': setting.bgcolor,
-          "border-radius": setting.borderRadius,
-          'right': setting.right,
-          'background-image': 'url(' + setting.scImg + ')',
-          'background-image': '-webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.1) 75%, transparent 75%, transparent)', 'border-radius': '2em',
-          'background-size': 'contain'
-        });
-      $("#" + setting.nekoname)
-        .css({
-          'position': 'fixed',
-          'top': basicInfo.Band_H * setting.zoom * basicInfo.ViewH * 0.01 - 50 + 'px',
-          'z-index': setting.z_index * 10,
-          'right': setting.right,
-          'background-image': 'url(' + setting.nekoImg + ')',
-        });
-      show(getBasicInfo());
-      $(window)
-        .scroll(function () {
-          let basicInfo = getBasicInfo();
-          show(basicInfo);
-          $(getThis)
-            .css({
-              'position': 'fixed',
-              'width': setting.scroWidth,
-              'top': setting.top,
-              'height': basicInfo.Band_H * setting.zoom * basicInfo.ViewH * 0.01 + 'px',
-              'z-index': setting.z_index,
-              'background-color': setting.bgcolor,
-              "border-radius": setting.borderRadius,
-              'right': setting.right,
-              'background-image': 'url(' + setting.scImg + ')',
-              'background-image': '-webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.1) 75%, transparent 75%, transparent)', 'border-radius': '2em',
-              'background-size': 'contain'
-            });
-          $("#" + setting.nekoname)
-            .css({
-              'position': 'fixed',
-              'top': basicInfo.Band_H * setting.zoom * basicInfo.ViewH * 0.01 - 50 + 'px',
-              'z-index': setting.z_index * 10,
-              'right': setting.right,
-              'background-image': 'url(' + setting.nekoImg + ')',
-            });
-          if (basicInfo.ScrollTop == basicInfo.S_V) {
-            $("#" + setting.nekoname)
-              .addClass("showMsg")
-          } else {
-            $("#" + setting.nekoname)
-              .removeClass("showMsg");
-            $("#" + setting.nekoname)
-              .attr("data-msg", nekoTimeMsg());
-          }
-        });
-      this.click(function (e) {
-        btf.scrollToDest(0, 500)
-      });
-      $("#" + setting.nekoname)
-        .click(function () {
-          btf.scrollToDest(0, 500)
-        });
+      nekoState.cat = cat;
+      nekoState.rope = this[0];
+      nekoState.setting = setting;
+      nekoState.styles = new WeakMap();
+      nekoState.top = Number.isFinite(parseFloat(cat.style.top)) ? parseFloat(cat.style.top) : null;
+      nekoState.rect = null;
+      this.css({ position: 'fixed', width: setting.scroWidth, top: setting.top,
+        'z-index': setting.z_index, 'background-color': setting.bgcolor,
+        'border-radius': setting.borderRadius, right: setting.right,
+        'background-image': '-webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.1) 75%, transparent 75%, transparent)',
+        'background-size': 'contain' });
+      $(cat).css({ position: 'fixed', 'z-index': setting.z_index * 10,
+        right: setting.right, 'background-image': 'url(' + setting.nekoImg + ')' });
+      this.off('click.nekoScroll').on('click.nekoScroll', nekoToTop);
+      $(cat).off('click.nekoScroll').on('click.nekoScroll', nekoToTop);
+      nekoQueue(true, true);
       return this;
-    }
+    };
   })(jQuery);
-
   $(document).ready(function () {
-    //部分自定义
-    $("#myscoll").nekoScroll({
-      bgcolor: 'rgb(0 0 0 / .5)', //背景颜色，没有绳子背景图片时有效
-      borderRadius: '2em',
-      zoom: 0.9
-    }
-    );
-    // 立即写一次时间；悬停由上面的 mousemove 判定处理（猫咪是 pointer-events:none，收不到 mouseenter）
+    $('#myscoll').nekoScroll({ bgcolor: 'rgb(0 0 0 / .5)', borderRadius: '2em', zoom: 0.9 });
     nekoClockTick();
-    //自定义（去掉以下注释，并注释掉其他的查看效果）
-    /*
-    $("#myscoll").nekoScroll({
-        nekoname:'neko1', //nekoname，相当于id
-        nekoImg:'img/猫咪.png', //neko的背景图片
-        scImg:"img/绳1.png", //绳子的背景图片
-        bgcolor:'#1e90ff', //背景颜色，没有绳子背景图片时有效
-        zoom:0.9, //绳子长度的缩放值
-        hoverMsg:'你好~喵', //鼠标浮动到neko上方的对话框信息
-        right:'100px', //距离页面右边的距离
-        fontFamily:'楷体', //对话框字体
-        fontSize:'14px', //对话框字体的大小
-        color:'#1e90ff', //对话框字体颜色
-        scroWidth:'8px', //绳子的宽度
-        z_index:100, //不用解释了吧
-        during:1200, //从顶部到底部滑动的时长
-    });
-    */
-  })
+  });
+  document.addEventListener('pjax:complete', function () {
+    $('#myscoll').nekoScroll(nekoState.setting || {});
+    nekoClockTick();
+    nekoQueue(true, true);
+  });
 }
 
 /* 小猫咪 end */
@@ -567,7 +511,7 @@ function changeMouseMode() {
 /* 右键菜单 end */
 
 /* ------------------------------ 听话鼠标 ------------------------------ */
-/* 原 fomal.js 1337-1436 行，原样搬运，未改逻辑 */
+/* 原 fomal.js 1337-1436 行；位移分层、目标按需识别、空闲停帧。 */
 /* 听话鼠标 start */
 var CURSOR;
 
@@ -600,97 +544,168 @@ map.set('gray', "rgb(150, 150, 150)");
 class Cursor {
   constructor() {
     this.pos = { curr: null, prev: null };
-    this.pt = [];
+    this.pointerCache = new WeakMap();
+    this.__raf = null;
+    this.__hoverDirty = false;
     this.create();
     this.init();
-    this.start();
   }
 
   move(left, top) {
-    this.cursor.style["left"] = `${left}px`;
-    this.cursor.style["top"] = `${top}px`;
+    const value = 'translate3d(' + left + 'px, ' + top + 'px, 0)';
+    if (this.__transform !== value) {
+      this.layer.style.transform = value;
+      this.__transform = value;
+    }
   }
 
   create() {
     if (!this.cursor) {
-      this.cursor = document.createElement("div");
-      this.cursor.id = "cursor";
-      this.cursor.classList.add("hidden");
-      document.body.append(this.cursor);
+      // 位移与 #cursor.hover/active 的 scale 分层：保留原来的 16px 尺寸与 0.2s 缩放。
+      this.layer = document.createElement('div');
+      this.layer.id = 'cursor-position';
+      Object.assign(this.layer.style, { position: 'fixed', left: '0px', top: '0px',
+        width: '16px', height: '16px', pointerEvents: 'none', zIndex: '10086' });
+      this.cursor = document.createElement('div');
+      this.cursor.id = 'cursor';
+      this.cursor.classList.add('hidden');
+      this.cursor.style.left = '0px';
+      this.cursor.style.top = '0px';
+      this.layer.appendChild(this.cursor);
     }
-    // 【2026-10-04 修「鼠标处闪出打字机光标」】光标样式必须在下面这次全元素
-    // 扫描之前就挂上。getStyle2 就是 getComputedStyle，关于页 3000+ 元素实测
-    // 一次扫描 ~37ms；旧顺序是「先扫描、再 append 样式」，这 37ms 内浏览器没有
-    // 自定义光标规则，会退回系统光标——鼠标停在文字上就是 I 形「打字机」光标，
-    // 而 #cursor 粉点是 DOM 元素、照旧可见，看起来就像鼠标那儿多闪出一个光标。
-    var colorVal = map.get(localStorage.getItem("themeColor")) || map.get("green");
-    if (!this.scr) document.body.appendChild((this.scr = document.createElement("style")));
-    this.scr.innerHTML = `* {cursor: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' width='8px' height='8px'><circle cx='4' cy='4' r='4' opacity='1.0' fill='` + colorVal + `'/></svg>") 4 4, auto}`;
-    var el = document.getElementsByTagName('*');
-    for (let i = 0; i < el.length; i++)
-      if (getStyle2(el[i], "cursor") == "pointer")
-        this.pt.push(el[i].outerHTML);
+    if (!this.layer.isConnected) document.body.appendChild(this.layer);
+    if (!this.scr) this.scr = document.createElement('style');
+    // 原地改样式，不移除；任何时候都不能露出文字区域的系统 I 形光标。
+    if (!this.scr.isConnected) document.body.appendChild(this.scr);
+    const color = map.get(localStorage.getItem('themeColor')) || map.get('green');
+    if (this.color !== color) {
+      const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" width="8px" height="8px"><circle cx="4" cy="4" r="4" fill="' + color + '"/></svg>';
+      this.scr.textContent = '* {cursor: url("data:image/svg+xml,' + encodeURIComponent(svg) + '") 4 4, auto}';
+      this.color = color;
+    }
+  }
+
+  setClass(name, enabled) {
+    if (this.cursor.classList.contains(name) !== enabled) this.cursor.classList.toggle(name, enabled);
+  }
+
+  isPointer(target) {
+    if (target && target.nodeType !== 1) target = target.parentElement;
+    if (!target || !target.isConnected) return false;
+    if (this.pointerCache.has(target)) return this.pointerCache.get(target);
+    // 实际元素身份而非 outerHTML：嵌套 span / SVG、异步按钮和同 HTML 的不同节点均可区分。
+    const control = target.closest('a[href], button, summary, label, input[type="button"], input[type="submit"], input[type="reset"], [onclick], [role="button"], [role="link"]');
+    let pointer = !!(control && !control.disabled);
+    if (!control) {
+      // 非语义可点元素只检查当前目标及祖先，不扫描全页。结果缓存到下一次 DOM/主题变化。
+      for (let el = target; el; el = el.parentElement) {
+        if (getStyle2(el, 'cursor') === 'pointer') { pointer = true; break; }
+      }
+    }
+    this.pointerCache.set(target, pointer);
+    return pointer;
+  }
+
+  invalidatePointer(hitTest) {
+    this.pointerCache = new WeakMap();
+    this.__hoverDirty = true;
+    this.__hitTest = this.__hitTest || !!hitTest;
+    if (this.pos.curr) this.start();
   }
 
   refresh() {
-    // 【2026-10-04 修「鼠标处闪出打字机光标」】这里原本是 this.scr.remove()：
-    // 删掉样式到 create() 重新 append 之间隔着一整次全页扫描（实测 ~37ms），
-    // 窗口内浏览器用系统光标（文字上就是「打字机」I 形光标）而粉点还在 = 闪一下。
-    // 改成原地改写同一个 <style> 的内容：样式永远在场，顺带保证扫描中途万一抛错
-    // 也不会让自定义光标永久丢失。
-    this.cursor.classList.remove("hover");
-    this.cursor.classList.remove("active");
-    this.pos = { curr: null, prev: null };
-    this.pt = [];
-
     this.create();
-    this.init();
-    this.start();
+    this.setClass('active', false);
+    this.invalidatePointer(true);
+    // 不重绑事件、不重置位置、不创建第二条动画链；样式节点始终留在 DOM。
   }
 
   init() {
-    document.onmouseover = e => this.pt.includes(e.target.outerHTML) && this.cursor.classList.add("hover");
-    document.onmouseout = e => this.pt.includes(e.target.outerHTML) && this.cursor.classList.remove("hover");
-    document.onmousemove = e => { (this.pos.curr == null) && this.move(e.clientX - 8, e.clientY - 8); this.pos.curr = { x: e.clientX - 8, y: e.clientY - 8 }; this.cursor.classList.remove("hidden"); this.start(); };
-    document.onmouseenter = e => this.cursor.classList.remove("hidden");
-    document.onmouseleave = e => this.cursor.classList.add("hidden");
-    document.onmousedown = e => this.cursor.classList.add("active");
-    document.onmouseup = e => this.cursor.classList.remove("active");
+    if (this.__bound) return;
+    this.__bound = true;
+    const trackTarget = e => {
+      if (this.target !== e.target) {
+        this.target = e.target;
+        this.__hoverDirty = true;
+      }
+    };
+    document.addEventListener('mousemove', e => {
+      trackTarget(e);
+      this.pos.curr = { x: e.clientX - 8, y: e.clientY - 8 };
+      this.setClass('hidden', false);
+      this.start();
+    }, { passive: true });
+    document.addEventListener('mouseover', e => {
+      trackTarget(e);
+      // :hover 选择器可能改变 cursor；同一目标重新进入时也重新检查。
+      if (e.target && e.target.nodeType === 1) this.pointerCache.delete(e.target);
+      this.__hoverDirty = true;
+      if (this.pos.curr) this.start();
+    }, { passive: true });
+    document.addEventListener('mouseout', e => {
+      this.target = e.relatedTarget;
+      this.__hoverDirty = true;
+      if (this.pos.curr) this.start();
+    }, { passive: true });
+    document.addEventListener('mouseenter', () => { if (this.pos.curr) this.setClass('hidden', false); });
+    document.addEventListener('mouseleave', () => this.pause());
+    window.addEventListener('blur', () => this.pause());
+    document.addEventListener('mousedown', () => this.setClass('active', true));
+    document.addEventListener('mouseup', () => this.setClass('active', false));
+    document.addEventListener('visibilitychange', () => { if (document.hidden) this.pause(); });
+    window.addEventListener('scroll', () => this.invalidatePointer(true), { passive: true });
+    window.addEventListener('resize', () => this.invalidatePointer(true), { passive: true });
+    document.addEventListener('pjax:complete', () => this.refresh());
+    document.addEventListener('load', e => {
+      if (e.target && e.target.tagName === 'LINK') this.invalidatePointer(true);
+    }, true);
+    if (typeof MutationObserver !== 'undefined') {
+      this.observer = new MutationObserver(records => {
+        // 自己的 transform/class/style 更新不触发下一帧，避免观察器自激循环。
+        if (records.some(r => r.target !== this.scr && r.target !== this.layer &&
+          !this.layer.contains(r.target))) this.invalidatePointer(true);
+      });
+      this.observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, characterData: true });
+    }
   }
 
-  /* ---- 2026-10-04 性能修复：指针停住就停掉 rAF ----
-   * 原来 render() 每帧无条件 requestAnimationFrame 递归下去：鼠标不动时也在写
-   * #cursor 的 left/top，页面永远进不了空闲状态（风扇转、发烫、滚动发涩都跟它有关）。
-   * 现在按「剩余距离」判停：缓动追上（< 0.1px）就退出循环，mousemove / refresh 再唤醒。
-   * 阈值 0.1px 远低于视觉可辨，拖尾手感与原实现一致。
-   */
+  pause() {
+    if (this.__raf !== null) cancelAnimationFrame(this.__raf);
+    this.__raf = null;
+    this.setClass('hidden', true);
+    this.setClass('active', false);
+    this.setClass('hover', false);
+    this.target = null;
+  }
+
   start() {
-    if (this.__raf) return;
+    if (this.__raf !== null || document.hidden || !this.pos.curr || this.cursor.classList.contains('hidden')) return;
     this.__raf = requestAnimationFrame(() => { this.__raf = null; this.render(); });
   }
 
   render() {
     const curr = this.pos.curr;
-    if (curr == null) return; // 指针还没进来过：不空转，等 init() 的 mousemove 唤醒
-    if (this.pos.prev == null) {
-      // 第一次对齐（原逻辑就是 prev = curr），不必缓动
-      this.pos.prev = { x: curr.x, y: curr.y };
-      this.move(this.pos.prev.x, this.pos.prev.y);
-      return;
+    if (!curr || document.hidden) return;
+    // 样式读取必须在 transform / class 写入之前完成，且每帧只处理最后一个目标。
+    if (this.__hoverDirty) {
+      if (this.__hitTest) this.target = document.elementFromPoint(curr.x + 8, curr.y + 8);
+      const hover = this.isPointer(this.target);
+      this.__hoverDirty = false;
+      this.__hitTest = false;
+      this.setClass('hover', hover);
     }
-    // 跟踪速度调节
-    const dx = curr.x - this.pos.prev.x;
-    const dy = curr.y - this.pos.prev.y;
-    this.pos.prev.x = Math.lerp(this.pos.prev.x, curr.x, 0.15);
-    this.pos.prev.y = Math.lerp(this.pos.prev.y, curr.y, 0.15);
+    if (!this.pos.prev) this.pos.prev = { x: curr.x, y: curr.y };
+    const dx = curr.x - this.pos.prev.x, dy = curr.y - this.pos.prev.y;
+    const moving = Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1;
+    this.pos.prev.x = moving ? Math.lerp(this.pos.prev.x, curr.x, 0.15) : curr.x;
+    this.pos.prev.y = moving ? Math.lerp(this.pos.prev.y, curr.y, 0.15) : curr.y;
     this.move(this.pos.prev.x, this.pos.prev.y);
-    if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) this.start();
+    if (moving) this.start();
   }
 }
 
 (() => {
   CURSOR = new Cursor();
-  // 需要重新获取列表时，使用 CURSOR.refresh()
 })();
 
 /* 听话鼠标 end */

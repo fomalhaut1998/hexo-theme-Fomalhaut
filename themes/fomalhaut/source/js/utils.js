@@ -46,6 +46,13 @@ const btf = {
       }
     }
 
+    // Removing a listener does not cancel its pending trailing invocation.
+    throttled.cancel = function () {
+      clearTimeout(timeout)
+      timeout = context = args = null
+      previous = 0
+    }
+
     return throttled
   },
 

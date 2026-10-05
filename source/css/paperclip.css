@@ -1,0 +1,63 @@
+@charset "UTF-8";
+/*!
+ * 个人卡片右上角回形针 · 参考图细长蓝白款
+ * 独立样式覆盖，不改 themes/，不增加 DOM 或外部图片请求。
+ * 一条连续圆头针线：藏青细轮廓、浅蓝侧棱、蓝白受光面；SVG 内置 18° 倾角。
+ * 两道黄色短棒各自有白色包边，不与针身相连；SVG 局部阴影避免整块重黑投影。
+ * --clip-w 调大小，--clip-top / --clip-right 调出界；--clip-rot 为额外倾角（默认 0°）。
+ * 回滚：恢复 bak/paperclip-20261005-reference/before/ 中的样式与配置，重新 generate。
+ */
+#aside-content > .card-widget.card-info {
+  --clip-w: 64px;
+  --clip-h: calc(var(--clip-w) * 1.138889);
+  --clip-rot: 0deg;
+  --clip-top: -21px;
+  --clip-right: -21px;
+  /* 仅放开作者卡，允许回形针探出边缘。 */
+  overflow: visible;
+}
+#aside-content > .card-widget.card-info::before {
+  /* 玻璃层自行保留卡片圆角，避免 overflow: visible 改变背景。 */
+  border-radius: inherit;
+}
+#aside-content > .card-widget.card-info::after {
+  content: "";
+  position: absolute;
+  top: var(--clip-top);
+  right: var(--clip-right);
+  width: var(--clip-w);
+  height: var(--clip-h);
+  z-index: 6;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20180%20205%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22wire%22%20x1%3D%2230%22%20y1%3D%2225%22%20x2%3D%2296%22%20y2%3D%22180%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20stop-color%3D%22%23ffffff%22%2F%3E%3Cstop%20offset%3D%22.28%22%20stop-color%3D%22%23eefaff%22%2F%3E%3Cstop%20offset%3D%22.52%22%20stop-color%3D%22%23b6e6fc%22%2F%3E%3Cstop%20offset%3D%22.73%22%20stop-color%3D%22%23f5fcff%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%238ad0f3%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22rim%22%20x1%3D%2228%22%20y1%3D%2230%22%20x2%3D%22101%22%20y2%3D%22177%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20stop-color%3D%22%23a1dafa%22%2F%3E%3Cstop%20offset%3D%22.45%22%20stop-color%3D%22%235cb6e7%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23afdff7%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22gold%22%20x1%3D%22130%22%20y1%3D%2240%22%20x2%3D%22167%22%20y2%3D%2278%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20stop-color%3D%22%23ffeaa1%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23ffd16d%22%2F%3E%3C%2FlinearGradient%3E%3Cfilter%20id%3D%22shadow%22%20x%3D%22-40%25%22%20y%3D%22-25%25%22%20width%3D%22180%25%22%20height%3D%22170%25%22%3E%3CfeDropShadow%20dx%3D%220%22%20dy%3D%224%22%20stdDeviation%3D%222.8%22%20flood-color%3D%22%2317385c%22%20flood-opacity%3D%22.26%22%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Cg%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cg%20transform%3D%22rotate(18%2064%20102)%22%20filter%3D%22url(%23shadow)%22%3E%3Cpath%20d%3D%22M34%2047%20V146%20C34%20188%2094%20188%2094%20146%20V43%20C94%2015%2054%2015%2054%2043%20V149%20C54%20163%2074%20163%2074%20149%20V69%22%20stroke%3D%22%23304467%22%20stroke-width%3D%2217%22%2F%3E%3Cpath%20d%3D%22M34%2047%20V146%20C34%20188%2094%20188%2094%20146%20V43%20C94%2015%2054%2015%2054%2043%20V149%20C54%20163%2074%20163%2074%20149%20V69%22%20stroke%3D%22url(%23rim)%22%20stroke-width%3D%2213.8%22%2F%3E%3Cpath%20d%3D%22M34%2047%20V146%20C34%20188%2094%20188%2094%20146%20V43%20C94%2015%2054%2015%2054%2043%20V149%20C54%20163%2074%20163%2074%20149%20V69%22%20stroke%3D%22url(%23wire)%22%20stroke-width%3D%2210.5%22%2F%3E%3Cpath%20d%3D%22M34%2047%20V146%20C34%20188%2094%20188%2094%20146%20V43%20C94%2015%2054%2015%2054%2043%20V149%20C54%20163%2074%20163%2074%20149%20V69%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%223%22%20opacity%3D%22.88%22%20transform%3D%22translate(-2.1%20-1.5)%22%2F%3E%3Cpath%20d%3D%22M57%2039%20C62%2025%2083%2024%2091%2038%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%223.8%22%20opacity%3D%22.92%22%2F%3E%3Cpath%20d%3D%22M34%2056%20V75%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%223.2%22%20opacity%3D%22.85%22%20transform%3D%22translate(-2%200)%22%2F%3E%3C%2Fg%3E%3Cg%20filter%3D%22url(%23shadow)%22%3E%3Cpath%20d%3D%22M135%2056%20L145%2040%20M151%2076%20L168%2068%22%20stroke%3D%22%23fffaf0%22%20stroke-width%3D%2213%22%2F%3E%3Cpath%20d%3D%22M135%2056%20L145%2040%20M151%2076%20L168%2068%22%20stroke%3D%22url(%23gold)%22%20stroke-width%3D%228%22%2F%3E%3Cpath%20d%3D%22M134%2053%20L142%2041%20M152%2073%20L166%2067%22%20stroke%3D%22%23fff0b3%22%20stroke-width%3D%221.7%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  transform: rotate(var(--clip-rot));
+  transform-origin: 40% 47%;
+}
+
+/* 夜间夜光款：冰蓝发光针线、柔和青色光晕与暖金点缀。
+ * 白天款、尺寸和位置保持不变；只对夜间伪元素做低幅度透明度呼吸。
+ */
+html[data-theme="dark"] #aside-content > .card-widget.card-info::after {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20180%20205%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22wire%22%20x1%3D%2230%22%20y1%3D%2225%22%20x2%3D%2296%22%20y2%3D%22180%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20stop-color%3D%22%23ddfcff%22%2F%3E%3Cstop%20offset%3D%22.28%22%20stop-color%3D%22%237ce6ff%22%2F%3E%3Cstop%20offset%3D%22.52%22%20stop-color%3D%22%23319fc9%22%2F%3E%3Cstop%20offset%3D%22.73%22%20stop-color%3D%22%23a9f3ff%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2348c5e8%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22rim%22%20x1%3D%2228%22%20y1%3D%2230%22%20x2%3D%22101%22%20y2%3D%22177%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20stop-color%3D%22%231d698b%22%2F%3E%3Cstop%20offset%3D%22.45%22%20stop-color%3D%22%23154967%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%233185a1%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22gold%22%20x1%3D%22130%22%20y1%3D%2240%22%20x2%3D%22167%22%20y2%3D%2278%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20stop-color%3D%22%23ffe6a0%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23e8b759%22%2F%3E%3C%2FlinearGradient%3E%3Cfilter%20id%3D%22shadow%22%20x%3D%22-40%25%22%20y%3D%22-25%25%22%20width%3D%22180%25%22%20height%3D%22170%25%22%3E%3CfeDropShadow%20dx%3D%220%22%20dy%3D%224%22%20stdDeviation%3D%222.8%22%20flood-color%3D%22%23030d18%22%20flood-opacity%3D%22.38%22%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Cg%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cg%20transform%3D%22rotate(18%2064%20102)%22%20filter%3D%22url(%23shadow)%22%3E%3Cpath%20d%3D%22M34%2047%20V146%20C34%20188%2094%20188%2094%20146%20V43%20C94%2015%2054%2015%2054%2043%20V149%20C54%20163%2074%20163%2074%20149%20V69%22%20stroke%3D%22%2309283d%22%20stroke-width%3D%2217%22%2F%3E%3Cpath%20d%3D%22M34%2047%20V146%20C34%20188%2094%20188%2094%20146%20V43%20C94%2015%2054%2015%2054%2043%20V149%20C54%20163%2074%20163%2074%20149%20V69%22%20stroke%3D%22url(%23rim)%22%20stroke-width%3D%2213.8%22%2F%3E%3Cpath%20d%3D%22M34%2047%20V146%20C34%20188%2094%20188%2094%20146%20V43%20C94%2015%2054%2015%2054%2043%20V149%20C54%20163%2074%20163%2074%20149%20V69%22%20stroke%3D%22url(%23wire)%22%20stroke-width%3D%2210.5%22%2F%3E%3Cpath%20d%3D%22M34%2047%20V146%20C34%20188%2094%20188%2094%20146%20V43%20C94%2015%2054%2015%2054%2043%20V149%20C54%20163%2074%20163%2074%20149%20V69%22%20stroke%3D%22%23ddfcff%22%20stroke-width%3D%223%22%20opacity%3D%22.86%22%20transform%3D%22translate(-2.1%20-1.5)%22%2F%3E%3Cpath%20d%3D%22M57%2039%20C62%2025%2083%2024%2091%2038%22%20stroke%3D%22%23ddfcff%22%20stroke-width%3D%223.8%22%20opacity%3D%22.90%22%2F%3E%3Cpath%20d%3D%22M34%2056%20V75%22%20stroke%3D%22%23ddfcff%22%20stroke-width%3D%223.2%22%20opacity%3D%22.80%22%20transform%3D%22translate(-2%200)%22%2F%3E%3C%2Fg%3E%3Cg%20filter%3D%22url(%23shadow)%22%3E%3Cpath%20d%3D%22M135%2056%20L145%2040%20M151%2076%20L168%2068%22%20stroke%3D%22%23c8c39f%22%20stroke-width%3D%2213%22%2F%3E%3Cpath%20d%3D%22M135%2056%20L145%2040%20M151%2076%20L168%2068%22%20stroke%3D%22url(%23gold)%22%20stroke-width%3D%228%22%2F%3E%3Cpath%20d%3D%22M134%2053%20L142%2041%20M152%2073%20L166%2067%22%20stroke%3D%22%23fff3ca%22%20stroke-width%3D%221.7%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  /* 静态双层光晕贴着针线，不给整张卡加滤镜，也不逐帧重算模糊。 */
+  filter: drop-shadow(0 0 2px rgba(105, 239, 255, .62))
+          drop-shadow(0 0 7px rgba(43, 190, 244, .34));
+  animation: paperclip-nightglow-breathe 4.8s ease-in-out infinite;
+}
+
+/* 只动画透明度，光晕半径保持固定；不闪烁、不移动针身。 */
+@keyframes paperclip-nightglow-breathe {
+  0%, 100% { opacity: .86; }
+  50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme="dark"] #aside-content > .card-widget.card-info::after {
+    animation: none;
+    opacity: 1;
+  }
+}
+

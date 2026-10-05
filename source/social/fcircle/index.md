@@ -367,7 +367,7 @@ comments: false
         // 点击加载更多时，一次最多加载几篇文章，默认10
         page_turning_number: 12,
         // 头像加载失败时，默认头像地址
-        error_img: '/assets/r1.webp',
+        error_img: '/img/friend_404.gif',
         // 进入页面时第一次的排序规则
         sort_rule: 'created'
     }

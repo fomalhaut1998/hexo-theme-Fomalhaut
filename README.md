@@ -1,11 +1,11 @@
-# hexo-theme-Fomalhaut · v1.0.0
+# hexo-theme-Fomalhaut · v1.0.1
 
 > 一套「克隆即用」的 Hexo 卡片式博客源码。主题基于 [Butterfly 4.3.1](https://butterfly.js.org/) 深度二次开发，
 > 并把**站点配置**与**主题代码**彻底分开：改配置就能搭起自己的站，升级主题不会冲掉你自己的改动。
 
 ![hexo](https://img.shields.io/badge/Hexo-6.3.0-0e83c?style=flat-square&logo=hexo)
 ![node](https://img.shields.io/badge/Node.js-18%20%7C%2020%20%7C%2022-339933?style=flat-square&logo=nodedotjs)
-![theme](https://img.shields.io/badge/Theme-Fomalhaut%20v1.0.0-6513df?style=flat-square)
+![theme](https://img.shields.io/badge/Theme-Fomalhaut%20v1.0.1-6513df?style=flat-square)
 ![license](https://img.shields.io/badge/License-Apache--2.0-blue?style=flat-square)
 ![stars](https://img.shields.io/github/stars/fomalhaut1998/hexo-theme-Fomalhaut?style=flat-square&logo=github&label=Stars)
 ![forks](https://img.shields.io/github/forks/fomalhaut1998/hexo-theme-Fomalhaut?style=flat-square&logo=github&label=Forks)
@@ -16,6 +16,7 @@
 
 ## 目录
 
+- [更新日志](#更新日志)
 - [一、这是什么](#一这是什么)
 - [二、项目架构](#二项目架构)
 - [三、相比上一版改了什么](#三相比上一版改了什么)
@@ -30,6 +31,48 @@
 - [十二、部署](#十二部署)
 - [十三、常见问题](#十三常见问题)
 - [十四、授权与致谢](#十四授权与致谢)
+
+---
+
+## 更新日志
+
+### v1.0.1 — 打磨与生命周期修复（2026-10-05）
+
+这一版没有新增页面，全部围绕「首屏更快、动画不白跑、滚动不掉帧」：
+
+**首屏关键链**
+
+- 默认正文字体补上游 `preload`（带 `crossorigin`，字体按 CORS 模式取）——浏览器不用再等 `index.css` 解析完才发现字体；
+- 夜间默认壁纸与 `source/js/modules/settings.js` 的 `resetBg_()` 对齐到逐字一致的地址，避免同一张图下两份。
+
+**动画与帧率生命周期**
+
+- 雪花 / 星空从「不可见就跳过绘制」升级为「不可见即退出 rAF」，恢复交给 `MutationObserver` / `resize` / `pjax:complete` 的失效回调；
+- 帧率监测改成「面板开着才起循环」，采样封装成带 generation 的闭包，切后台自动挂起。
+
+**滚动与指针**
+
+- 修掉主题里 `window.scrollCollect = () => btf.throttle(fn, 200)()` 这种「工厂 + 当场调用」的假节流——原来每次滚动都会新建一个 throttle 再执行，节流形同虚设；
+- `btf.throttle` 补 `cancel()`；`pjax.pug` 里手写的两处解绑统一收进清理函数；
+- 小猫咪光标改成读写分离：高频指针输入只记最新值，下一帧先读几何再增量写，写入值用 `WeakMap` 缓存（CSSOM 会规范化小数与单位，不能拿序列化后的 style 反复比）；
+- 手机端自绘滚动条：滚动 / 布局值在读阶段一次采完，节点创建与样式写入放写阶段。
+
+**样式**
+
+- 评论区重做（`source/css/twikoo.css`）：三张独立白卡浮在压灰一档的面板上，配整块焦点环；
+- 侧栏作者卡新增回形针装饰（新增 `source/css/paperclip.css`）：内联 SVG、18° 倾角、针身探出卡片边缘；夜间自动切成冰蓝夜光。
+
+**工程与清理**
+
+- 新增 4 个回归脚本（`tools/tests/`，用 Node 自带的 `node:test`，无额外依赖）：光标效果、帧率生命周期、手机滚动条、滚动监听；
+- 新增 `docs/plans/2026-10-05-paperclip.md`，记录回形针的设计参数与回滚方式；
+- 删掉 13 个死文件：`leaves.js`、`bibi.js`、`love.js`、`tag-map` 的 proj4 两条、`themes/.../search/local-search.js`、`tw_cn.js`，以及 8 个不再引用的图片资源（`assets/gulp/*`、`loading2.gif`、`r1.webp`、`r2.webp`）；
+- 修好控制台字符画的版式与版权行（版权年份改为运行时计算）；
+- `error_img` 的兜底图改用主题自带的 `/img/friend_404.gif` 与 `/img/404.jpg`。
+
+### v1.0.0 — 首个正式版（2026-10-04）
+
+主题从 `themes/butterfly` 独立为 `themes/fomalhaut`，站点配置与主题代码彻底分离。详见 [三、相比上一版改了什么](#三相比上一版改了什么)。
 
 ---
 
@@ -276,7 +319,7 @@ npx hexo clean && npx hexo generate && npx gulp
 ├─ scripts/                    ★ 站点级 Hexo 插件（构建期生效）
 ├─ api/        Vercel 云函数（AI 代理）
 ├─ functions/  Cloudflare Pages 函数（同一份逻辑）
-├─ tools/      本地脚本（一键部署 Vercel）
+├─ tools/      本地脚本（一键部署 Vercel）+ tools/tests/ 回归脚本
 ├─ .github/workflows/autodeploy.yml   GitHub Actions 自动部署
 ├─ repoPic/                    README 用图（不参与构建）
 ├─ source/                     ★ 站点内容
@@ -307,6 +350,7 @@ npx hexo clean && npx hexo generate && npx gulp
 | `coin.css` | 投币按钮样式 | 文章底部「投喂」区 |
 | `gitcalendar.css` | GitHub 贡献日历底色与格子 | `#git_container`，配 `js/gitcalendar.js` |
 | `kslink.css` | 友人帐「快速申请」按钮 | `/social/link/` |
+| `paperclip.css` | 侧栏作者卡的细长回形针装饰（内联 SVG，白天蓝白高光 / 夜间冰蓝夜光） | 由 `inject.head` 引入，只影响电脑端侧栏作者卡 |
 | `mobile-drawer.css` | 手机端抽屉菜单改版（面板/字标/头像/菜单/遮罩/入场动效 13 小节） | 窄屏自动生效 |
 | `site-inject.css` | 站点注入样式合集（横幅公告、PC 浅色主题、侧栏加宽、列表分页、面包屑、小站资讯卡、aplayer 音量条、页脚隐藏本站项等） | 由 `_config.fomalhaut.yml` 的 `inject.head` 以 `<link>` 引入 |
 | `stats.css` | 文章统计页图表排版 | 只由 `/tags/` 页生效 |
@@ -350,11 +394,8 @@ npx hexo clean && npx hexo generate && npx gulp
 | `pjax-guard.js` | 修 pjax 选择器不匹配导致的「换页退回整页刷新」与「加载遮罩一直转圈」 |
 | `wechat-qr.js` | 社交二维码点击 → 同页灯箱展示（不跳转不下载） |
 | `kslink.js` | 友人帐「快速申请」表单填充 |
-| `bibi.js` | B 站粉丝数等数据展示 |
 | `coin.js` | 投币音效与动画 |
 | `footer-music.js` | 页脚「猜你想看」补一条「听点音乐」→ `/life/music/` |
-| `leaves.js` | 落叶特效 |
-| `love.js` | 「在一起 X 天」计时 |
 | `51la.js` | 51LA 统计与灵雀监控初始化 |
 | `jquery.min.js` / `winbox.bundle.min.js` | 第三方库 |
 
@@ -386,7 +427,20 @@ npx hexo clean && npx hexo generate && npx gulp
 | `tag-map-local.js` | 把 `hexo-tag-map` 的 jsDelivr CDN 改成本站自托管 |
 | `vercel-api-copy.js` | 构建后把 `api/`、`functions/`、`vercel.json` 拷进 `public/` |
 
-### 7.5 `themes/fomalhaut/` —— 主题本体
+### 7.6 `tools/tests/` —— 回归脚本
+
+用 Node 自带的 `node:test`，不需要额外依赖：
+
+| 文件 | 覆盖的行为 |
+| --- | --- |
+| `cursor-effects.test.cjs` | 小猫咪光标的读写分离与元素缓存 |
+| `fps-lifecycle.test.cjs` | 帧率监测的启动 / 停止与 generation 闭包 |
+| `mobile-scrollbar.test.cjs` | 手机端自绘滚动条的读 / 写两阶段 |
+| `scroll-listeners.test.cjs` | 滚动节流、`cancel()` 与 pjax 解绑 |
+
+跑法：`node --test "tools/tests/*.test.cjs"`（共 50 个用例；部分脚本支持用环境变量指向 `bak/` 里的基线做前后对比）。
+
+### 7.7 `themes/fomalhaut/` —— 主题本体
 
 | 目录 | 说明 |
 | --- | --- |

@@ -33,21 +33,29 @@ document.addEventListener('pjax:complete', tonav);
 document.addEventListener('DOMContentLoaded', tonav);
 //响应pjax
 function tonav() {
-  document.getElementById("name-container").setAttribute("style", "display:none");
-  var position = $(window).scrollTop();
-  $(window).scroll(function () {
-    var scroll = $(window).scrollTop();
+  // Replace only this module's listener; keep other scroll handlers intact.
+  var $window = $(window);
+  $window.off('scroll.fomalNavTitle');
+  var nameContainer = document.getElementById("name-container");
+  var menusItems = document.getElementsByClassName("menus_items")[1];
+  var pageName = document.getElementById("page-name");
+  if (!nameContainer || !menusItems || !pageName) return;
+
+  nameContainer.setAttribute("style", "display:none");
+  var position = $window.scrollTop();
+  $window.on('scroll.fomalNavTitle', function () {
+    var scroll = $window.scrollTop();
     if (scroll > position) {
-      document.getElementById("name-container").setAttribute("style", "");
-      document.getElementsByClassName("menus_items")[1].setAttribute("style", "display:none!important");
+      nameContainer.setAttribute("style", "");
+      menusItems.setAttribute("style", "display:none!important");
     } else {
-      document.getElementsByClassName("menus_items")[1].setAttribute("style", "");
-      document.getElementById("name-container").setAttribute("style", "display:none");
+      menusItems.setAttribute("style", "");
+      nameContainer.setAttribute("style", "display:none");
     }
     position = scroll;
   });
   //修复没有弄右键菜单的童鞋无法回顶部的问题
-  document.getElementById("page-name").innerText = document.title.split(" | Demo")[0];
+  pageName.innerText = document.title.split(" | Demo")[0];
 }
 
 function scrollToTop() {

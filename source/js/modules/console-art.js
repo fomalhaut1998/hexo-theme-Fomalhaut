@@ -43,16 +43,20 @@ function createtime1() {
     "小站已经苟活",
     dnum,
     "天啦!",
-    "©2022 By Demo",
+    // 版权年份跟着走：2022 是建站年（与 _config.fomalhaut.yml 的 footer.owner.since 保持一致），
+    // 结束年份取运行时的当前年份，省得每年手改一次。
+    "©2022-" + new Date().getFullYear() + " By Demo",
   ];
 
   setTimeout(
     console.log.bind(
       console,
-      `\n%c${ascll[0]} %c ${ascll[1]} %c \n%c${ascll[2]}%c ${ascll[3]}%c ${ascll[4]}\n\n%c ${ascll[5]}\n`,
+      // 版式：欢迎 / Future 一行 → 字符画 → 「小站已经苟活 1518 天啦!」一行 → 空行 → 版权行。
+      // 2026-10-03 拆分时这串格式被改坏：中间多插了一个 %c 加换行把字符画顶到新行，
+      // 换行被挪到「天啦!」前面把整句劈成两行，ascll[6] 版权行则整段丢失。
+      `\n%c${ascll[0]} %c ${ascll[1]} %c${ascll[2]}%c${ascll[3]}%c ${ascll[4]}%c ${ascll[5]}\n\n%c ${ascll[6]}\n`,
       "color:#39c5bb",
       "",
-      "color:#39c5bb",
       // 字符画必须用等宽字体：控制台默认等宽字体可能把 U+2588(█) 当全角渲染，
       // 方块会比字符格宽一倍，整幅画糊成一片。这里显式指定带半宽方块的等宽字体。
       "color:#39c5bb;font-family:Consolas,Menlo,Monaco,\"DejaVu Sans Mono\",\"Courier New\",monospace",

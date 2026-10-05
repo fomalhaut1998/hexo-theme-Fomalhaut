@@ -256,6 +256,12 @@ document.addEventListener('DOMContentLoaded', function () {
    * 滾動處理
    */
   const scrollFn = function () {
+    // refreshFn can also run without PJAX; release the previous page first.
+    if (window.scrollCollect) {
+      window.removeEventListener('scroll', window.scrollCollect)
+      if (typeof window.scrollCollect.cancel === 'function') window.scrollCollect.cancel()
+      window.scrollCollect = null
+    }
     const $rightside = document.getElementById('rightside')
     const innerHeight = window.innerHeight + 56
 
@@ -278,40 +284,39 @@ document.addEventListener('DOMContentLoaded', function () {
     const isChatBtnHide = typeof chatBtnHide === 'function'
     const isChatBtnShow = typeof chatBtnShow === 'function'
 
-    window.scrollCollect = () => {
-      return btf.throttle(function (e) {
-        const currentTop = window.scrollY || document.documentElement.scrollTop
-        const isDown = scrollDirection(currentTop)
-        if (currentTop > 56) {
-          if (isDown) {
-            if ($header.classList.contains('nav-visible')) $header.classList.remove('nav-visible')
-            if (isChatBtnShow && isChatShow === true) {
-              chatBtnHide()
-              isChatShow = false
-            }
-          } else {
-            if (!$header.classList.contains('nav-visible')) $header.classList.add('nav-visible')
-            if (isChatBtnHide && isChatShow === false) {
-              chatBtnShow()
-              isChatShow = true
-            }
-          }
-          $header.classList.add('nav-fixed')
-          if (window.getComputedStyle($rightside).getPropertyValue('opacity') === '0') {
-            $rightside.style.cssText = 'opacity: 0.8; transform: translateX(-58px)'
+    // Keep the throttle state across scroll events for this page.
+    window.scrollCollect = btf.throttle(function (e) {
+      const currentTop = window.scrollY || document.documentElement.scrollTop
+      const isDown = scrollDirection(currentTop)
+      if (currentTop > 56) {
+        if (isDown) {
+          if ($header.classList.contains('nav-visible')) $header.classList.remove('nav-visible')
+          if (isChatBtnShow && isChatShow === true) {
+            chatBtnHide()
+            isChatShow = false
           }
         } else {
-          if (currentTop === 0) {
-            $header.classList.remove('nav-fixed', 'nav-visible')
+          if (!$header.classList.contains('nav-visible')) $header.classList.add('nav-visible')
+          if (isChatBtnHide && isChatShow === false) {
+            chatBtnShow()
+            isChatShow = true
           }
-          $rightside.style.cssText = "opacity: ''; transform: ''"
         }
-
-        if (document.body.scrollHeight <= innerHeight) {
+        $header.classList.add('nav-fixed')
+        if (window.getComputedStyle($rightside).getPropertyValue('opacity') === '0') {
           $rightside.style.cssText = 'opacity: 0.8; transform: translateX(-58px)'
         }
-      }, 200)()
-    }
+      } else {
+        if (currentTop === 0) {
+          $header.classList.remove('nav-fixed', 'nav-visible')
+        }
+        $rightside.style.cssText = "opacity: ''; transform: ''"
+      }
+
+      if (document.body.scrollHeight <= innerHeight) {
+        $rightside.style.cssText = 'opacity: 0.8; transform: translateX(-58px)'
+      }
+    }, 200)
 
     window.addEventListener('scroll', scrollCollect)
   }
@@ -320,6 +325,12 @@ document.addEventListener('DOMContentLoaded', function () {
   * toc,anchor
   */
   const scrollFnToDo = function () {
+    // refreshFn can also run without PJAX; release the previous page first.
+    if (window.tocScrollFn) {
+      window.removeEventListener('scroll', window.tocScrollFn)
+      if (typeof window.tocScrollFn.cancel === 'function') window.tocScrollFn.cancel()
+      window.tocScrollFn = null
+    }
     const isToc = GLOBAL_CONFIG_SITE.isToc
     const isAnchor = GLOBAL_CONFIG.isAnchor
     const $article = document.getElementById('article-container')
@@ -434,13 +445,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // main of scroll
-    window.tocScrollFn = function () {
-      return btf.throttle(function () {
-        const currentTop = window.scrollY || document.documentElement.scrollTop
-        isToc && scrollPercent(currentTop)
-        findHeadPosition(currentTop)
-      }, 100)()
-    }
+    // Keep the throttle state across scroll events for this page.
+    window.tocScrollFn = btf.throttle(function () {
+      const currentTop = window.scrollY || document.documentElement.scrollTop
+      isToc && scrollPercent(currentTop)
+      findHeadPosition(currentTop)
+    }, 100)
     window.addEventListener('scroll', tocScrollFn)
   }
 

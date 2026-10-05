@@ -35,7 +35,13 @@
   --tk-fill-strong: rgba(128, 128, 128, 0.11);
   /* 两个中性实底：表单面板 / 字段，用来避免「半透明灰叠在白卡上」的灰蒙蒙观感 */
   --tk-surface: #fff;
-  --tk-surface-2: #f7f9fa;
+  /* 面板必须比字段灰一档：白字段放在白面板上等于没有边界（这就是「看不出三块」的根因） */
+  --tk-surface-2: #e8edf2;
+  /* 字段框（昵称/邮箱/网址、正文框）：纯白 + 极淡描边 + 一点投影 = 浮在灰面板上的三张白卡。
+     对比改造前的「一条浅灰带子 + 30% 灰外框」，观感是完全不同的两种设计 */
+  --tk-field-bg: #fff;
+  --tk-field-line: rgba(15, 23, 42, 0.12);
+  --tk-field-shadow: 0 1px 3px rgba(15, 23, 42, 0.09);
   --tk-radius-card: 14px;
   --tk-radius-field: 10px;
   --tk-shadow-soft: 0 2px 10px rgba(15, 23, 42, 0.05);
@@ -142,42 +148,56 @@
   z-index: 4;
 }
 
-/* 昵称 / 邮箱 / 网址：三个字段拼成一条胶囊输入带 */
-.twikoo .tk-meta-input {
+/* 昵称 / 邮箱 / 网址：三个字段各自独立成框（原来拼成一条胶囊带，块与块之间分不清） */
+.twikoo .tk-submit .tk-meta-input {
   display: flex;
   align-items: stretch;
-  gap: 8px;
-  margin-bottom: 0;
-  overflow: hidden;
-  border: 1px solid var(--tk-line);
-  border-radius: var(--tk-radius-field);
-  background-color: var(--tk-surface-2);
-  transition: border-color 0.25s ease, background-color 0.25s ease;
-}
-.twikoo .tk-meta-input:focus-within {
-  border-color: var(--tk-accent-line);
-}
-.twikoo .tk-meta-input .tk-input + .tk-input {
-  margin-left: 0;
+  gap: 18px;
+  margin-bottom: 8px;
+  overflow: visible;
+  border: 0;
+  background-color: transparent;
 }
 .twikoo .tk-meta-input__item {
   min-width: 0;
 }
-.twikoo .tk-meta-input .tk-input-group__prepend {
+/* 每个字段自己是一块：描边 + 圆角 + 实底。
+   选择器加上 .tk-submit 提一档特异度，避免和 Twikoo 自带样式同权重时被后来者盖掉 */
+.twikoo .tk-submit .tk-meta-input .tk-input {
+  min-width: 0;
+  border: 1px solid var(--tk-field-line);
+  border-radius: var(--tk-radius-field);
+  background-color: var(--tk-field-bg);
+  box-shadow: var(--tk-field-shadow);
+  overflow: hidden;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+}
+.twikoo .tk-submit .tk-meta-input .tk-input + .tk-input {
+  margin-left: 0;
+}
+.twikoo .tk-submit .tk-meta-input .tk-input:hover {
+  border-color: var(--tk-accent-line);
+}
+/* 焦点环画在整块输入框上，而不是只画在输入区底部 */
+.twikoo .tk-submit .tk-meta-input .tk-input:focus-within {
+  border-color: var(--tk-accent-deep);
+  box-shadow: var(--tk-field-shadow), 0 0 0 3px var(--tk-accent-wash);
+}
+.twikoo .tk-submit .tk-meta-input .tk-input-group__prepend {
   height: auto;
   padding: 0 11px;
   border: 0;
   border-right: 1px solid var(--tk-line-soft);
   border-radius: 0;
-  background-color: var(--tk-fill-soft);
+  background-color: var(--tk-fill-strong);
   color: inherit;
   font-size: 0.8125rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   /* 「昵称/邮箱/网址」不再用满饱和主题色，中灰更耐看 */
-  opacity: 0.72;
+  opacity: 0.78;
 }
-.twikoo .tk-meta-input .tk-input__inner {
+.twikoo .tk-submit .tk-meta-input .tk-input__inner {
   height: 40px;
   padding: 0 12px;
   border: 0;
@@ -185,14 +205,12 @@
   background-color: transparent;
   font-size: 0.875rem;
 }
-.twikoo .tk-meta-input .tk-input__inner:hover {
-  background-color: var(--tk-accent-wash);
+.twikoo .tk-submit .tk-meta-input .tk-input__inner:hover,
+.twikoo .tk-submit .tk-meta-input .tk-input__inner:focus {
+  background-color: transparent;
+  box-shadow: none;
 }
-.twikoo .tk-meta-input .tk-input__inner:focus {
-  background-color: var(--tk-accent-wash);
-  box-shadow: inset 0 -2px 0 var(--tk-accent-deep);
-}
-.twikoo .tk-meta-input .tk-input__inner::placeholder {
+.twikoo .tk-submit .tk-meta-input .tk-input__inner::placeholder {
   color: currentColor;
   opacity: 0.4;
 }
@@ -201,15 +219,18 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* 正文输入框 */
+/* 正文输入框（行高同时决定 placeholder 那两行提示的间距，太挤了往上调） */
+.twikoo .tk-submit .tk-textarea .tk-input__inner,
+.twikoo .tk-submit .tk-textarea__inner,
 .twikoo .tk-textarea .tk-input__inner,
 .twikoo .tk-textarea__inner {
   min-height: 120px;
   padding: 12px 14px;
-  border: 1px solid var(--tk-line);
+  border: 1px solid var(--tk-field-line);
   border-radius: var(--tk-radius-field);
-  background-color: var(--tk-surface);
-  line-height: 1.7;
+  background-color: var(--tk-field-bg);
+  box-shadow: var(--tk-field-shadow);
+  line-height: 2.1;
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 .twikoo .tk-textarea .tk-input__inner:hover,
@@ -219,7 +240,7 @@
 .twikoo .tk-textarea .tk-input__inner:focus,
 .twikoo .tk-textarea__inner:focus {
   border-color: var(--tk-accent-deep);
-  box-shadow: 0 0 0 3px var(--tk-accent-wash);
+  box-shadow: var(--tk-field-shadow), 0 0 0 3px var(--tk-accent-wash);
 }
 .twikoo .tk-textarea .tk-input__inner::placeholder,
 .twikoo .tk-textarea__inner::placeholder {
@@ -534,7 +555,11 @@
   --tk-line: rgba(255, 255, 255, 0.22);
   --tk-line-soft: rgba(255, 255, 255, 0.12);
   --tk-surface: #232323;
-  --tk-surface-2: #2a2a2a;
+  /* 深色下同样要拉开明度差，但方向相反：面板提亮、字段做深色凹槽（#1a1a1a vs #2f2f2f） */
+  --tk-surface-2: #2f2f2f;
+  --tk-field-bg: #1a1a1a;
+  --tk-field-line: rgba(255, 255, 255, 0.16);
+  --tk-field-shadow: none;
   --tk-fill-soft: rgba(255, 255, 255, 0.05);
   --tk-fill-strong: rgba(255, 255, 255, 0.09);
   --tk-shadow-soft: 0 2px 10px rgba(0, 0, 0, 0.25);
@@ -543,17 +568,14 @@
 
 /* ------------------------------------------------------------------ 移动端 */
 @media screen and (max-width: 767px) {
-  /* 三个字段竖排（Twikoo 原布局就是竖排，这里只收敛间距与圆角） */
-  .twikoo .tk-meta-input {
-    border-radius: var(--tk-radius-field);
-  }
-  .twikoo .tk-meta-input .tk-input-group__prepend {
+  /* 三个字段竖排（Twikoo 原布局就是竖排）：字段间距交给 gap，避免和 margin-top 叠成双倍空隙 */
+  .twikoo .tk-submit .tk-meta-input .tk-input-group__prepend {
     border-right: 0;
     border-bottom: 1px solid var(--tk-line-soft);
     border-radius: 0;
   }
-  .twikoo .tk-meta-input .tk-input + .tk-input {
-    margin-top: 8px;
+  .twikoo .tk-submit .tk-meta-input .tk-input + .tk-input {
+    margin-top: 0;
   }
   .twikoo .tk-submit {
     padding: 14px;
@@ -597,12 +619,9 @@
       border-right: 0;
       border-bottom: 1px solid var(--tk-line-soft);
     }
-    .twikoo .tk-meta-input:focus-within {
-      border-color: var(--tk-line);
-    }
-    .twikoo .tk-meta-input .tk-input + .tk-input {
+    .twikoo .tk-submit .tk-meta-input .tk-input + .tk-input {
       margin-left: 0;
-      margin-top: 8px;
+      margin-top: 0;
     }
   }
 }
