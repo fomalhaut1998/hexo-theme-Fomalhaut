@@ -1,5 +1,62 @@
+/* GitHub 贡献日历的调色板：跟随站点主题色 --theme-color，不再写死一套绿色。
+   [0] 是「没有提交」的格子（中性灰 + 透明度，白天/夜间都自动合适），
+   [1]~[9] 是主题色由浅到深（用透明度叠加，不依赖 color-mix，老浏览器也能用）。
+   读不到 --theme-color（或值不是 rgb/#hex）时返回 null，调用方继续用配置里那套颜色兜底。 */
+function git_theme_palette() {
+  try {
+    var raw = (getComputedStyle(document.documentElement).getPropertyValue('--theme-color') || '').trim();
+    var r, g, b, m = raw.match(/^rgba?\(\s*([\d.]+)\s*[,\s]\s*([\d.]+)\s*[,\s]\s*([\d.]+)/i);
+    if (m) {
+      r = Math.round(+m[1]); g = Math.round(+m[2]); b = Math.round(+m[3]);
+    } else {
+      var h = raw.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+      if (!h) return null;
+      var v = h[1];
+      if (v.length === 3) v = v[0] + v[0] + v[1] + v[1] + v[2] + v[2];
+      r = parseInt(v.slice(0, 2), 16); g = parseInt(v.slice(2, 4), 16); b = parseInt(v.slice(4, 6), 16);
+    }
+    if (!isFinite(r) || !isFinite(g) || !isFinite(b)) return null;
+    var base = r + ',' + g + ',' + b;
+    var ramp = [0, .16, .28, .4, .52, .64, .76, .86, .94, 1];
+    var out = ['rgba(128,134,140,.22)'];
+    for (var i = 1; i < ramp.length; i++) out.push('rgba(' + base + ',' + ramp[i] + ')');
+    out.push('rgba(' + base + ',1)');
+    return out;
+  } catch (e) { return null; }
+}
+
+/* 主题色变化后重画日历（美化面板里的 setColor 会调它）。
+   调色板在 init 里实时推导，所以这里重新 init 一次即可拿到新颜色；
+   但只有「主题色真的和画布上那份不一样」才动手，否则原地跳过。 */
+function GitCalendarRefresh() {
+  if (!window.__gitCalendarArgs) return false;
+  var box = document.getElementById('git_container');
+  if (!box) return false;
+  var git_now = (getComputedStyle(document.documentElement).getPropertyValue('--theme-color') || '').trim();
+  if (!git_now || git_now === git_painted_theme) return false;
+  box.innerHTML = '';
+  box.removeAttribute('data-gitcalendar-fallback');
+  GitCalendarInit(window.__gitCalendarArgs[0], window.__gitCalendarArgs[1], window.__gitCalendarArgs[2]);
+  return true;
+}
+
+/* 每次初始化都会领一个递增的编号；旧的那次 fetch 回来时发现自己已经不是最新，就整段丢弃。
+   这样「页面刚打开就切主题色」「连点两下颜色」这类并发都不会叠出两份画布。 */
+var git_init_seq = 0;
+
+/* 画布当前（或正在路上）这一份所依据的主题色值。用它来判断「要不要重画」：
+   和现在一样就什么都不做 —— 页面加载时那次 setColor 正是这种情况，插手会和首次渲染撞车；
+   不一样才清空重画（换主题色、「恢复默认设置」都走这条路）。 */
+var git_painted_theme = '';
+
 function GitCalendarInit(git_gitapiurl, git_color, git_user) {
   if (document.getElementById('git_container')) {
+    /* 记住原始参数，主题色变了才好在原地重画（见 GitCalendarRefresh） */
+    window.__gitCalendarArgs = [git_gitapiurl, git_color, git_user];
+    var git_themecolor = git_theme_palette();
+    if (git_themecolor) git_color = git_themecolor;
+    git_painted_theme = (getComputedStyle(document.documentElement).getPropertyValue('--theme-color') || '').trim();
+    var git_seq = ++git_init_seq;
     var git_canlendar = (git_user, git_gitapiurl, git_color) => {
       var git_fixed = 'fixed';
       var git_px = 'px';
@@ -203,6 +260,7 @@ function GitCalendarInit(git_gitapiurl, git_color, git_user) {
       }
 
       fetch(git_gitapiurl).then(data => data.json()).then(data => {
+        if (git_seq !== git_init_seq) { return }  // 已经被更新的一次初始化取代，丢弃这次结果
         if (document.getElementById('git_loading')) {
           document.getElementById('git_loading').remove()
         };
@@ -222,9 +280,11 @@ function GitCalendarInit(git_gitapiurl, git_color, git_user) {
         addweek(data);
         addlastmonth();
         var html = git_main_box(git_monthchange, git_data, git_user, git_color, git_total, git_thisweekdatacore, git_weekdatacore, git_oneyearbeforeday, git_thisday, git_aweekago, git_amonthago);
+        git_container.innerHTML = '';  // 只保留这一份渲染结果，重复初始化时不会叠出两份画布
         append_div_gitcalendar(git_container, html);
         responsiveChart()
       }).catch(function(error) {
+        if (git_seq !== git_init_seq) { return }  // 同上：别让旧的失败结果盖住新的渲染
         // —— 本站补丁（2026-10-01）——
         // 原版只在这里 console.log，加载动画 #git_loading 永远不会被摘掉，页面会一直转圈。
         // 任何失败（接口 500、返回的不是 JSON、数据形状不对）都必须收尾：摘掉转圈 + 原地给出提示。

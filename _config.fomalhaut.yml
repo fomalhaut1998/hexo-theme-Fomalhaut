@@ -1241,8 +1241,8 @@ inject:
     # CSS 选择器又全部带 .tl-ready（JS 确认通过后才加），任一环节缺失就整块失效、退回主题原样。
     # 改 css/js 记得把下面两个 ?v= 一起提版本。回滚：删掉下面两行即可
     # （配置备份 bak/20261009-timeline-archive/before/_config.fomalhaut.yml）。
-    - <link rel="stylesheet" href="/css/timeline-archive.css?v=20261010">
-    - <script defer src="/js/timeline-archive.js?v=20261010"></script>
+    - <link rel="stylesheet" href="/css/timeline-archive.css?v=20261011">
+    - <script defer src="/js/timeline-archive.js?v=20261011"></script>
     # ── 关于页改版（站点独立样式 + 脚本，不改主题源码）──────────────────────────
     # source/css/about-page.css：/personal/about/ 专用外观，全部选择器以 .ab2 开头；
     #   含 Hero、6 张线路卡、实测参数对照表、技术栈六层分层、个人档案卡 + 昵称由来列表。
@@ -1278,7 +1278,7 @@ inject:
     # 夜间随 html[data-theme="dark"] 切换为冰蓝夜光 / 柔和青色光晕 / 暖金点缀；轻微呼吸，尊重减少动态设置，白天不变。
     # 改这个文件记得把 ?v= 一起提版本；只影响电脑端侧栏的作者卡。
     # 回滚：删掉下面这一行即可（themes/ 下的 custom.css 与 git 版本逐字节一致，无需还原）。
-    - <link rel="stylesheet" href="/css/paperclip.css?v=20261005-nightglow1">
+    - <link rel="stylesheet" href="/css/paperclip.css?v=20261005-mobile1">
 
   bottom:
     - <script defer charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script> # 51la统计（+defer 解除阻塞）
@@ -1310,7 +1310,7 @@ inject:
     - <script defer src="/js/modules/effects.js?v=20261004q"></script> # 雪花/星空/表情放大
     - <script defer src="/js/modules/reading.js?v=20261005-animation1"></script> # 阅读进度条/FPS
     - <script defer src="/js/modules/nav.js?v=20261005-scroll1"></script> # 导航栏标题/首屏欢迎语/随便逛逛/分享
-    - <script defer src="/js/modules/cursor.js?v=20261005-animation1"></script> # 小猫咪/右键菜单/听话鼠标
+    - <script defer src="/js/modules/cursor.js?v=20261005-hover1"></script> # 小猫咪/右键菜单/听话鼠标
     - <script defer src="/js/modules/footer-time.js"></script> # 页脚计时器
     - <script defer src="/js/modules/settings.js?v=20261005-animation1"></script> # 美化模块（右下角齿轮设置面板，最大的一块）
     - <script defer src="/js/fomal.js"></script> # 站点主引导：模块地图 + 控制台策略 + 全局入口清单

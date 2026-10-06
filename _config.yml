@@ -242,6 +242,9 @@ gitcalendar:
   minheight:
     pc: 320px #桌面端最小高度
     mibile: 0px #移动端最小高度
+  # 这里只作兜底：前端 gitcalendar.js 里的 git_theme_palette() 会读 --theme-color 实时生成
+  # 一套同色系调色板（[0] 空白天用中性灰，[1]~[9] 主题色由浅到深）；
+  # 只有读不到 --theme-color 时才会用到下面这套写死的颜色。
   color: "['#d9e0df', '#c6e0dc', '#a8dcd4', '#9adcd2', '#89ded1', '#77e0d0', '#5fdecb', '#47dcc6', '#39dcc3', '#1fdabe', '#00dab9']"
   # "['rgb(145, 145, 145, 0.2)', '#c6ecc1', '#a0e2bb', '#1fc7b6', '#70c5d3', '#60a2ce', '#507ac9', '#4356c5', '#423cc4', '#5b3abc', '#7138b6']" # 冷色系温度色调
   # "['rgb(145, 145, 145, 0.2)', '#c6ecc1', '#a0e2bb', '#1fc7b6', '#70c5d3', '#60a2ce', '#507ac9', '#4356c5', '#423cc4', '#5b3abc', '#7138b6']" # 冷色系温度色调

@@ -11,8 +11,14 @@
  *   页面自动退回主题原样，不会出现半成品。
  * 配色全部从 --theme-color / --font-color / --card-bg 派生，跟主题色与明暗模式走。
  * 回滚：删掉 _config.fomalhaut.yml 里的这两行即可 ——
- *   <link rel="stylesheet" href="/css/timeline-archive.css?v=20261009">
- *   <script defer src="/js/timeline-archive.js?v=20261009"></script>
+ *   <link rel="stylesheet" href="/css/timeline-archive.css?v=20261011">
+ *   <script defer src="/js/timeline-archive.js?v=20261011"></script>
+ *
+ * 2026-10-06 修窄屏横向溢出：栅格第二列原写 1fr，而 1fr 的最小尺寸是 min-content，
+ *   于是最长的那串不可断词（形如 “cur/avif/bmp/…/wasm” 的斜线清单，约 88 字符、
+ *   单行 654px）把整条轨道顶到 687px，卡片撑破 390px 视口，触屏一拖整页横移。
+ *   改成 minmax(0, 1fr)（配 min-width: 0）后轨道不再有 min-content 底线，
+ *   长串交给卡片上已有的 overflow-wrap: break-word 断行。
  *   （配置备份 bak/20261009-timeline-archive/before/_config.fomalhaut.yml）
  * 改本文件记得把 ?v= 一起提版本，否则会吃缓存。
  * ========================================================================== */
@@ -190,7 +196,7 @@
 
 #article-container .timeline.tl-ready .tl-year {
   display: grid;
-  grid-template-columns: var(--tl-rail) 1fr;
+  grid-template-columns: var(--tl-rail) minmax(0, 1fr);
   column-gap: var(--tl-gap);
   align-items: center;
   margin: 44px 0 16px;
@@ -242,7 +248,7 @@
 
 #article-container .timeline.tl-ready .timeline-item {
   display: grid;
-  grid-template-columns: var(--tl-rail) 1fr;
+  grid-template-columns: var(--tl-rail) minmax(0, 1fr);
   column-gap: var(--tl-gap);
   align-items: start;
   margin: 0 0 18px;
@@ -302,6 +308,7 @@
 /* 内容卡片 */
 #article-container .timeline.tl-ready .timeline-item > .timeline-item-content {
   grid-column: 2;
+  min-width: 0;
   position: relative;
   padding: 16px 22px 17px 24px;
   border: 1px solid var(--tl-hair);

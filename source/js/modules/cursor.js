@@ -545,6 +545,8 @@ class Cursor {
   constructor() {
     this.pos = { curr: null, prev: null };
     this.pointerCache = new WeakMap();
+    this.controlCache = new WeakMap();
+    this.ancestorPointerCache = new WeakMap();
     this.__raf = null;
     this.__hoverDirty = false;
     this.create();
@@ -592,25 +594,68 @@ class Cursor {
   isPointer(target) {
     if (target && target.nodeType !== 1) target = target.parentElement;
     if (!target || !target.isConnected) return false;
-    if (this.pointerCache.has(target)) return this.pointerCache.get(target);
-    // 实际元素身份而非 outerHTML：嵌套 span / SVG、异步按钮和同 HTML 的不同节点均可区分。
-    const control = target.closest('a[href], button, summary, label, input[type="button"], input[type="submit"], input[type="reset"], [onclick], [role="button"], [role="link"]');
-    let pointer = !!(control && !control.disabled);
-    if (!control) {
-      // 非语义可点元素只检查当前目标及祖先，不扫描全页。结果缓存到下一次 DOM/主题变化。
-      for (let el = target; el; el = el.parentElement) {
-        if (getStyle2(el, 'cursor') === 'pointer') { pointer = true; break; }
-      }
+    // 控件身份与 CSS 结果分开缓存：子元素往返不再重复 closest / 祖先样式查询。
+    let control = this.controlCache.get(target);
+    if (control === undefined) {
+      control = target.closest('a[href], button, summary, label, input[type="button"], input[type="submit"], input[type="reset"], [onclick], [role="button"], [role="link"], .wb-control > span');
+      this.controlCache.set(target, control);
     }
+    // WinBox 的标题栏按钮本来就是 cursor:pointer；标题和缩放边缘不走此快路径。
+    // disabled 读当前值，不能把已禁用按钮的旧结果复用。
+    if (control) return !control.disabled;
+    if (this.pointerCache.has(target)) return this.pointerCache.get(target);
+    let pointer = false;
+    const path = [];
+    for (let el = target; el; el = el.parentElement) {
+      if (this.ancestorPointerCache.has(el)) {
+        pointer = this.ancestorPointerCache.get(el);
+        break;
+      }
+      path.push(el);
+      if (getStyle2(el, 'cursor') === 'pointer') { pointer = true; break; }
+    }
+    // 保留原来的“任意祖先 pointer”语义；只在同一 hover / 样式版本共享祖先链。
+    for (const el of path) this.ancestorPointerCache.set(el, pointer);
     this.pointerCache.set(target, pointer);
     return pointer;
   }
 
-  invalidatePointer(hitTest) {
-    this.pointerCache = new WeakMap();
+  invalidatePointer(hitTest, clearCache = true) {
+    // 观察器可能在一帧内多次投递：这里只标脏，统一在 render 重建一次。
+    this.__pointerInvalid = this.__pointerInvalid || clearCache;
     this.__hoverDirty = true;
     this.__hitTest = this.__hitTest || !!hitTest;
     if (this.pos.curr) this.start();
+  }
+
+  fpsOutputNode(node) {
+    if (node.nodeType === 3) return true;
+    if (node.nodeType !== 1 || node.tagName !== 'SPAN' || !node.getAttributeNames) return false;
+    const attrs = node.getAttributeNames();
+    return attrs.length === 1 && attrs[0] === 'style' &&
+      /^\s*color\s*:\s*(?:#bd0000|red|orange|#9338e6|#08b7e4|#39c5bb)\s*;?\s*$/i.test(node.getAttribute('style')) &&
+      [...node.childNodes].every(child => child.nodeType === 3);
+  }
+
+  pointerMutation(record) {
+    const target = record.target;
+    if (target === this.scr || this.scr.contains(target) ||
+      target === this.layer || this.layer.contains(target)) return 0;
+    // 精确排除已知纯装饰数据；不能泛化为忽略所有 class / style / 文本变化。
+    if (record.type === 'attributes' && record.attributeName === 'data-msg' &&
+      target.nodeType === 1 && target.classList.contains('neko')) return 0;
+    const element = target.nodeType === 1 ? target : target.parentElement;
+    const fps = element && element.closest('#fps');
+    if (fps) {
+      if (record.type === 'attributes' && record.attributeName === 'title' && target === fps) return 0;
+      // 只豁免计数器已知的纯文字 / 着色 span 输出，未知控件或重排仍全失效。
+      // 输出宽度变化可能改变命中元素，因此仍需重查位置。
+      if (record.type === 'childList' && target === fps && record.addedNodes && record.removedNodes &&
+        [...record.addedNodes, ...record.removedNodes].every(node => this.fpsOutputNode(node))) return 1;
+      if (record.type === 'characterData' && (element === fps ||
+        (element.parentElement === fps && this.fpsOutputNode(element)))) return 1;
+    }
+    return 2;
   }
 
   refresh() {
@@ -626,6 +671,7 @@ class Cursor {
     const trackTarget = e => {
       if (this.target !== e.target) {
         this.target = e.target;
+        this.__styleInvalid = true;
         this.__hoverDirty = true;
       }
     };
@@ -637,13 +683,15 @@ class Cursor {
     }, { passive: true });
     document.addEventListener('mouseover', e => {
       trackTarget(e);
-      // :hover 选择器可能改变 cursor；同一目标重新进入时也重新检查。
-      if (e.target && e.target.nodeType === 1) this.pointerCache.delete(e.target);
+      // :hover / 兄弟选择器可能改变非语义区域的 cursor，下一帧更新 CSS 版本；
+      // 控件身份缓存不受纯 hover 切换影响。
+      this.__styleInvalid = true;
       this.__hoverDirty = true;
       if (this.pos.curr) this.start();
     }, { passive: true });
     document.addEventListener('mouseout', e => {
       this.target = e.relatedTarget;
+      this.__styleInvalid = true;
       this.__hoverDirty = true;
       if (this.pos.curr) this.start();
     }, { passive: true });
@@ -661,9 +709,12 @@ class Cursor {
     }, true);
     if (typeof MutationObserver !== 'undefined') {
       this.observer = new MutationObserver(records => {
-        // 自己的 transform/class/style 更新不触发下一帧，避免观察器自激循环。
-        if (records.some(r => r.target !== this.scr && r.target !== this.layer &&
-          !this.layer.contains(r.target))) this.invalidatePointer(true);
+        let change = 0;
+        for (const record of records) {
+          change = Math.max(change, this.pointerMutation(record));
+          if (change === 2) break;
+        }
+        if (change) this.invalidatePointer(true, change === 2);
       });
       this.observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, characterData: true });
     }
@@ -688,7 +739,17 @@ class Cursor {
     if (!curr || document.hidden) return;
     // 样式读取必须在 transform / class 写入之前完成，且每帧只处理最后一个目标。
     if (this.__hoverDirty) {
-      if (this.__hitTest) this.target = document.elementFromPoint(curr.x + 8, curr.y + 8);
+      if (this.__hitTest) {
+        const target = document.elementFromPoint(curr.x + 8, curr.y + 8);
+        if (target !== this.target) this.__styleInvalid = true;
+        this.target = target;
+      }
+      if (this.__pointerInvalid) this.controlCache = new WeakMap();
+      if (this.__pointerInvalid || this.__styleInvalid) {
+        this.pointerCache = new WeakMap();
+        this.ancestorPointerCache = new WeakMap();
+      }
+      this.__pointerInvalid = this.__styleInvalid = false;
       const hover = this.isPointer(this.target);
       this.__hoverDirty = false;
       this.__hitTest = false;

@@ -206,6 +206,11 @@ setColor(localStorage.getItem("themeColor"));
 function setColor(c) {
   document.getElementById("themeColor").innerText = `:root{--theme-color:` + map.get(c) + ` !important}`;
   localStorage.setItem("themeColor", c);
+  /* GitHub 贡献日历的调色板是从 --theme-color 推导出来的，主题色一变就得重画一次，
+     否则它会一直停在上一个颜色。要不要真的重画由 GitCalendarRefresh 自己按「画布上的颜色
+     和当前主题色是否一致」判断 —— 页面加载、以及「恢复默认设置」里先 initItem() 写了
+     localStorage 再调这里，都属于颜色没变，它会原地跳过。 */
+  if (window.GitCalendarRefresh) window.GitCalendarRefresh();
   /* 只有主题色变化才刷新鼠标颜色；Cursor.refresh 原地更新样式，
    * 按当前目标识别交互状态，不再遍历全页元素。 */
   if (window.__cursorColor !== c) {

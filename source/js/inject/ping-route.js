@@ -52,7 +52,9 @@
   }
 
   /* 探测地址：根路径 + 随机串。随机串是为了绕过浏览器缓存与站点 SW 缓存，
-     每次量到的都是真实网络往返，而不是「0ms 的缓存命中」。 */
+     每次量到的都是真实网络往返，而不是「0ms 的缓存命中」。
+     （sw.js 那边对带 __pr= 的请求只改写回源、不写 CacheStorage，
+       否则每个随机串都会在 ICDNCache 里留下一条约 98KB、永远读不到的记录。） */
   function probeUrl(href, tag) {
     var u;
     try { u = new URL(href); } catch (e) { return null; }

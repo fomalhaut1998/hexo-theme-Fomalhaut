@@ -2191,7 +2191,9 @@ a:hover {
   -webkit-appearance: none;
   user-select: none;
   outline: none;
-  transform: translateY(5px);
+  /* 开关的垂直位置由外面的 .opt（display:flex; align-items:center）居中决定。
+     这里原来有一句 transform: translateY(5px) —— 那是给更早的「文字与开关同行、
+     按基线对齐」补的偏移；套上 flex 居中之后它会把开关整体压到文字中线下方 5px，故删除。 */
 }
 .settings input[type="checkbox"]:before {
   content: "";
@@ -3983,10 +3985,15 @@ hr:before {
 }
 
 /* 主题色选择行：桌面一行铺开，手机端换成网格均分（见下面的 @media） */
+/* 两圈之间的空隙只是排版空白：不能被当成可选文本，否则点一下就会在那里落下
+   一个编辑光标（会闪的那道竖杠），而这一行本来没有任何可选的文字。 */
 .settings .colorRow {
   display: flex;
   flex-wrap: wrap;
   padding-left: 12px;
+  -webkit-user-select: none;
+  user-select: none;
+  caret-color: transparent;
 }
 
 /* 恢复默认设置按钮：原来是写死在 inline style 里的 #fc354c→#0abfbc 红青渐变，
@@ -4015,10 +4022,8 @@ hr:before {
   .settings .content > .opt + .opt > .content-text {
     padding-left: 10px;
   }
-  /* translateY(5px) 是给原来的基线对齐补的，这里改成行内居中就不需要了 */
-  .settings .content > .opt > input[type="checkbox"] {
-    transform: none;
-  }
+  /* 开关的垂直居中由 .opt 的 flex 居中统一负责（见「开关按钮」那条的基础样式），
+     这里不再需要单独把 transform 覆盖回 none。 */
 
   /* 「模糊半径: 0px | 饱和度: 108% | 对比度: 105%」这行摘要：360px 窄屏下 1em 会正好在
      「对比度:」和红色数值之间断成两行，缩一档让它留住一行 */

@@ -7,8 +7,8 @@
  *
  * 上一版修掉了上面三条，但留下两个问题，本版一并处理：
  *   A. db.read('blog_version') 读出来后从未被使用，KV 里也从来没人写过，
- *      于是缓存是空的 —— 这个 SW 只起「换源」作用，没有「加速」，每次仍回源缤纷云。
- *   B. fullpath() 把查询串整个丢掉，?w=400&fmt=webp&q=73 这类缤纷云图片处理参数失效。
+ *      于是缓存是空的 —— 这个 SW 只起「换源」作用，没有「加速」，每次仍回源对象存储。
+ *   B. fullpath() 把查询串整个丢掉，?w=400&fmt=webp&q=73 这类对象存储图片处理参数失效。
  *
  * 本版策略：
  *   - 只有 TARGET_HOSTS 内的域名才介入，其他请求一律不 respondWith（避免资源丢失）；
@@ -18,19 +18,32 @@
  *   - HTML：回源优先（内容始终最新），回源失败再用缓存兜底；
  *   - 其余资源：缓存优先（真正省流加速），超过 TTL 后台静默校正一次；
  *   - 任何异常都回退到浏览器原始请求，绝不返回悬空结果。
+ *
+ * 【2026-10-05 修订】
+ *   C. 缓存失效只认 index.html 的哈希。如果某次发版只改了 JS/CSS 而 index.html
+ *      字节没变（例如忘了同步改 ?v= 缓存戳），哈希不变 → 不清缓存 → 回访者会
+ *      继续跑旧代码。现在把「文本资源」的 TTL 从 24 小时压到 10 分钟，这种情况
+ *      最多撑 10 分钟就自我纠正；图片 / 字体 / 音视频仍是 24 小时。
+ *   D. getFileType 的白名单只到 ttf，其余一律 text/plain。站内会走 SW 的还有
+ *      自定义光标 .cur（source/assets/c*.cur）、atom.xml / sitemap.xml / search.xml、
+ *      manifest、avif、otf/eot、音视频，已补齐。
+ *   同时 CACHE_NAME 提到 v3：老访客 activate 时会整体丢掉 v2 的旧副本。
+ *   E. ping-route.js 的线路探测是「站点自身域名 + 每次不同的随机串」，会被 SW 接住
+ *      并写进 ICDNCache —— 每条约 98KB 且以后永远读不到，缓存会无限膨胀。
+ *      现在带 __pr= 的请求只做「改写 + 回源」，不落地缓存。
  *----------------------------------------------------------------*/
-const CACHE_NAME = 'ICDNCache-v2';         // 资源缓存
+const CACHE_NAME = 'ICDNCache-v3';         // 资源缓存（v3 = 2026-10-05 修订，升级即清掉旧的 v2 残留）
 const META_CACHE = 'ICDNCache-meta';       // 元数据（版本号），单独存放，清资源缓存时不受牵连
 /* 需要分流的域名白名单（不在名单里的域名一律不介入，保持各镜像线路独立）
-   - example.com 主线（Vercel）
-   - example.com / example.com 裸域：目前会 301 跳到 www，跳转还在时这段不生效；
-     哪天去掉跳转，这两个域名立刻自动分流，不用再改代码
-   - example.com example.com 镜像线
-   注意：github./netlify.example.com、github.io 是刻意排除的独立备用线 */
+   - example.com / www.example.com：主站。你自己部署时换成自己的域名，
+     裸域与 www 都列上，两条都走同一套换源逻辑
+   注意：备份线路（github.io、*.vercel.app 之类）刻意不列进来，
+   它们本来就是「出了事才切」的独立线路 */
 const TARGET_HOSTS = ['example.com', 'www.example.com'];
 const S3_ORIGIN = 'https://your-bucket.s3.example.com';
 const VERSION_KEY = 'blog_version';
-const TTL = 24 * 60 * 60 * 1000;           // 资源最长 24 小时后台校正一次
+const TTL_MEDIA = 24 * 60 * 60 * 1000;     // 图片 / 字体 / 音视频：24 小时后台校正一次（大文件，省流优先）
+const TTL_TEXT = 10 * 60 * 1000;           // HTML / JS / CSS / JSON / XML 等文本资源：10 分钟
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (event) => event.waitUntil((async () => {
@@ -67,7 +80,17 @@ const getFileType = (fileName) => {
     html: 'text/html', htm: 'text/html', js: 'text/javascript', mjs: 'text/javascript',
     css: 'text/css', jpg: 'image/jpeg', jpeg: 'image/jpeg', ico: 'image/x-icon',
     png: 'image/png', webp: 'image/webp', gif: 'image/gif', svg: 'image/svg+xml',
-    json: 'application/json', woff2: 'font/woff2', woff: 'font/woff', ttf: 'font/ttf'
+    json: 'application/json', woff2: 'font/woff2', woff: 'font/woff', ttf: 'font/ttf',
+    /* —— 2026-10-05 补齐 ——
+       原来只列到 ttf，其余一律落到 text/plain。站内实际会走 SW 的还有：
+       自定义光标 .cur（source/assets/c*.cur）、atom.xml / sitemap.xml / search.xml、
+       manifest、avif、otf/eot、音视频。补上，免得浏览器拿到 text/plain 去猜。 */
+    cur: 'image/x-icon', avif: 'image/avif', bmp: 'image/bmp', apng: 'image/apng',
+    otf: 'font/otf', eot: 'application/vnd.ms-fontobject',
+    xml: 'application/xml', txt: 'text/plain', map: 'application/json',
+    webmanifest: 'application/manifest+json', manifest: 'application/manifest+json',
+    mp3: 'audio/mpeg', m4a: 'audio/mp4', mp4: 'video/mp4', webm: 'video/webm',
+    pdf: 'application/pdf', wasm: 'application/wasm'
   };
   return map[suffix] || 'text/plain';
 };
@@ -106,6 +129,10 @@ const lfetch = async (urls) => {
 /* target → 文件名：必须先去查询串，否则 index.css?v=1 会判成 text/plain */
 const nameOf = (target) => target.split('?')[0].split('#')[0].split('/').pop();
 
+/* 哪些扩展名算「文本资源」→ 用短 TTL。判据与 getFileType 的键保持一致。 */
+const TEXT_EXT = ['html', 'htm', 'js', 'mjs', 'css', 'json', 'xml', 'txt', 'map', 'webmanifest', 'manifest', 'svg'];
+const ttlOf = (name) => (TEXT_EXT.indexOf(String(name).split('.').pop().toLowerCase()) === -1 ? TTL_MEDIA : TTL_TEXT);
+
 /* 回源一份并写入缓存 */
 const fetchAndCache = async (cache, target) => {
   const res = await lfetch([target]);
@@ -136,8 +163,22 @@ self.addEventListener('fetch', (event) => {
   const name = path.split('/').pop();
   const target = S3_ORIGIN + path + search;                // ★ 查询串原样带上（修 B）
   const isHTML = /\.html$/.test(path) || req.mode === 'navigate';
+  /* 线路探测：ping-route.js 请求「站点自身域名 + /?__pr=随机串」，会被这里接住。
+     随机串每次都不同 → 缓存键每次都不同 → 写进去的条目以后永远读不到，只会让
+     ICDNCache 无限膨胀（每条约 98KB；页面加载 / 每次 pjax / 每 5 分钟各来一轮）。 */
+  const isProbe = /[?&]__pr=/.test(search);
 
   event.respondWith((async () => {
+    /* 探测请求只改写回源、不落地缓存：量到的仍然是「本机 → 对象存储」的往返，
+       侧栏线路徽标的数字不变，只是不再往 CacheStorage 里堆永远读不到的垃圾。 */
+    if (isProbe) {
+      try {
+        return build(await (await lfetch([target])).arrayBuffer(), name);
+      } catch (err) {
+        console.warn('[sw] 探测回源失败，回退原始请求：', req.url, err && err.message);
+        try { return await fetch(req); } catch (e2) { return new Response('', { status: 504, statusText: 'Gateway Timeout' }); }
+      }
+    }
     const cache = await caches.open(CACHE_NAME);
     try {
       const hit = await cache.match(target);
@@ -159,7 +200,10 @@ self.addEventListener('fetch', (event) => {
       }
 
       if (hit) {
-        if (Date.now() - Number(hit.headers.get('X-SW-TIME') || 0) > TTL) revalidate(cache, target);
+        /* 文本资源用短 TTL：万一下次发版忘了改 ?v= 缓存戳，URL 不变、缓存键也不变，
+           旧副本最多再撑 10 分钟就自我纠正，而不是 24 小时。
+           图片 / 字体 / 音视频仍旧 24 小时，省流的大头不受影响。 */
+        if (Date.now() - Number(hit.headers.get('X-SW-TIME') || 0) > ttlOf(name)) revalidate(cache, target);
         return hit;                                        // ★ 命中缓存：真正的加速
       }
       return await fetchAndCache(cache, target);

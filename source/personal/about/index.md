@@ -212,7 +212,7 @@ date: 2022-08-10 16:05:11
         <li><b>生成器</b><a href="https://github.com/hexojs/hexo" target="_blank" rel="noopener">Hexo 6.3.0</a>（Node.js 静态站点生成，全量构建约 9 秒）</li>
         <li><b>Markdown</b><code>hexo-renderer-markdown-it 6.1.0</code> 与 <code>@upupming/hexo-renderer-markdown-it-plus 2.0.2</code> 双渲染器注册（plus 先注册、markdown-it 后注册生效）</li>
         <li><b>模板 / 样式</b><a href="https://pugjs.org/" target="_blank" rel="noopener">Pug 3.0.0</a> · <a href="https://stylus-lang.com/" target="_blank" rel="noopener">Stylus 2.1.0</a> · EJS · YAML</li>
-        <li><b>主题</b>Fomalhaut 1.0.0，基于 <a href="https://butterfly.js.org/" target="_blank" rel="noopener">Butterfly 4.3.1</a> 二次开发，源码已开源：<a href="https://github.com/yourname/hexo-theme-Fomalhaut" target="_blank" rel="noopener">hexo-theme-Fomalhaut</a></li>
+        <li><b>主题</b>Fomalhaut 1.0.2，基于 <a href="https://butterfly.js.org/" target="_blank" rel="noopener">Butterfly 4.3.1</a> 二次开发，源码已开源：<a href="https://github.com/yourname/hexo-theme-Fomalhaut" target="_blank" rel="noopener">hexo-theme-Fomalhaut</a></li>
         <li><b>内容插件</b><code>markdown-it-container / -deflist / -emoji / -mark</code> · <code>hexo-abbrlink 2.2.1</code>（固定链接） · <code>hexo-blog-encrypt 3.1.6</code>（文章加密） · <code>hexo-wordcount-fomal</code>（字数统计） · <code>hexo-filter-nofollow</code> · <code>hexo-filter-gitcalendar</code></li>
         <li><b>聚合与订阅</b><code>hexo-generator-index / archive / category / tag</code> · <code>hexo-generator-sitemap</code> · <code>hexo-generator-feed</code> · <code>hexo-generator-baidu-sitemap</code> · <code>hexo-baidu-url-submit</code>（百度主动推送）</li>
       </ul>
@@ -241,7 +241,7 @@ date: 2022-08-10 16:05:11
     <div class="ab2-layer">
       <div class="ab2-layer-h"><span class="ab2-layer-idx">L5</span><span class="ab2-layer-name">数据与可观测</span><span class="ab2-layer-en">Data / Observability</span></div>
       <ul class="ab2-layer-body">
-        <li><b>结构化存储</b><a href="https://www.mongodb.com/" target="_blank" rel="noopener">MongoDB</a>：托管 Twikoo 评论数据与 <a href="https://github.com/kkfive/kkapi-open" target="_blank" rel="noopener">Ispeak</a> 哔哔数据</li>
+        <li><b>结构化存储</b><a href="https://www.mongodb.com/" target="_blank" rel="noopener">MongoDB</a>：托管 Twikoo 评论数据</li>
         <li><b>访问统计</b><a href="https://aoaoao.info/321.html" target="_blank" rel="noopener">不蒜子</a>（前端 UV/PV） + <a href="https://tongji.baidu.com/" target="_blank" rel="noopener">百度统计</a> + <a href="https://github.com/Eurkon/baidu-tongji-api" target="_blank" rel="noopener">baidu-tongji-api</a> 爬虫（部署在 Vercel）</li>
         <li><b>性能监控</b><a href="https://v6.51.la/" target="_blank" rel="noopener">51la</a> + <a href="https://perf.51.la/" target="_blank" rel="noopener">灵雀监控</a>（站点 JS 全部 <code>defer</code>，不进首屏关键路径）</li>
         <li><b>友链朋友圈</b><a href="https://github.com/Rock-Candy-Tea/hexo-circle-of-friends" target="_blank" rel="noopener">hexo-circle-of-friends</a> 爬虫由 GitHub Actions 定时跑，产出静态 JSON 后交 <a href="https://www.jsdelivr.com/" target="_blank" rel="noopener">jsDelivr</a> 分发</li>
@@ -278,7 +278,7 @@ date: 2022-08-10 16:05:11
   </div>
   <div class="ab2-kv">
     <div class="ab2-kv-row"><span class="ab2-kv-k">站点名称</span><span class="ab2-kv-v">Demo</span></div>
-    <div class="ab2-kv-row"><span class="ab2-kv-k">主题</span><span class="ab2-kv-v">hexo-theme-Fomalhaut v1.0.1（基于 Butterfly 4.3.1 二次开发）</span></div>
+    <div class="ab2-kv-row"><span class="ab2-kv-k">主题</span><span class="ab2-kv-v">hexo-theme-Fomalhaut v1.0.2（基于 Butterfly 4.3.1 二次开发）</span></div>
     <div class="ab2-kv-row"><span class="ab2-kv-k">邮箱</span><span class="ab2-kv-v"><a href="mailto:you@example.com">you@example.com</a></span></div>
     <div class="ab2-kv-row"><span class="ab2-kv-k">源码</span><span class="ab2-kv-v"><a href="https://github.com/yourname/hexo-theme-Fomalhaut" target="_blank" rel="noopener">github.com/yourname/hexo-theme-Fomalhaut</a></span></div>
     <div class="ab2-kv-row"><span class="ab2-kv-k">技术栈</span><span class="ab2-kv-v"><span class="ab2-chips"><i>Hexo 6.3.0</i><i>Pug</i><i>Stylus</i><i>gulp</i><i>Vercel</i><i>Cloudflare Pages</i></span></span></div>
@@ -292,5 +292,5 @@ date: 2022-08-10 16:05:11
     <li>本页的样式在 <code>source/css/about-page.css</code>，想换版式改那一个文件就够。</li>
   </ol>
   <div class="ab2-coda">这份源码的全部意义，是让你少走一遍前人在美化博客路上踩过的坑。祝你搭站顺利 🍭</div>
-  <div class="ab2-coda-s">hexo-theme-Fomalhaut v1.0.1｜Apache-2.0｜基于 Butterfly 4.3.1 二次开发</div>
+  <div class="ab2-coda-s">hexo-theme-Fomalhaut v1.0.2｜Apache-2.0｜基于 Butterfly 4.3.1 二次开发</div>
 </div>

@@ -50,6 +50,13 @@ comments: false
 6. 侧栏作者卡加回形针装饰（新增 `source/css/paperclip.css`，白天细长蓝白款 / 夜间冰蓝夜光）
 7. 新增 4 个 `node:test` 回归脚本（光标效果、帧率生命周期、手机滚动条、滚动监听），可用环境变量指向 `bak/` 里的基线做前后对比（`tools/tests/`）
 8. 清理 13 个死文件（`leaves.js` / `bibi.js` / `love.js`、tag-map 的 proj4 两条、`local-search.js`、`tw_cn.js`、旧 gulp 素材等）
+9. 排查「同一页面线上比本地卡」：先证明不是部署问题 —— 线上 `js/modules/` 与本地 `public/js/modules/` 下的同名模块脚本过一遍同版本 terser 后逐字节一致，`css/index.css` 也只是 clean-css 的等价改写，规则级 diff 没有语义丢失；同一浏览器全新加载，线上 85fps、本地 84fps。真正的分叉在 DevTools Performance 里：线上单帧 75ms 有 64ms 花在「重新计算样式」，本地同帧只有 26ms 渲染 + 26ms 绘制。无痕窗口（禁用全部扩展）打开即与本地一样流畅，单独关掉广告拦截器立刻恢复 —— 拦截器的隐藏规则按域名下发，`localhost` 与 `127.0.0.1` 天然被排除，所以只有线上受影响。结论在浏览器侧，站点代码一行没改
+10. 顺带修掉 `themes/fomalhaut/source/sw.js` 的两个真缺陷：① 缓存失效只认 index.html 内容的 djb2 哈希，其余资源走 cache-first + 24 小时 TTL，某次发版只改 JS 与 CSS 却忘了改 `?v=` 缓存戳时 URL 与 HTML 都没变，回访者会继续跑旧代码最长 24 小时；现在文本资源（html/js/mjs/css/json/xml/txt/map/webmanifest/manifest/svg）的 TTL 压到 10 分钟、图片与字体与音视频仍按 24 小时，`CACHE_NAME` 提到 `ICDNCache-v3`，老访客 activate 时整体丢掉 v2 残片。② `getFileType()` 白名单只列到 ttf，其余一律 text/plain，站内会走 SW 的 `.cur` 自定义光标与 `atom.xml` / `sitemap.xml` / `search.xml` 都被猜错类型；补齐 cur/avif/bmp/apng/otf/eot/xml/txt/map/webmanifest/manifest/mp3/m4a/mp4/webm/pdf/wasm
+11. 新增 `tools/tests/sw-cache.test.cjs`：纯 VM 跑 Service Worker 源码（caches / fetch / Response 全打桩，不联网、不起服务），断言覆盖域名白名单、回源到对象存储、二次请求吃缓存，以及「js 11 分钟旧 → 触发一次后台校验，5 分钟新 → 不动，webp 25 小时旧 → 才校验」的 TTL 分流
+12. 线路探测不再污染 SW 缓存：`source/js/inject/ping-route.js` 每次探测都用「站点自身域名 + 新的随机串」请求 `/?__pr=xxx-N`，在线上会被 sw.js 接住走 HTML 分支（改写回源、下载整份 index.html 约 98KB、写进 ICDNCache）；缓存键含查询串而随机串每次都不同，这些条目以后永远读不到，而加载、每次 pjax、每 5 分钟各来一轮，逛得越久堆得越多。现在带 `__pr=` 的请求只做「改写 + 回源」不落地缓存，徽标量到的仍是到源站的往返、数字不变；回归测试同步加到 9 项
+13. AI 助手「吐字」卡顿：先证伪了最像元凶的一条 —— 把 `esc()` 与 `md()` 从 `source/js/ai-chat.js` 按行号切出来做 Node 微基准，8000 字全量重解析 2667 次累计只有 195ms（单次 `md(4000)` 只有 0.06ms），O(n²) 是真的但常数可忽略；真凶在每个分片都 `bub.innerHTML = md(acc)` 整块重建气泡，加上 `scrollBottom()` 里先读 `scrollHeight` 与 `clientHeight` 再写 `scrollTop` 的读写交错，探针在真机上量出 28 秒里有 8.1 秒花在强制同步布局上（3816 次读取）、面板 innerHTML 写了 955 次
+14. 流式渲染改成「分片只累积文本、DOM 提交合并到一帧（rAF + 100ms 兜底）+ 滚动只写不读（stick 标记：手动往上滚不再跟随、滚回底部自动恢复）」：三条 20 秒突发流的帧率 63.7/67.6 → 89.7/89.9/90.0 fps，超过 50ms 的卡顿帧 94/73 → 0，长任务 99 个合计 7.5s → 0，强制布局累计 5925/7015ms → 82/106/107ms，面板写入 944/994 次 → 96/102 次
+15. AI 助手再往下两步：只重建「尾巴」（`tailCut` 只在代码围栏外、非有序列表中间、行内 `**` 与 `[ ]` 成对的行尾定稿，已定稿部分一次性追加，最大尾块 111 字，Node 按 1/3/11/17 字四种分片步长验证 0 处不一致）与面板空闲时提前建好（点开最差帧 288.9 → 177.8ms、热开 11.2ms）；想让剩下那 180ms 也提前付掉，试过把关闭态改成 `visibility:visible` + `opacity:0`，Chromium 不绘制全透明内容，没收益已回滚
 
 <!-- endtimeline -->
 

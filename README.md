@@ -1,11 +1,11 @@
-# hexo-theme-Fomalhaut · v1.0.1
+# hexo-theme-Fomalhaut · v1.0.2
 
 > 一套「克隆即用」的 Hexo 卡片式博客源码。主题基于 [Butterfly 4.3.1](https://butterfly.js.org/) 深度二次开发，
 > 并把**站点配置**与**主题代码**彻底分开：改配置就能搭起自己的站，升级主题不会冲掉你自己的改动。
 
 ![hexo](https://img.shields.io/badge/Hexo-6.3.0-0e83c?style=flat-square&logo=hexo)
 ![node](https://img.shields.io/badge/Node.js-18%20%7C%2020%20%7C%2022-339933?style=flat-square&logo=nodedotjs)
-![theme](https://img.shields.io/badge/Theme-Fomalhaut%20v1.0.1-6513df?style=flat-square)
+![theme](https://img.shields.io/badge/Theme-Fomalhaut%20v1.0.2-6513df?style=flat-square)
 ![license](https://img.shields.io/badge/License-Apache--2.0-blue?style=flat-square)
 ![stars](https://img.shields.io/github/stars/fomalhaut1998/hexo-theme-Fomalhaut?style=flat-square&logo=github&label=Stars)
 ![forks](https://img.shields.io/github/forks/fomalhaut1998/hexo-theme-Fomalhaut?style=flat-square&logo=github&label=Forks)
@@ -35,6 +35,46 @@
 ---
 
 ## 更新日志
+
+### v1.0.2 — 流式渲染与缓存策略（2026-10-05）
+
+这一版集中修三类「用久了才显出来」的问题：AI 助手吐字时掉帧、Service Worker 该失效时不失效、窄屏被撑出横向滚动。回归脚本从 4 个加到 5 个。
+
+**AI 助手流式渲染（`source/js/ai-chat.js`）**
+
+- 分片只累积文本，DOM 提交合并到一帧：`requestAnimationFrame` 提交，配 100ms `setTimeout` 兜底，同一帧里只保留最后一次待提交内容；
+- 每帧只重建「尾巴」：新增 `tailCut()`，逐行扫出可定稿的切点（不在代码围栏内、不在有序列表项中间、行内 `**` 与 `[ ]` 成对），已定稿部分一次性 `insertAdjacentHTML` 追加，尾块单独放进 `.ai-tail` 容器（`display: contents`）；
+- 滚动改成只写不读：用 passive `scroll` 事件异步维护 `stick` 标记，写位置用 `b.scrollTop = 1e9`（越界会自动夹到最大值，省掉读 `scrollHeight` 触发的强制布局）；手动往上滚不再跟随，滚回底部自动恢复；
+- 面板空闲或悬停时预热（`requestIdleCallback` + `pointerenter`），提前建好 DOM 并强制一次样式布局；
+- 实测：三条 20 秒突发流从 63.7 / 67.6 fps 提到 89.7 / 89.9 / 90.0 fps，超过 50ms 的卡顿帧 94 / 73 降到 0，强制布局累计 5925 / 7015ms 降到 82 / 106 / 107ms。
+
+**Service Worker 缓存策略（`themes/fomalhaut/source/sw.js`）**
+
+- `CACHE_NAME` 提到 `ICDNCache-v3`，老访客激活时整体丢掉 v2 残片；
+- TTL 从一档拆成两档：文本资源（html / js / mjs / css / json / xml / txt / map / webmanifest / manifest / svg）压到 10 分钟，图片、字体、音视频仍按 24 小时。原来全按 24 小时——发版时只改 JS 或 CSS、忘了改 `?v=` 缓存戳的话，URL 与 HTML 都没变，回访者会继续跑旧代码最长一天；
+- `getFileType()` 补齐 `cur / avif / bmp / apng / otf / eot / xml / txt / map / webmanifest / manifest / mp3 / m4a / mp4 / webm / pdf / wasm`，原来只列到 `ttf`，`atom.xml`、`search.xml` 与自定义光标都会被当成 `text/plain`；
+- 线路探测请求（`?__pr=`）不再写入 CacheStorage，只做「改写 + 回源」。探测每次都用新的随机串，缓存键各不相同，写进去的条目以后永远读不到，而首屏、每次 pjax、每 5 分钟各来一轮，逛得越久堆得越多。
+
+**主题色联动**
+
+- 日历热力图新增 `git_theme_palette()`：直接读 `--theme-color` 实时生成 10 档调色板，换主题色自动重画（`GitCalendarRefresh()` 只在颜色真变了时才清空重绘）；`_config.yml` 里的 `gitcalendar.color` 退化为兜底值。
+
+**指针与滚动**
+
+- 小猫咪光标加两个 `WeakMap` 缓存（控件身份 + 祖先 `cursor:pointer` 链），并给 `MutationObserver` 加过滤：光标自身、`.neko` 的 `data-msg`、`#fps` 的 `title` 等纯输出改动不再触发整轮重算；
+- 回形针在窄屏会撑出约 10px 横向溢出，改 `--clip-right: calc(-21px + max(0px, 23px - (100vw - 100%) / 2))`；
+- 时间线归档页与年表把 `grid-template-columns` 的固定轨道改成 `minmax(0, 1fr)` 并补 `min-width: 0`，长不可断词不再把页面顶宽。
+
+**细节修正**
+
+- 设置面板的复选框去掉 `translateY(5px)`（套上 flex 居中后会压到文字中线下方）；`.colorRow` 补 `user-select: none` 与 `caret-color: transparent`，点空隙不再落编辑光标；
+- 关于页第 5 层「结构化存储」去掉站长的私人数据源，只留评论数据；
+- 页脚主题版本号同步，npmmirror 徽章换成源站已去掉阴影的那一版。
+
+**回归脚本**
+
+- 新增 `tools/tests/sw-cache.test.cjs`：纯 VM 跑 Service Worker 源码（caches / fetch / Response 全打桩，不联网、不起服务），断言覆盖域名白名单、回源写缓存、二次请求吃缓存、文本与媒体的 TTL 分流、`?__pr=` 不写缓存；
+- `tools/tests/cursor-effects.test.cjs` 配合指针缓存重构扩充。
 
 ### v1.0.1 — 打磨与生命周期修复（2026-10-05）
 
