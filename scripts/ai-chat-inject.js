@@ -82,15 +82,12 @@ hexo.extend.filter.register('after_render:html', function (html) {
     if (cfg.enable === false) return html;
     const envKey = String(process.env.DEEPSEEK_API_KEY || '').trim();
     const localKey = resolveKey(hexo.base_dir || process.cwd(), cfg);
-    // 代理优先：没有本地真 key（或构建环境显式给了 key）时走同源代理，页面里不出现真 key
-    if (envKey || !localKey) {
-      cfg.api_base = cfg.proxy_api_base || '/api';
-      cfg.api_key = cfg.proxy_key_stub || 'via-proxy';
-      cfg.proxied = true;
-    } else {
-      cfg.api_key = localKey;
-    }
-    cfg.has_key = !!cfg.api_key;
+    // 始终走同源代理：真实 key（无论来自环境变量还是本地文件）只留在服务端，
+    // 绝不序列化进客户端 HTML，避免任何访客通过查看源码窃取 API Key。
+    cfg.api_base = cfg.proxy_api_base || '/api';
+    cfg.api_key = cfg.proxy_key_stub || 'via-proxy';
+    cfg.proxied = true;
+    cfg.has_key = !!(envKey || localKey);
 
     const json = JSON.stringify(cfg)
       .replace(/</g, '\\u003c')          // 防止 </script> 提前闭合
