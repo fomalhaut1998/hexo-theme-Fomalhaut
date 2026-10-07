@@ -969,7 +969,7 @@ aside:
         <div class="a-sect">
           <div class="a-row a-flat"><span class="a-lb">常用入口</span></div>
           <div class="a-row"><span class="a-lb">文档</span><a class="a-chip" href="https://hexo.io/zh-cn/docs/" target="_blank" rel="noopener"><i class="a-dot"></i>Hexo 文档</a><span class="a-note">官方</span></div>
-          <div class="a-row a-sub"><span class="a-lb"></span><a class="a-chip" href="https://github.com/yourname/hexo-theme-fomalhaut" target="_blank" rel="noopener"><i class="a-dot"></i>主题仓库</a><span class="a-note">GitHub</span></div>
+          <div class="a-row a-sub"><span class="a-lb"></span><a class="a-chip" href="https://github.com/fomalhaut1998/hexo-theme-fomalhaut" target="_blank" rel="noopener"><i class="a-dot"></i>主题仓库</a><span class="a-note">GitHub</span></div>
         </div>
       </div>
 

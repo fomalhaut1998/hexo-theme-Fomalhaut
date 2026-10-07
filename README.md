@@ -1,4 +1,4 @@
-# hexo-theme-Fomalhaut · v1.0.2
+# hexo-theme-fomalhaut · v1.0.2
 
 > 一套「克隆即用」的 Hexo 卡片式博客源码。主题基于 [Butterfly 4.3.1](https://butterfly.js.org/) 深度二次开发，
 > 并把**站点配置**与**主题代码**彻底分开：改配置就能搭起自己的站，升级主题不会冲掉你自己的改动。
@@ -118,7 +118,7 @@
 
 ## 一、这是什么
 
-**hexo-theme-Fomalhaut** 是一个跑在 Hexo 上的个人博客主题 / 站点模板。它不是单纯的 `themes/` 目录，而是一整套可运行站点：
+**hexo-theme-fomalhaut** 是一个跑在 Hexo 上的个人博客主题 / 站点模板。它不是单纯的 `themes/` 目录，而是一整套可运行站点：
 
 - 一套**主题代码**（`themes/fomalhaut/`，Pug + Stylus 渲染）；
 - 一份**站点配置**（根目录 `_config.yml` + 根目录 `_config.fomalhaut.yml`）；
@@ -238,10 +238,13 @@ v1.0.0 是一次结构性重写，主要变化：
 ### 1. 克隆并安装依赖
 
 ```bash
-git clone https://github.com/yourname/hexo-theme-fomalhaut.git my-blog
+git clone https://github.com/fomalhaut1998/hexo-theme-fomalhaut.git my-blog
 cd my-blog
 npm install          # 或 npm ci（有 package-lock.json，更快更稳）
 ```
+
+> 上面这条命令拉的是**本仓库**。想在它基础上做自己的站，clone 完把远程地址换成你自己的仓库：
+> `git remote set-url origin https://github.com/你的用户名/你的仓库名.git`
 
 > 不要在这个目录里执行 `hexo init`！那会重置 `_config.yml`，站点配置会丢。
 
@@ -1121,7 +1124,7 @@ npx hexo clean && npx hexo generate && npx gulp
 
 ## 十四、授权与致谢
 
-- 本项目基于 [hexo-theme-butterfly](https://github.com/jerryc127/hexo-theme-butterfly)（Apache-2.0，作者 [Jerry](https://butterfly.js.org/)）二次开发，**继续沿用 Apache-2.0 协议**，`themes/fomalhaut/LICENSE` 保留了上游许可证；
+- 本项目基于 [hexo-theme-butterfly](https://github.com/jerryc127/hexo-theme-butterfly)（Apache-2.0，作者 [Jerry](https://butterfly.js.org/)）二次开发，**继续沿用 Apache-2.0 协议**：仓库根目录的 `LICENSE` 覆盖整套站点、配置与文档，主题本体另见 `themes/fomalhaut/LICENSE`（保留上游许可证与版权声明）；
 - 部分美化思路参考了 Hexo 社区的公开方案（[akilar](https://akilar.top/)、[anzhiyu](https://blog.anheyu.com/) 等），在此致谢；
 - 示例图片来自 [picsum.photos](https://picsum.photos/)，字体来自 [jsDelivr](https://www.jsdelivr.com/) 上的 `@fontsource/*` 开源字体包（全部为 SIL OFL 许可）；
 - 站点里的示例数据（域名、邮箱、友链、统计 ID）均为占位内容，请替换为你自己的。
