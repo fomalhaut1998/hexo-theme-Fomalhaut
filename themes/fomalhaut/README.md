@@ -1,6 +1,6 @@
 # hexo-theme-fomalhaut
 
-> [hexo-theme-Fomalhaut](https://github.com/yourname/hexo-theme-Fomalhaut) 的主题本体 · **v1.0.2**
+> [hexo-theme-Fomalhaut](https://github.com/yourname/hexo-theme-fomalhaut) 的主题本体 · **v1.0.2**
 > 基于 [hexo-theme-butterfly](https://github.com/jerryc127/hexo-theme-butterfly) 4.3.1 的二次开发，沿用 Apache-2.0 协议。
 
 ## 这个目录里有什么
@@ -23,7 +23,7 @@
 本主题是**整套站点**的一部分，不单独发布到 npm，安装方式就是克隆整个仓库：
 
 ```bash
-git clone https://github.com/yourname/hexo-theme-Fomalhaut.git my-blog
+git clone https://github.com/yourname/hexo-theme-fomalhaut.git my-blog
 cd my-blog && npm install && npx hexo server
 ```
 

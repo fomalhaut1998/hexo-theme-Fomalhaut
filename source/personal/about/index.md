@@ -212,7 +212,7 @@ date: 2022-08-10 16:05:11
         <li><b>生成器</b><a href="https://github.com/hexojs/hexo" target="_blank" rel="noopener">Hexo 6.3.0</a>（Node.js 静态站点生成，全量构建约 9 秒）</li>
         <li><b>Markdown</b><code>hexo-renderer-markdown-it 6.1.0</code> 与 <code>@upupming/hexo-renderer-markdown-it-plus 2.0.2</code> 双渲染器注册（plus 先注册、markdown-it 后注册生效）</li>
         <li><b>模板 / 样式</b><a href="https://pugjs.org/" target="_blank" rel="noopener">Pug 3.0.0</a> · <a href="https://stylus-lang.com/" target="_blank" rel="noopener">Stylus 2.1.0</a> · EJS · YAML</li>
-        <li><b>主题</b>Fomalhaut 1.0.2，基于 <a href="https://butterfly.js.org/" target="_blank" rel="noopener">Butterfly 4.3.1</a> 二次开发，源码已开源：<a href="https://github.com/yourname/hexo-theme-Fomalhaut" target="_blank" rel="noopener">hexo-theme-Fomalhaut</a></li>
+        <li><b>主题</b>Fomalhaut 1.0.2，基于 <a href="https://butterfly.js.org/" target="_blank" rel="noopener">Butterfly 4.3.1</a> 二次开发，源码已开源：<a href="https://github.com/yourname/hexo-theme-fomalhaut" target="_blank" rel="noopener">hexo-theme-Fomalhaut</a></li>
         <li><b>内容插件</b><code>markdown-it-container / -deflist / -emoji / -mark</code> · <code>hexo-abbrlink 2.2.1</code>（固定链接） · <code>hexo-blog-encrypt 3.1.6</code>（文章加密） · <code>hexo-wordcount-fomal</code>（字数统计） · <code>hexo-filter-nofollow</code> · <code>hexo-filter-gitcalendar</code></li>
         <li><b>聚合与订阅</b><code>hexo-generator-index / archive / category / tag</code> · <code>hexo-generator-sitemap</code> · <code>hexo-generator-feed</code> · <code>hexo-generator-baidu-sitemap</code> · <code>hexo-baidu-url-submit</code>（百度主动推送）</li>
       </ul>
@@ -280,7 +280,7 @@ date: 2022-08-10 16:05:11
     <div class="ab2-kv-row"><span class="ab2-kv-k">站点名称</span><span class="ab2-kv-v">Demo</span></div>
     <div class="ab2-kv-row"><span class="ab2-kv-k">主题</span><span class="ab2-kv-v">hexo-theme-Fomalhaut v1.0.2（基于 Butterfly 4.3.1 二次开发）</span></div>
     <div class="ab2-kv-row"><span class="ab2-kv-k">邮箱</span><span class="ab2-kv-v"><a href="mailto:you@example.com">you@example.com</a></span></div>
-    <div class="ab2-kv-row"><span class="ab2-kv-k">源码</span><span class="ab2-kv-v"><a href="https://github.com/yourname/hexo-theme-Fomalhaut" target="_blank" rel="noopener">github.com/yourname/hexo-theme-Fomalhaut</a></span></div>
+    <div class="ab2-kv-row"><span class="ab2-kv-k">源码</span><span class="ab2-kv-v"><a href="https://github.com/yourname/hexo-theme-fomalhaut" target="_blank" rel="noopener">github.com/yourname/hexo-theme-fomalhaut</a></span></div>
     <div class="ab2-kv-row"><span class="ab2-kv-k">技术栈</span><span class="ab2-kv-v"><span class="ab2-chips"><i>Hexo 6.3.0</i><i>Pug</i><i>Stylus</i><i>gulp</i><i>Vercel</i><i>Cloudflare Pages</i></span></span></div>
   </div>
   <div class="ab2-sub">怎么把它变成你自己的站</div>

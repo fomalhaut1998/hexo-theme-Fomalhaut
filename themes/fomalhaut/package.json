@@ -16,16 +16,16 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourname/hexo-theme-Fomalhaut.git"
+    "url": "https://github.com/yourname/hexo-theme-fomalhaut.git"
   },
   "bugs": {
-    "url": "https://github.com/yourname/hexo-theme-Fomalhaut/issues"
+    "url": "https://github.com/yourname/hexo-theme-fomalhaut/issues"
   },
   "dependencies": {
     "hexo-renderer-stylus": "^2.1.0",
     "hexo-renderer-pug": "^3.0.0"
   },
-  "homepage": "https://github.com/yourname/hexo-theme-Fomalhaut",
+  "homepage": "https://github.com/yourname/hexo-theme-fomalhaut",
   "author": "Demo",
   "license": "Apache-2.0"
 }

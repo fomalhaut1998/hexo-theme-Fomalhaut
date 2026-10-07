@@ -7,8 +7,8 @@
 ![node](https://img.shields.io/badge/Node.js-18%20%7C%2020%20%7C%2022-339933?style=flat-square&logo=nodedotjs)
 ![theme](https://img.shields.io/badge/Theme-Fomalhaut%20v1.0.2-6513df?style=flat-square)
 ![license](https://img.shields.io/badge/License-Apache--2.0-blue?style=flat-square)
-![stars](https://img.shields.io/github/stars/fomalhaut1998/hexo-theme-Fomalhaut?style=flat-square&logo=github&label=Stars)
-![forks](https://img.shields.io/github/forks/fomalhaut1998/hexo-theme-Fomalhaut?style=flat-square&logo=github&label=Forks)
+![stars](https://img.shields.io/github/stars/fomalhaut1998/hexo-theme-fomalhaut?style=flat-square&logo=github&label=Stars)
+![forks](https://img.shields.io/github/forks/fomalhaut1998/hexo-theme-fomalhaut?style=flat-square&logo=github&label=Forks)
 
 [界面预览](#六界面预览) · [快速开始](#五快速开始约-10-分钟) · [功能配置](#八主要功能怎么配) · [写文章](#九怎么开始写文章) · [文件地图](#七目录结构与文件地图) · [常见改动](#十最常改的地方速查)
 
@@ -238,7 +238,7 @@ v1.0.0 是一次结构性重写，主要变化：
 ### 1. 克隆并安装依赖
 
 ```bash
-git clone https://github.com/yourname/hexo-theme-Fomalhaut.git my-blog
+git clone https://github.com/yourname/hexo-theme-fomalhaut.git my-blog
 cd my-blog
 npm install          # 或 npm ci（有 package-lock.json，更快更稳）
 ```
@@ -1131,16 +1131,16 @@ npx hexo clean && npx hexo generate && npx gulp
 ## ⭐ Star 历史
 
 <p align="center">
-  <a href="https://star-history.com/#fomalhaut1998/hexo-theme-Fomalhaut&Timeline">
+  <a href="https://star-history.com/#fomalhaut1998/hexo-theme-fomalhaut&Timeline">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=fomalhaut1998/hexo-theme-Fomalhaut&type=Timeline&theme=dark" />
-      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=fomalhaut1998/hexo-theme-Fomalhaut&type=Timeline" />
-      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=fomalhaut1998/hexo-theme-Fomalhaut&type=Timeline" width="100%" />
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=fomalhaut1998/hexo-theme-fomalhaut&type=Timeline&theme=dark" />
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=fomalhaut1998/hexo-theme-fomalhaut&type=Timeline" />
+      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=fomalhaut1998/hexo-theme-fomalhaut&type=Timeline" width="100%" />
     </picture>
   </a>
 </p>
 
-> 上图来自 [star-history.com](https://star-history.com/#fomalhaut1998/hexo-theme-Fomalhaut&Timeline)，实时更新；顶部那两枚 Stars / Forks 徽章也是实时数据。
+> 上图来自 [star-history.com](https://star-history.com/#fomalhaut1998/hexo-theme-fomalhaut&Timeline)，实时更新；顶部那两枚 Stars / Forks 徽章也是实时数据。
 
 感谢每一位点过星星、提过 Issue、发过 PR 的朋友 🍭
 
