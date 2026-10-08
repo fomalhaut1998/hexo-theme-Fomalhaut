@@ -61,6 +61,11 @@
 **内容**
 
 - `source/life/music/index.md` 歌单换成网易云「［轻音乐纯享］何人都有孤独之时」（105 首），热评区块同步换新。
+
+**版本号解耦（`themes/fomalhaut/scripts/butterfly-version.js`）**
+
+- 启动横幅与 CDN 地址此前都读主题自己的 `package.json`：主题一升版本，jsdelivr / unpkg 上的地址就被拼成 `hexo-theme-butterfly@1.0.3`（上游并没有这个版本），开了 `internal_provider: jsdelivr` 的站点会整片 404。现在把「fork 自哪个上游 Butterfly」（4.3.1）抽成 `scripts/butterfly-version.js`，与主题自身版本（`package.json` 的 `version`，仍是 1.0.3）分开。
+
 ### v1.0.2 — 流式渲染与缓存策略（2026-10-05）
 
 这一版集中修三类「用久了才显出来」的问题：AI 助手吐字时掉帧、Service Worker 该失效时不失效、窄屏被撑出横向滚动。回归脚本从 4 个加到 5 个。
@@ -523,6 +528,7 @@ npx hexo clean && npx hexo generate && npx gulp
 | `scripts/filters/` | 构建期过滤器（图片懒加载、随机封面） |
 | `scripts/helpers/` | 模板助手（归档、分类、相关文章、echarts…） |
 | `scripts/events/` | 启动事件（版本横幅、CDN 预解析、404、评论初始化） |
+| `scripts/butterfly-version.js` | 上游 Butterfly 版本号常量：启动横幅与 CDN 地址共用（与主题自身版本 `package.json` 的 `version` 分开） |
 | `languages/` | 多语言文案 |
 
 > 💡 **要不要改主题？** 尽量别改。能用配置解决的走 `_config.fomalhaut.yml`；配置解决不了的，写进 `source/css/*.css` 或 `source/js/`，再用 `inject` 引入——这样升级主题时直接覆盖 `themes/fomalhaut/` 就行。
