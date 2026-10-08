@@ -50,7 +50,7 @@
     "hexo-renderer-stylus": "^2.1.0",
     "hexo-server": "^3.0.0",
     "hexo-tag-aplayer": "^3.0.4",
-    "hexo-tag-map": "^1.2.0",
+    "hexo-tag-map": "^1.2.1",
     "hexo-theme-volantis": "^5.7.1",
     "hexo-wordcount-fomal": "^1.0.0",
     "markdown-it-container": "^3.0.0",
