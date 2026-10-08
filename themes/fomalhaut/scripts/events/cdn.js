@@ -5,7 +5,7 @@
 
 'use strict'
 
-const { version } = require('../../package.json')
+const butterflyVersion = require('../butterfly-version')
 const path = require('path')
 
 hexo.extend.filter.register('before_generate', () => {
@@ -13,31 +13,32 @@ hexo.extend.filter.register('before_generate', () => {
   const { CDN } = themeConfig
 
   const thirdPartySrc = hexo.render.renderSync({ path: path.join(hexo.theme_dir,'/plugins.yml'), engine: 'yaml'})
+  // internal：本主题自己提供的资源，沿用上游 Butterfly 的包名与版本号上 CDN
   const internalSrc = {
     main: {
       name: 'hexo-theme-butterfly',
       file: 'js/main.js',
-      version
+      version: butterflyVersion
     },
     utils: {
       name: 'hexo-theme-butterfly',
       file: 'js/utils.js',
-      version
+      version: butterflyVersion
     },
     translate: {
       name: 'hexo-theme-butterfly',
       file: 'js/tw_cn.js',
-      version
+      version: butterflyVersion
     },
     local_search: {
       name: 'hexo-theme-butterfly',
       file: 'js/search/local-search.js',
-      version
+      version: butterflyVersion
     },
     algolia_js: {
       name: 'hexo-theme-butterfly',
       file: 'js/search/algolia.js',
-      version
+      version: butterflyVersion
     }
   }
 

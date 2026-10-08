@@ -2,6 +2,7 @@
 
 > [hexo-theme-fomalhaut](https://github.com/fomalhaut1998/hexo-theme-fomalhaut) 的主题本体 · **v1.0.3**
 > 基于 [hexo-theme-butterfly](https://github.com/jerryc127/hexo-theme-butterfly) 4.3.1 的二次开发，沿用 Apache-2.0 协议。
+> 上游版本号同时供启动横幅与 CDN 地址使用，写在 `scripts/butterfly-version.js`（主题自身版本在 `package.json` 的 `version`，两者分开）。
 
 ## 这个目录里有什么
 
