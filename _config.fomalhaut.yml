@@ -1236,13 +1236,15 @@ inject:
     # 最新一条右上角挂一枚胶囊；配色全部由 --theme-color / --font-color / --card-bg 派生，
     # 主题色和明暗模式跟着变，不写死颜色。
     # source/js/timeline-archive.js 负责结构：拆日期 → 挂 id → 插年份分隔器 → 造头部锚点；
+    # 头部＝起止日期 · 历时天数（约 X 年 Y 个月）· 更新天数（日期卡数）· 记录条数（正文条目数）· 年份数；
+    # 年份胶囊只写「N 条」，底部细条＝该年条数占全部条数的比例（悬停有完整提示）。
     # 只读主题渲染好的 DOM，不新增任何网络请求。
     # 只在 /site/time/ 生效：两层守卫（#article-container 里只有这一条 timeline + 条目数 ≥ 8），
     # CSS 选择器又全部带 .tl-ready（JS 确认通过后才加），任一环节缺失就整块失效、退回主题原样。
     # 改 css/js 记得把下面两个 ?v= 一起提版本。回滚：删掉下面两行即可
     # （配置备份 bak/20261009-timeline-archive/before/_config.fomalhaut.yml）。
-    - <link rel="stylesheet" href="/css/timeline-archive.css?v=20261011">
-    - <script defer src="/js/timeline-archive.js?v=20261011"></script>
+    - <link rel="stylesheet" href="/css/timeline-archive.css?v=20261011d">
+    - <script defer src="/js/timeline-archive.js?v=20261011b"></script>
     # ── 关于页改版（站点独立样式 + 脚本，不改主题源码）──────────────────────────
     # source/css/about-page.css：/personal/about/ 专用外观，全部选择器以 .ab2 开头；
     #   含 Hero、6 张线路卡、实测参数对照表、技术栈六层分层、个人档案卡 + 昵称由来列表。
@@ -1279,6 +1281,25 @@ inject:
     # 改这个文件记得把 ?v= 一起提版本；只影响电脑端侧栏的作者卡。
     # 回滚：删掉下面这一行即可（themes/ 下的 custom.css 与 git 版本逐字节一致，无需还原）。
     - <link rel="stylesheet" href="/css/paperclip.css?v=20261005-mobile1">
+    # ── 文章归档页改版（站点独立样式 + 脚本 + 构建期脚本，不改主题源码）──────────────
+    # 目标页 = /archives/（Hexo 归档页）。改版前只有「日期 + 标题 + 120×120 缩略图」的单列列表，
+    # 左侧时间轴占位、右侧大片空白、年份没有层级感，整页看起来单调。改版后：
+    #   顶部概览统计条（文章总数 / 覆盖年份 / 文章最多年份 / 年均产出）
+    #   + 年份快捷跳转胶囊（吸顶，滚动时高亮当前年份）
+    #   + 年份章节（大号年份 + 条数统计，可折叠，折叠状态记在 localStorage）
+    #   + 文章卡片网格（大封面 / 分类胶囊 / 标题 / 日期 / 约 N 分钟阅读时长，整卡可点）。
+    # source/css/archive-page.css 负责外观：配色全部由 --theme-color / --font-color /
+    #   --card-bg 派生，深浅两模式都适配，不写死颜色；选择器全部带 .ar-ready 守卫。
+    # source/js/inject/archive-page.js 负责结构：只读主题渲染好的 .article-sort，三层守卫
+    #   （容器是 #archive/#category/#tag 之一 + .article-sort 恰好 1 个 + 条目数 ≥ 3），
+    #   全部通过才加 .ar-ready；任一环节失败整块失效、退回主题原样。
+    # scripts/archive-index.js 在构建期往归档页 </head> 前插一段 id="ar-index" 的 JSON
+    #   （每篇的标题/链接/日期/分类/字数/阅读分钟）；脚本据此补分类与阅读时长，
+    #   没有这段 JSON 时卡片照常渲染、只是少了分类与时长。数据构建期算好，页面零额外请求。
+    # 改 css/js 记得把下面两个 ?v= 一起提版本。回滚：删掉下面两行即可
+    # （配置备份 bak/20261012-archive-cards/before/_config.fomalhaut.yml）。
+    - <link rel="stylesheet" href="/css/archive-page.css?v=20261013b">
+    - <script defer src="/js/inject/archive-page.js?v=20261013b"></script>
 
   bottom:
     - <script defer charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script> # 51la统计（+defer 解除阻塞）

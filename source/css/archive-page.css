@@ -1,0 +1,740 @@
+/*!
+ * archive-page.css  —— 归档页卡片改版（站点独立样式，不改主题源码）
+ * ---------------------------------------------------------------------------
+ * 作用页：/archives/（Hexo 的 archive 页，每页篇数由根 _config.yml 的 archive_generator.per_page
+ *          决定，默认 10 篇；本站 50 篇 = 5 页）；
+ *         同一套样式对 /categories/* 与 /tags/* 的 article-sort 列表同样适用。
+ * 负责：外观。结构由 source/js/inject/archive-page.js 负责（它确认页面匹配后才会
+ *       给容器加上 .ar-ready，下面所有选择器都以 .ar-ready 守卫；JS 没跑 / 页面不匹配
+ *       / 脚本报错，整块样式失效，页面原样退回主题的 article-sort 列表）。
+ *
+ * 配色：全部由 --theme-color / --font-color / --card-bg 与 .dark 模式派生，不写死颜色。
+ * 布局：内容区最大 1180px、卡片 auto-fit 栅格（≥1024px 两列、≥1480px 三列、
+ *       ≤680px 单列），栅格列一律 minmax(0, 1fr) 配 min-width: 0，
+ *       避免长标题把列顶宽（这条是 /site/time/ 时间轴改版踩过的坑）。
+ *
+ * 卸载：删掉 _config.fomalhaut.yml inject.head 里的引入行即可，无其它依赖。
+ * 仓库路径：source/css/archive-page.css
+ */
+
+#archive,
+#category,
+#tag {
+  --ar-w: 1180px;
+  --ar-gap: 20px;
+  --ar-cover-h: 210px;
+  --ar-radius: 16px;
+  --ar-radius-sm: 11px;
+  --ar-line: color-mix(in srgb, var(--font-color) 13%, transparent);
+  --ar-line-strong: color-mix(in srgb, var(--font-color) 22%, transparent);
+  --ar-soft: color-mix(in srgb, var(--font-color) 6%, transparent);
+  --ar-dim: color-mix(in srgb, var(--font-color) 58%, transparent);
+  --ar-accent: var(--theme-color, #39c5bb);
+  --ar-glass: color-mix(in srgb, var(--card-bg, #fff) 74%, transparent);
+  --ar-nav-h: 0px;
+}
+
+/* ============================== 年度分布条 ============================== */
+/* 用迷你柱状图替代原来的四格数字卡：柱高 = 该年篇数 ÷ 最多年篇数，产出节奏一眼可见。
+   数据来自构建期写进页面的全站索引（ar-index），所以每一页显示的都是全站分布；
+   下面的年份胶囊只跳转「当前页存在的年份」—— 两者职责不同，别合并。 */
+
+#archive.ar-ready .ar-dist,
+#category.ar-ready .ar-dist,
+#tag.ar-ready .ar-dist {
+  max-width: var(--ar-w);
+  margin: 0 auto 26px;
+  padding: 14px 18px 13px;
+  border: 1px solid var(--ar-line);
+  border-radius: var(--ar-radius);
+  background: var(--ar-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+#archive.ar-ready .ar-dist-head,
+#category.ar-ready .ar-dist-head,
+#tag.ar-ready .ar-dist-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+#archive.ar-ready .ar-dist-title,
+#category.ar-ready .ar-dist-title,
+#tag.ar-ready .ar-dist-title {
+  flex: 0 0 auto;
+  font-size: 0.82em;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  color: var(--font-color);
+}
+
+#archive.ar-ready .ar-dist-sum,
+#category.ar-ready .ar-dist-sum,
+#tag.ar-ready .ar-dist-sum {
+  min-width: 0;
+  font-size: 0.72em;
+  letter-spacing: 0.3px;
+  color: var(--ar-dim);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#archive.ar-ready .ar-bars,
+#category.ar-ready .ar-bars,
+#tag.ar-ready .ar-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+#archive.ar-ready .ar-bar-col,
+#category.ar-ready .ar-bar-col,
+#tag.ar-ready .ar-bar-col {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+#archive.ar-ready .ar-bar-track,
+#category.ar-ready .ar-bar-track,
+#tag.ar-ready .ar-bar-track {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  height: 52px;
+}
+
+#archive.ar-ready .ar-bar,
+#category.ar-ready .ar-bar,
+#tag.ar-ready .ar-bar {
+  width: 100%;
+  max-width: 46px;
+  min-height: 3px;
+  border-radius: 5px 5px 2px 2px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ar-accent) 90%, transparent),
+    color-mix(in srgb, var(--ar-accent) 42%, transparent)
+  );
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+#archive.ar-ready .ar-bar-col:hover .ar-bar,
+#category.ar-ready .ar-bar-col:hover .ar-bar,
+#tag.ar-ready .ar-bar-col:hover .ar-bar {
+  transform: translateY(-2px);
+  filter: saturate(1.15) brightness(1.06);
+}
+
+#archive.ar-ready .ar-bar-col.is-zero .ar-bar,
+#category.ar-ready .ar-bar-col.is-zero .ar-bar,
+#tag.ar-ready .ar-bar-col.is-zero .ar-bar {
+  background: var(--ar-line-strong);
+  border-radius: 2px;
+}
+
+#archive.ar-ready .ar-bar-n,
+#category.ar-ready .ar-bar-n,
+#tag.ar-ready .ar-bar-n {
+  font-size: 0.7em;
+  font-weight: 600;
+  line-height: 1;
+  color: color-mix(in srgb, var(--font-color) 76%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+#archive.ar-ready .ar-bar-y,
+#category.ar-ready .ar-bar-y,
+#tag.ar-ready .ar-bar-y {
+  font-size: 0.74em;
+  line-height: 1;
+  letter-spacing: 0.4px;
+  color: var(--ar-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+#archive.ar-ready .ar-bar-col.is-zero .ar-bar-y,
+#category.ar-ready .ar-bar-col.is-zero .ar-bar-y,
+#tag.ar-ready .ar-bar-col.is-zero .ar-bar-y {
+  opacity: 0.6;
+}
+
+#archive.ar-ready .ar-bar-col.is-zero .ar-bar-n,
+#category.ar-ready .ar-bar-col.is-zero .ar-bar-n,
+#tag.ar-ready .ar-bar-col.is-zero .ar-bar-n {
+  opacity: 0.45;
+}
+
+/* ============================ 年份快捷跳转（吸顶） ============================ */
+
+#archive.ar-ready .ar-nav,
+#category.ar-ready .ar-nav,
+#tag.ar-ready .ar-nav {
+  position: sticky;
+  top: var(--ar-nav-h, 0px);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: var(--ar-w);
+  margin: 0 auto 24px;
+  padding: 8px 10px;
+  border: 1px solid var(--ar-line);
+  border-radius: 14px;
+  background: var(--ar-glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 6px 20px -14px rgba(0, 0, 0, 0.5);
+}
+
+#archive.ar-ready .ar-nav-label,
+#category.ar-ready .ar-nav-label,
+#tag.ar-ready .ar-nav-label {
+  flex: none;
+  padding-left: 4px;
+  font-size: 0.76em;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--ar-dim);
+}
+
+#archive.ar-ready .ar-nav-track,
+#category.ar-ready .ar-nav-track,
+#tag.ar-ready .ar-nav-track {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+#archive.ar-ready .ar-nav-track::-webkit-scrollbar,
+#category.ar-ready .ar-nav-track::-webkit-scrollbar,
+#tag.ar-ready .ar-nav-track::-webkit-scrollbar {
+  display: none;
+}
+
+#archive.ar-ready .ar-chip,
+#category.ar-ready .ar-chip,
+#tag.ar-ready .ar-chip {
+  flex: none;
+  padding: 5px 11px;
+  border: 1px solid var(--ar-line);
+  border-radius: 999px;
+  color: var(--font-color);
+  background: color-mix(in srgb, var(--font-color) 4%, transparent);
+  font-size: 0.82em;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.18s, border-color 0.18s, background 0.18s, transform 0.18s;
+}
+
+#archive.ar-ready .ar-chip:hover,
+#category.ar-ready .ar-chip:hover,
+#tag.ar-ready .ar-chip:hover {
+  border-color: color-mix(in srgb, var(--ar-accent) 55%, transparent);
+  color: var(--ar-accent);
+  transform: translateY(-1px);
+}
+
+#archive.ar-ready .ar-chip.on,
+#category.ar-ready .ar-chip.on,
+#tag.ar-ready .ar-chip.on {
+  border-color: color-mix(in srgb, var(--ar-accent) 72%, transparent);
+  background: color-mix(in srgb, var(--ar-accent) 15%, transparent);
+  color: var(--ar-accent);
+  font-weight: 700;
+}
+
+/* ================================= 年份章节 ================================= */
+
+#archive.ar-ready .ar-year,
+#category.ar-ready .ar-year,
+#tag.ar-ready .ar-year {
+  position: relative;
+  max-width: var(--ar-w);
+  margin: 0 auto 14px;
+  padding-left: 14px;
+  border-left: 3px solid color-mix(in srgb, var(--ar-accent) 30%, transparent);
+  border-radius: 3px;
+}
+
+#archive.ar-ready .ar-year-label,
+#category.ar-ready .ar-year-label,
+#tag.ar-ready .ar-year-label {
+  position: sticky;
+  top: calc(var(--ar-nav-h, 0px) + 49px);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 16px;
+  padding: 9px 14px;
+  border: 1px solid var(--ar-line);
+  border-radius: 12px;
+  background: var(--ar-glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+#archive.ar-ready .ar-year-num,
+#category.ar-ready .ar-year-num,
+#tag.ar-ready .ar-year-num {
+  font-size: 1.42em;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 1.5px;
+  color: var(--font-color);
+  font-variant-numeric: tabular-nums;
+}
+
+#archive.ar-ready .ar-year-count,
+#category.ar-ready .ar-year-count,
+#tag.ar-ready .ar-year-count {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ar-accent) 14%, transparent);
+  color: var(--ar-accent);
+  font-size: 0.76em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+#archive.ar-ready .ar-year-rule,
+#category.ar-ready .ar-year-rule,
+#tag.ar-ready .ar-year-rule {
+  flex: 1 1 auto;
+  min-width: 20px;
+  height: 1px;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--ar-accent) 40%, transparent),
+    transparent 80%);
+}
+
+#archive.ar-ready .ar-year-toggle,
+#category.ar-ready .ar-year-toggle,
+#tag.ar-ready .ar-year-toggle {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--ar-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--font-color) 4%, transparent);
+  color: var(--ar-dim);
+  font-size: 0.76em;
+  cursor: pointer;
+  transition: color 0.18s, border-color 0.18s;
+}
+
+#archive.ar-ready .ar-year-toggle:hover,
+#category.ar-ready .ar-year-toggle:hover,
+#tag.ar-ready .ar-year-toggle:hover {
+  border-color: color-mix(in srgb, var(--ar-accent) 55%, transparent);
+  color: var(--ar-accent);
+}
+
+#archive.ar-ready .ar-year-toggle svg,
+#category.ar-ready .ar-year-toggle svg,
+#tag.ar-ready .ar-year-toggle svg {
+  width: 11px;
+  height: 11px;
+  transition: transform 0.24s ease;
+}
+
+#archive.ar-ready .ar-year.collapsed .ar-year-toggle svg,
+#category.ar-ready .ar-year.collapsed .ar-year-toggle svg,
+#tag.ar-ready .ar-year.collapsed .ar-year-toggle svg {
+  transform: rotate(-90deg);
+}
+
+/* 折叠容器：靠 grid-template-rows 0fr→1fr 做高度过渡，不需要读取 scrollHeight */
+#archive.ar-ready .ar-collapse,
+#category.ar-ready .ar-collapse,
+#tag.ar-ready .ar-collapse {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.34s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#archive.ar-ready .ar-year.collapsed .ar-collapse,
+#category.ar-ready .ar-year.collapsed .ar-collapse,
+#tag.ar-ready .ar-year.collapsed .ar-collapse {
+  grid-template-rows: 0fr;
+}
+
+#archive.ar-ready .ar-collapse > .ar-cards,
+#category.ar-ready .ar-collapse > .ar-cards,
+#tag.ar-ready .ar-collapse > .ar-cards {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ================================= 卡片栅格 ================================= */
+
+#archive.ar-ready .ar-cards,
+#category.ar-ready .ar-cards,
+#tag.ar-ready .ar-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+  gap: var(--ar-gap) var(--ar-gap);
+  align-items: start;
+  margin-bottom: 26px;
+}
+
+/* 主题的「时间轴」装饰残留：竖轨 + 标题圆点/连接线 + 每条圆点。
+   新版是卡片网格，这些点线已经失去承载物（用户截图里圈出的孤立圆点就是它）。
+   竖轨那条必须带 !important —— 主题在 index.css 里用 `.article-sort { border-left: 2px solid var(--theme-color) !important }` 覆盖过。 */
+#archive.ar-ready .article-sort,
+#category.ar-ready .article-sort,
+#tag.ar-ready .article-sort {
+  margin-left: 0;
+  padding-left: 0;
+  border-left: 0 !important;
+}
+
+#archive.ar-ready .article-sort-title,
+#category.ar-ready .article-sort-title,
+#tag.ar-ready .article-sort-title {
+  margin-left: 0;
+  padding-left: 0;
+}
+
+#archive.ar-ready .article-sort-title::before,
+#archive.ar-ready .article-sort-title::after,
+#category.ar-ready .article-sort-title::before,
+#category.ar-ready .article-sort-title::after,
+#tag.ar-ready .article-sort-title::before,
+#tag.ar-ready .article-sort-title::after,
+#archive.ar-ready .article-sort-item::before,
+#category.ar-ready .article-sort-item::before,
+#tag.ar-ready .article-sort-item::before {
+  display: none !important;
+}
+
+#archive.ar-ready .ar-year-label svg.icon,
+#category.ar-ready .ar-year-label svg.icon,
+#tag.ar-ready .ar-year-label svg.icon {
+  display: none;
+}
+
+/* ==================================== 卡片 ==================================== */
+
+#archive.ar-ready .article-sort-item.ar-card,
+#category.ar-ready .article-sort-item.ar-card,
+#tag.ar-ready .article-sort-item.ar-card {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--ar-line);
+  border-radius: var(--ar-radius);
+  overflow: hidden;
+  background: var(--ar-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 2px 10px -6px rgba(0, 0, 0, 0.35);
+  transition: transform 0.26s cubic-bezier(0.2, 0.7, 0.3, 1),
+              border-color 0.26s, box-shadow 0.26s;
+}
+
+#archive.ar-ready .article-sort-item.ar-card:hover,
+#category.ar-ready .article-sort-item.ar-card:hover,
+#tag.ar-ready .article-sort-item.ar-card:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--ar-accent) 42%, transparent);
+  box-shadow: 0 18px 38px -22px color-mix(in srgb, var(--ar-accent) 65%, transparent),
+              0 2px 10px -6px rgba(0, 0, 0, 0.4);
+}
+
+/* 卡片封面：原 a.article-sort-item-img 被 JS 提到卡片最上层 */
+#archive.ar-ready .article-sort-item.ar-card > a.article-sort-item-img,
+#category.ar-ready .article-sort-item.ar-card > a.article-sort-item-img,
+#tag.ar-ready .article-sort-item.ar-card > a.article-sort-item-img {
+  display: block;
+  width: 100%;
+  height: var(--ar-cover-h);
+  margin: 0;
+  border-radius: var(--ar-radius) var(--ar-radius) 0 0;
+  overflow: hidden;
+  background: var(--ar-soft);
+}
+
+#archive.ar-ready .article-sort-item.ar-card > .ar-cover,
+#category.ar-ready .article-sort-item.ar-card > .ar-cover,
+#tag.ar-ready .article-sort-item.ar-card > .ar-cover {
+  display: block;
+  width: 100%;
+  height: var(--ar-cover-h);
+  margin: 0;
+  border-radius: var(--ar-radius) var(--ar-radius) 0 0;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 130% at 12% 0%,
+      color-mix(in srgb, var(--ar-accent) 34%, transparent),
+      transparent 62%),
+    var(--ar-soft);
+}
+
+#archive.ar-ready .ar-cover > .ar-cover-char,
+#category.ar-ready .ar-cover > .ar-cover-char,
+#tag.ar-ready .ar-cover > .ar-cover-char {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 3.4em;
+  font-weight: 700;
+  line-height: 1;
+  color: color-mix(in srgb, var(--ar-accent) 52%, transparent);
+  user-select: none;
+}
+
+#archive.ar-ready .article-sort-item.ar-card img,
+#category.ar-ready .article-sort-item.ar-card img,
+#tag.ar-ready .article-sort-item.ar-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border-radius: 0;
+  object-fit: cover;
+  transform: scale(1.01);
+  transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.3, 1), opacity 0.4s;
+}
+
+#archive.ar-ready .article-sort-item.ar-card:hover img,
+#category.ar-ready .article-sort-item.ar-card:hover img,
+#tag.ar-ready .article-sort-item.ar-card:hover img {
+  transform: scale(1.06);
+}
+
+/* 无封面占位（原始 src 是 1×1 占位 gif 时挂 .ar-nocover） */
+#archive.ar-ready .article-sort-item.ar-card.ar-nocover img,
+#category.ar-ready .article-sort-item.ar-card.ar-nocover img,
+#tag.ar-ready .article-sort-item.ar-card.ar-nocover img {
+  opacity: 0;
+}
+
+/* 卡片信息区 */
+#archive.ar-ready .article-sort-item.ar-card .article-sort-item-info,
+#category.ar-ready .article-sort-item.ar-card .article-sort-item-info,
+#tag.ar-ready .article-sort-item.ar-card .article-sort-item-info {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+  padding: 15px 17px 16px;
+}
+
+#archive.ar-ready .article-sort-item.ar-card .article-sort-item-info > .ar-head,
+#category.ar-ready .article-sort-item.ar-card .article-sort-item-info > .ar-head,
+#tag.ar-ready .article-sort-item.ar-card .article-sort-item-info > .ar-head {
+  order: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+#archive.ar-ready .article-sort-item.ar-card .article-sort-item-info > .ar-foot,
+#category.ar-ready .article-sort-item.ar-card .article-sort-item-info > .ar-foot,
+#tag.ar-ready .article-sort-item.ar-card .article-sort-item-info > .ar-foot {
+  order: 2;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+#archive.ar-ready .article-sort-item.ar-card .article-sort-item-title,
+#category.ar-ready .article-sort-item.ar-card .article-sort-item-title,
+#tag.ar-ready .article-sort-item.ar-card .article-sort-item-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: 1.02em;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--font-color);
+}
+
+#archive.ar-ready .article-sort-item.ar-card:hover .article-sort-item-title,
+#category.ar-ready .article-sort-item.ar-card:hover .article-sort-item-title,
+#tag.ar-ready .article-sort-item.ar-card:hover .article-sort-item-title {
+  color: var(--ar-accent);
+  transform: none;
+}
+
+/* 分类标签：文字靠 attr(data-cat) 渲染，CSS 里只有选择器，不需要转义中文 */
+#archive.ar-ready .article-sort-item.ar-card .ar-cat,
+#category.ar-ready .article-sort-item.ar-card .ar-cat,
+#tag.ar-ready .article-sort-item.ar-card .ar-cat {
+  flex: none;
+  max-width: 46%;
+  padding: 3px 9px;
+  border: 1px solid color-mix(in srgb, var(--ar-accent) 34%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ar-accent) 10%, transparent);
+  color: var(--ar-accent);
+  font-size: 0.72em;
+  font-weight: 600;
+  line-height: 1.7;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+#archive.ar-ready .article-sort-item.ar-card .ar-cat::before,
+#category.ar-ready .article-sort-item.ar-card .ar-cat::before,
+#tag.ar-ready .article-sort-item.ar-card .ar-cat::before {
+  content: attr(data-cat);
+}
+
+/* 日期 / 阅读时长胶囊 */
+#archive.ar-ready .article-sort-item.ar-card .article-sort-item-time,
+#category.ar-ready .article-sort-item.ar-card .article-sort-item-time,
+#tag.ar-ready .article-sort-item.ar-card .article-sort-item-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  margin: 0;
+  padding: 3px 9px;
+  border: 1px solid var(--ar-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--font-color) 4%, transparent);
+  font-size: 0.76em;
+  color: var(--ar-dim);
+  white-space: nowrap;
+}
+
+#archive.ar-ready .article-sort-item.ar-card .article-sort-item-time i,
+#category.ar-ready .article-sort-item.ar-card .article-sort-item-time i,
+#tag.ar-ready .article-sort-item.ar-card .article-sort-item-time i {
+  color: var(--ar-accent);
+  opacity: 0.85;
+}
+
+#archive.ar-ready .article-sort-item.ar-card .ar-read,
+#category.ar-ready .article-sort-item.ar-card .ar-read,
+#tag.ar-ready .article-sort-item.ar-card .ar-read {
+  flex: none;
+  margin-left: auto;
+  padding: 3px 9px;
+  border: 1px solid var(--ar-line);
+  border-radius: 999px;
+  font-size: 0.76em;
+  color: var(--ar-dim);
+  white-space: nowrap;
+}
+
+/* 整卡可点：指针层铺在信息区上，标题与封面仍是独立链接（可新窗口打开、可被爬虫抓） */
+#archive.ar-ready .article-sort-item.ar-card .ar-hit,
+#category.ar-ready .article-sort-item.ar-card .ar-hit,
+#tag.ar-ready .article-sort-item.ar-card .ar-hit {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: inherit;
+}
+
+#archive.ar-ready .article-sort-item.ar-card .article-sort-item-title,
+#category.ar-ready .article-sort-item.ar-card .article-sort-item-title,
+#tag.ar-ready .article-sort-item.ar-card .article-sort-item-title {
+  position: relative;
+  z-index: 4;
+}
+
+/* ================================== 窄屏适配 ================================== */
+
+@media screen and (max-width: 1023px) {
+  #archive.ar-ready,
+  #category.ar-ready,
+  #tag.ar-ready {
+    --ar-cover-h: 178px;
+    --ar-gap: 16px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  #archive.ar-ready .ar-bars,
+  #category.ar-ready .ar-bars,
+  #tag.ar-ready .ar-bars {
+    gap: 6px;
+  }
+  #archive.ar-ready .ar-dist-sum,
+  #category.ar-ready .ar-dist-sum,
+  #tag.ar-ready .ar-dist-sum {
+    font-size: 0.68em;
+  }
+  #archive.ar-ready .ar-nav-label,
+  #category.ar-ready .ar-nav-label,
+  #tag.ar-ready .ar-nav-label {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  #archive.ar-ready .ar-dist,
+  #category.ar-ready .ar-dist,
+  #tag.ar-ready .ar-dist {
+    margin-bottom: 18px;
+    padding: 12px 13px 11px;
+  }
+  #archive.ar-ready .ar-dist-head,
+  #category.ar-ready .ar-dist-head,
+  #tag.ar-ready .ar-dist-head {
+    margin-bottom: 9px;
+  }
+  #archive.ar-ready .ar-bar-track,
+  #category.ar-ready .ar-bar-track,
+  #tag.ar-ready .ar-bar-track {
+    height: 42px;
+  }
+  #archive.ar-ready .ar-bar,
+  #category.ar-ready .ar-bar,
+  #tag.ar-ready .ar-bar {
+    max-width: 34px;
+  }
+  #archive.ar-ready .ar-cards,
+  #category.ar-ready .ar-cards,
+  #tag.ar-ready .ar-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  #archive.ar-ready .article-sort-item.ar-card .article-sort-item-info,
+  #category.ar-ready .article-sort-item.ar-card .article-sort-item-info,
+  #tag.ar-ready .article-sort-item.ar-card .article-sort-item-info {
+    padding: 13px 14px 14px;
+  }
+  #archive.ar-ready .ar-year,
+  #category.ar-ready .ar-year,
+  #tag.ar-ready .ar-year {
+    padding-left: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #archive.ar-ready .article-sort-item.ar-card,
+  #archive.ar-ready .ar-collapse,
+  #archive.ar-ready .ar-chip,
+  #archive.ar-ready .ar-bar,
+  #category.ar-ready .ar-bar,
+  #category.ar-ready .article-sort-item.ar-card,
+  #tag.ar-ready .article-sort-item.ar-card {
+    transition: none;
+  }
+}

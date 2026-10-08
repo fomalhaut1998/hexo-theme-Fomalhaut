@@ -1,11 +1,11 @@
-# hexo-theme-fomalhaut · v1.0.2
+# hexo-theme-fomalhaut · v1.0.3
 
 > 一套「克隆即用」的 Hexo 卡片式博客源码。主题基于 [Butterfly 4.3.1](https://butterfly.js.org/) 深度二次开发，
 > 并把**站点配置**与**主题代码**彻底分开：改配置就能搭起自己的站，升级主题不会冲掉你自己的改动。
 
 ![hexo](https://img.shields.io/badge/Hexo-6.3.0-0e83c?style=flat-square&logo=hexo)
 ![node](https://img.shields.io/badge/Node.js-18%20%7C%2020%20%7C%2022-339933?style=flat-square&logo=nodedotjs)
-![theme](https://img.shields.io/badge/Theme-Fomalhaut%20v1.0.2-6513df?style=flat-square)
+![theme](https://img.shields.io/badge/Theme-Fomalhaut%20v1.0.3-6513df?style=flat-square)
 ![license](https://img.shields.io/badge/License-Apache--2.0-blue?style=flat-square)
 ![stars](https://img.shields.io/github/stars/fomalhaut1998/hexo-theme-fomalhaut?style=flat-square&logo=github&label=Stars)
 ![forks](https://img.shields.io/github/forks/fomalhaut1998/hexo-theme-fomalhaut?style=flat-square&logo=github&label=Forks)
@@ -36,6 +36,31 @@
 
 ## 更新日志
 
+### v1.0.3 — 归档页卡片改版与时间轴统计（2026-10-09）
+
+这一版把 `/archives/` 从「日期 + 标题」的列表换成卡片墙（新增 3 个文件，站点级实现、不动主题源码），时间线档案页的统计口径拆细，另修一个 pjax 换页后日历热力图永远转圈的老 bug。
+
+**归档页卡片改版**（新增 `scripts/archive-index.js`、`source/css/archive-page.css`、`source/js/inject/archive-page.js`）
+
+- 版面从下到上：「年度分布」柱状图（每根柱标年份与篇数；年份跨度 ≤ 7 年时逐格画满，超过就只画有文章的年份，避免一整排空柱）→ 「共 N 篇 · 起始年–末年 · 某年最多（N 篇）」汇总 → 年份吸顶跳转胶囊（滚动高亮当前年份，点击平滑滚动并按固定导航高度留偏移）→ 年份章节（大号年份 + 条数 + 「收起 / 展开」按钮，折叠状态记在 `localStorage` 的 `ar-collapsed-years`）→ 卡片栅格；
+- 卡片：封面 + 分类胶囊 + 标题 + 日期 + 「约 N 分钟」阅读时长，整卡可点（标题与封面仍是独立链接，可新窗口打开、可被爬虫抓）；封面缺失或加载失败退回「标题首字 + 主题色光晕」占位，懒加载占位图直接读 `data-lazy-src` 补真图，不等 LazyLoad 的扫描时机；
+- 零额外请求：构建期由 `scripts/archive-index.js` 注册的 `after_render:html` 过滤器，只往归档页（含 `/archives/page/N/`）的 `</head>` 前插一段 `<script type="application/json" id="ar-index">`，内容是全站每篇的标题 / 路径 / 日期 / 分类 / 字数 / 阅读分钟；阅读时长复用 `hexo-wordcount-fomal` 的口径（中文 300 字/分、英文 160 词/分）；
+- 降级与守卫：页面里没有 `ar-index` 时卡片照常渲染、只是不显示分类与阅读时长；容器必须是 `#archive` / `#category` / `#tag` 之一、`.article-sort` 恰好 1 个、且至少有一篇文章，全部通过才给容器加 `.ar-ready`（CSS 选择器全部以 `.ar-ready` 开头），任一环节不成立就整块失效、页面原样；容器上打 `data-ar-archive` 保幂等，首屏 / `pjax:complete` / `pageshow(persisted)` 都能安全重入；
+- 同一套样式与脚本对 `/categories/*`、`/tags/*` 也生效；`_config.yml` 新增 `archive_generator` 段（`per_page: 12`、按年 / 按月生成、`order_by: -date`），`_config.fomalhaut.yml` 的 `inject.head` 新增两行引入（`?v=20261013b`），回滚删掉这两行即可。
+
+**时间线档案页统计拆细（`source/js/timeline-archive.js`、`source/css/timeline-archive.css`）**
+
+- 头部统计把原来混在一起的「天数」拆成两个口径：**更新天数**（日期卡数）与**记录条数**（正文条目数，新增 `countEntries()` 数 `.timeline-item-content` 里的 `:scope > ol/ul > li`），并新增**历时**（首尾日期差的天数 + 「约 X 年 Y 个月」，按 30.4375 天/月折算）；
+- 年份分隔器文案改成「N 条记录 · M 天」；年份胶囊只写条数，底部多一条占比细条，宽度 = 该年条数 ÷ 全站条数；
+- 左栏日期轨从 104px 收到 62px、列间距 28px → 18px（1440px 屏卡片宽约 +52px）；窄屏（≤768px）改单列，日期挪到卡片上方一行小字。
+
+**日历热力图 pjax 修复（`source/js/gitcalendar.js`）**
+
+- 文件级的 `var git_init_seq = 0` 改成挂在 `window.__gitInitSeq` 上：pjax 换页时内联脚本先领号、随后加载的外链脚本会把计数器重置回 0，fetch 回来的数据被判成过期直接丢弃，表现为日历一直停在加载态。
+
+**内容**
+
+- `source/life/music/index.md` 歌单换成网易云「［轻音乐纯享］何人都有孤独之时」（105 首），热评区块同步换新。
 ### v1.0.2 — 流式渲染与缓存策略（2026-10-05）
 
 这一版集中修三类「用久了才显出来」的问题：AI 助手吐字时掉帧、Service Worker 该失效时不失效、窄屏被撑出横向滚动。回归脚本从 4 个加到 5 个。
@@ -205,7 +230,7 @@ v1.0.0 是一次结构性重写，主要变化：
 | 网址导航 | `source/box/nav/` | 圆形头像小卡式导航，纯 CSS 计数器 |
 | 天文星图 | `source/box/astronomy/voyager.html` | 独立完整页面，用 iframe 引入，`skip_render` 不参与渲染 |
 | PWA + Service Worker | `themes/fomalhaut/source/sw.js` | 离线预缓存 + 请求分流 |
-| 多平台部署 | `.github/workflows/autodeploy.yml`、`vercel.json`、`functions/` | GitHub Actions / Vercel / Cloudflare Pages 三种方式 |
+| 多平台部署 | `vercel.json`、`functions/`、`tools/deploy-vercel.js` | Vercel / Cloudflare Pages 两种方式（要用 GitHub Actions 见「十二、部署」） |
 
 ### 4. 工程化与性能优化
 
@@ -363,7 +388,7 @@ npx hexo clean && npx hexo generate && npx gulp
 ├─ api/        Vercel 云函数（AI 代理）
 ├─ functions/  Cloudflare Pages 函数（同一份逻辑）
 ├─ tools/      本地脚本（一键部署 Vercel）+ tools/tests/ 回归脚本
-├─ .github/workflows/autodeploy.yml   GitHub Actions 自动部署
+├─ .github/dependabot.yml        依赖自动更新（Dependabot）配置
 ├─ repoPic/                    README 用图（不参与构建）
 ├─ source/                     ★ 站点内容
 │   ├─ _posts/                 文章
@@ -388,6 +413,7 @@ npx hexo clean && npx hexo generate && npx gulp
 | --- | --- | --- |
 | `about-page.css` | 关于页版式（Hero、线路卡、技术栈、时间线） | 选择器全部以 `.ab2` 开头，只影响 `/personal/about/` |
 | `aside-calendar.css` | 侧栏「日历卡 + 倒计时卡」外观 | 只作用 `#aside-calendar` / `#aside-countdown`，配 `js/aside-calendar.js` |
+| `archive-page.css` | 归档页卡片改版外观（年度分布柱、年份胶囊、年份章节、卡片栅格） | 选择器全部以 `.ar-ready` 开头，只影响 `/archives/`、`/categories/*`、`/tags/*` |
 | `avatar-glow.css` | 侧栏头像呼吸灯（颜色跟随主题色） | 全站侧栏生效 |
 | `census.css` | 网站统计页看板排版 | 只由 `/site/census/` 页面 `<link>` 引入 |
 | `coin.css` | 投币按钮样式 | 文章底部「投喂」区 |
@@ -453,6 +479,7 @@ npx hexo clean && npx hexo generate && npx gulp
 | `webinfo-card.js` | 侧栏「小站资讯」卡：KPI 数字滚动、运行天数、站点更新时间 |
 | `ping-route.js` + `ping-route-boot.js` | 公告栏里每条部署线路的实时延迟徽标（boot 文件放可调参数 initialDelay / stagger） |
 | `about-route-probe.js` | 关于页线路卡右下角的「实时延迟」徽标 |
+| `archive-page.js` | 归档页卡片改版行为层：只读 `.article-sort` 重排成统计条 + 年份跳转 + 可折叠年份章节 + 卡片栅格（三层守卫 + 幂等，降级不改排版） |
 | `pc-local-link.js` | 版权卡「文章链接」显示当前访问域名（而不是写死主域名） |
 | `right-menu-state-boot.js` | 侧栏「右键模式」按钮的状态同步 |
 | `ft-ad-extra.js` | 页脚友链补一个「广告位招租」（靠 `a[title="广告位招租"]` 存在才生效） |
@@ -462,6 +489,7 @@ npx hexo clean && npx hexo generate && npx gulp
 | 文件 | 负责的功能 |
 | --- | --- |
 | `ai-chat-inject.js` | 往每个页面 `</body>` 前注入 `window.AI_CHAT_CONFIG` 与 `/js/ai-chat.js` |
+| `archive-index.js` | 给归档页 `</head>` 前插一段 `ar-index` JSON（全站每篇的标题/路径/日期/分类/字数/阅读分钟），供归档页卡片显示分类与阅读时长 |
 | `gallery-pager.js` | 相册自动分页（生成 `/box/gallery/wallpaper/p2.html` 这类分页） |
 | `magnet-local-links.js` | 修 `hexo-magnet-fomal` 首页小冰磁贴跳到外站的问题 |
 | `post-copyright-local-link.js` | 修文章版权卡「文章链接」写死主域名的问题 |
@@ -470,7 +498,7 @@ npx hexo clean && npx hexo generate && npx gulp
 | `tag-map-local.js` | 把 `hexo-tag-map` 的 jsDelivr CDN 改成本站自托管 |
 | `vercel-api-copy.js` | 构建后把 `api/`、`functions/`、`vercel.json` 拷进 `public/` |
 
-### 7.6 `tools/tests/` —— 回归脚本
+### 7.5 `tools/tests/` —— 回归脚本
 
 用 Node 自带的 `node:test`，不需要额外依赖：
 
@@ -480,10 +508,11 @@ npx hexo clean && npx hexo generate && npx gulp
 | `fps-lifecycle.test.cjs` | 帧率监测的启动 / 停止与 generation 闭包 |
 | `mobile-scrollbar.test.cjs` | 手机端自绘滚动条的读 / 写两阶段 |
 | `scroll-listeners.test.cjs` | 滚动节流、`cancel()` 与 pjax 解绑 |
+| `sw-cache.test.cjs` | Service Worker 的域名白名单、回源写缓存、二次请求吃缓存、文本与媒体 TTL 分流、`?__pr=` 探测不写缓存 |
 
-跑法：`node --test "tools/tests/*.test.cjs"`（共 50 个用例；部分脚本支持用环境变量指向 `bak/` 里的基线做前后对比）。
+跑法：`node --test "tools/tests/*.test.cjs"`（共 119 个用例；部分脚本支持用环境变量指向 `bak/` 里的基线做前后对比）。
 
-### 7.7 `themes/fomalhaut/` —— 主题本体
+### 7.6 `themes/fomalhaut/` —— 主题本体
 
 | 目录 | 说明 |
 | --- | --- |
@@ -879,7 +908,7 @@ AI_PROXY_ALLOW_SUFFIXES=your-domain.com
    - `source/js/inject/ft-ad-extra.js` 会在末尾再补一个「广告位招租」凑成 4+4 两排；不想要就删掉那个文件与 `inject.bottom` 里的引用；
 3. **版权行 / 已运行天数 / 摸鱼徽章**（第 60–85 行）：文字来自 `_config.fomalhaut.yml` 的 `footer.owner` 与 `footer.custom_text`；
 4. **徽章列 `p#ghbdages`**（第 86–113 行）：一行小徽章，两种来源——
-   - **本地 SVG**：放在 `source/assets/badge/`，用 `/assets/badge/xxx.svg` 引用（仓库自带 `Theme-Fomalhaut-6513df.svg`、`CDN-npmmirror-fff2cc.svg`）；
+   - **本地 SVG**：放在 `source/assets/badge/`，用 `/assets/badge/xxx.svg` 引用（仓库自带 `Theme-Fomalhaut-6513df.svg`、`CDN-npmmirror.svg`（去掉原版投影的那一份）、`Fomalhaut-work.svg`、`Fomalhaut-rest.svg`）；
    - **shields.io 动态徽章**：`https://img.shields.io/badge/左侧文字-右侧文字-颜色.svg`，例如
      `https://img.shields.io/badge/Frame-Hexo-blue.svg`、`https://img.shields.io/badge/Hosted-Vercel-brightgreen.svg`；
      文字里的空格写成 `_`，颜色可用十六进制（去掉 `#`）。
@@ -892,6 +921,20 @@ a.github-badge(target='_blank' href='https://hexo.io/' style='margin-inline:5px'
 ```
 
 改完页脚记得 **重启 `hexo server`**（Hexo 只在启动时读 pug 模板）。
+
+### 8.13 归档页卡片（`/archives/`）
+
+归档页默认由主题渲染成「日期 + 标题」列表，仓库另外叠了一层站点级卡片改版：
+
+| 想改什么 | 去哪儿改 |
+| --- | --- |
+| 每页篇数、年份 / 月份分页 | `_config.yml` 的 `archive_generator`（默认 `per_page: 12`） |
+| 卡片外观（封面高度、列数、间距、配色） | `source/css/archive-page.css`（顶部变量 `--ar-w` / `--ar-gap` / `--ar-cover-h`） |
+| 版面结构（统计条、年份章节、折叠） | `source/js/inject/archive-page.js` |
+| 卡片上的分类与阅读时长 | `scripts/archive-index.js`（构建期写进页面的 `ar-index` JSON） |
+
+两个引入行在 `_config.fomalhaut.yml` 的 `inject.head`（`archive-page.css` / `archive-page.js`，带 `?v=` 缓存戳，改完记得提版本）。
+**回滚**：删掉那两行，归档页立刻回到主题原样——样式与脚本都带 `.ar-ready` 守卫，缺一不可；`scripts/archive-index.js` 只影响归档页的 `</head>`，留着也不会对别的页面产生输出。
 
 ---
 
@@ -1034,6 +1077,7 @@ npx hexo deploy            # 按 _config.yml 的 deploy 段推送
 | 首屏加载动画 | `_config.fomalhaut.yml` 的 `preloader`（样式文件在 `themes/fomalhaut/layout/includes/loading/load_style/`） |
 | 文章置顶 | 文章 Front-matter 写 `sticky: 1` |
 | 页面里的自定义样式 | 写进 `source/css/*.css`，再在 `inject.head` 里 `<link>` 引入 |
+| 归档页每页篇数 / 卡片外观 | 根 `_config.yml` 的 `archive_generator` 与 `source/css/archive-page.css`（详见 8.13） |
 
 ---
 
@@ -1063,11 +1107,13 @@ npx hexo deploy            # 按 _config.yml 的 deploy 段推送
 
 ## 十二、部署
 
-### 方案 A：GitHub Pages + GitHub Actions（推荐，仓库已带工作流）
+### 方案 A：GitHub Pages + GitHub Actions（需自己加工作流）
+
+仓库**不再内置** CI 工作流（v1.0.2 起删掉了：它带的是作者自己的部署目标与对象存储步骤，别人拿来直接用只会一路报红）。要用 CI 就自己加一个：
 
 1. 把仓库推到你自己的 GitHub 账号；
-2. 在仓库 `Settings → Secrets and variables → Actions` 里按需添加密钥；
-3. 修改 `.github/workflows/autodeploy.yml` 里的 `repository-name` 为 `你的用户名/你的用户名.github.io`；
+2. 需要参考就从历史里取回旧版工作流：`git show v1.0.1:.github/workflows/autodeploy.yml > .github/workflows/autodeploy.yml`（记得删掉其中「上传至对象存储」那一段，再把 `repository-name` 改成 `你的用户名/你的用户名.github.io`）；
+3. 在仓库 `Settings → Secrets and variables → Actions` 里添加它要用的密钥（旧版要 `GH_PAT`）；
 4. 推送到 `main` 分支，或在 Actions 页面手动 Run workflow。
 
 工作流做的事：`npm ci` → `hexo clean && hexo generate` → `gulp` → 写构建时间戳 → 推到 Pages 仓库。

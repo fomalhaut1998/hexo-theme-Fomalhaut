@@ -20,15 +20,23 @@
  *   改成 minmax(0, 1fr)（配 min-width: 0）后轨道不再有 min-content 底线，
  *   长串交给卡片上已有的 overflow-wrap: break-word 断行。
  *   （配置备份 bak/20261009-timeline-archive/before/_config.fomalhaut.yml）
+ * 2026-10-08 收窄左侧留白（用户反馈：手机端左边全是空的、右边没地方了；
+ *   同日续问电脑端，于是全宽也一起收）：
+ *   全宽日期轨 104+28 → 62+18 —— 1440px 屏上卡片左边线 308 → 256，卡片 +52px。
+ *   轨道宽的下限来自年份数字：1.45rem/800 的「2026」实测 56.6px，62px 只余 5.4px。
+ *   ≤768px 日期从左侧竖列改成卡片上方一行小字（--tl-rail: 0 / --tl-gap: 26，
+ *   轨道落在左边 13px 处），390px 屏上卡片 272px → 324px。
+ *   圆点位置是 right: calc(var(--tl-gap) / -2 - 5.5px) 与 gap 绑死的，改 gap 要一起看。
  * 改本文件记得把 ?v= 一起提版本，否则会吃缓存。
  * ========================================================================== */
 
 /* ── 0. 变量与容器 ───────────────────────────────────────────────────────── */
 
 #article-container .timeline.tl-ready {
-  /* 轨道列宽 / 列间距（JS 生成的年份分隔器与条目共用同一套栅格） */
-  --tl-rail: 104px;
-  --tl-gap: 28px;
+  /* 轨道列宽 / 列间距（JS 生成的年份分隔器与条目共用同一套栅格）
+     62px 是下限：年份数字「2026」1.45rem/800 实测宽 56.6px，再窄就会顶出格子。 */
+  --tl-rail: 62px;
+  --tl-gap: 18px;
 
   --tl-c: var(--theme-color, #39c5bb);
   --tl-ink: var(--font-color, #4c4948);
@@ -147,7 +155,10 @@
   display: inline-flex;
   align-items: baseline;
   gap: 6px;
-  padding: 5px 12px;
+  /* 底部要摆一条占比细条（.tl-chip-track），所以裁圆角 + 留出下边距 */
+  position: relative;
+  overflow: hidden;
+  padding: 6px 12px 10px;
   border: 1px solid var(--tl-hair);
   border-radius: 10px;
   background: var(--tl-card);
@@ -190,6 +201,43 @@
 #article-container .timeline.tl-ready .tl-chip--new span,
 #article-container .timeline.tl-ready a.tl-chip--new:hover span {
   color: rgba(255, 255, 255, .85);
+}
+
+/* 胶囊底部细条＝该年条数 ÷ 全部条数（宽度由 /js/timeline-archive.js 写 inline style）：
+   三个胶囊并排，一眼就能看出 2022 年占了大头；胶囊里只留「N 条」，最干净。 */
+#article-container .timeline.tl-ready .tl-chip-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: rgba(57, 197, 187, .15);
+  background: color-mix(in srgb, var(--tl-c) 15%, transparent);
+}
+
+#article-container .timeline.tl-ready .tl-chip-bar {
+  display: block;
+  height: 100%;
+  border-radius: 0 2px 2px 0;
+  background: rgba(57, 197, 187, .6);
+  background: color-mix(in srgb, var(--tl-c) 58%, transparent);
+  transition: background .2s;
+}
+
+#article-container .timeline.tl-ready .tl-chip--new .tl-chip-track {
+  background: rgba(255, 255, 255, .3);
+}
+
+#article-container .timeline.tl-ready .tl-chip--new .tl-chip-bar {
+  background: rgba(255, 255, 255, .92);
+}
+
+#article-container .timeline.tl-ready a.tl-chip:hover .tl-chip-bar {
+  background: var(--tl-c);
+}
+
+#article-container .timeline.tl-ready a.tl-chip--new:hover .tl-chip-bar {
+  background: #fff;
 }
 
 /* ── 2. 年份分隔器 ───────────────────────────────────────────────────────── */
@@ -425,45 +473,73 @@
   background: var(--tl-c);
 }
 
-/* ── 5. 窄屏：轨道收窄，卡片内边距减小 ─────────────────────────────────── */
+/* ── 5. 窄屏：收窄左侧留白 ─────────────────────────────────────────────── */
 
+/* 日期轨现在是全宽统一的一套值（62 + 18）：1440px 屏上卡片左边线 176+132 → 176+80，
+   卡片宽 +52px；≤768px 另有单列版式。这里不再需要按宽度分档收窄。 */
+
+/* 手机/窄屏：日期从左侧竖列改成卡片上方的一行小字，左侧只留轨道。
+   390px 屏上：卡片宽度 272px → 324px，左侧空白 98px → 46px。 */
 @media screen and (max-width: 768px) {
   #article-container .timeline.tl-ready {
-    --tl-rail: 62px;
-    --tl-gap: 16px;
+    --tl-rail: 0px;
+    --tl-gap: 26px;      /* 轨道中心 = timeline 左边 13px */
   }
 
   #article-container .timeline.tl-ready .tl-head-title {
     font-size: 1.45rem;
   }
 
+  /* 年份分隔器：年份数字对齐到卡片左边线，横线接在后面 */
   #article-container .timeline.tl-ready .tl-year {
-    margin: 34px 0 14px;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 12px;
+    margin: 30px 0 12px;
+    padding-left: var(--tl-gap);
   }
 
   #article-container .timeline.tl-ready .tl-year-num {
     font-size: 1.12rem;
+    text-align: left;
   }
 
+  #article-container .timeline.tl-ready .tl-year-line {
+    margin-left: 0;
+  }
+
+  /* 条目：单列，日期在上、卡片占满剩下的宽度 */
   #article-container .timeline.tl-ready .timeline-item {
+    display: block;
     margin: 0 0 14px;
+    padding-left: var(--tl-gap);
   }
 
   #article-container .timeline.tl-ready .timeline-item > .timeline-item-title {
-    padding-top: 12px;
+    padding: 0 0 7px;
+    text-align: left;
   }
 
   #article-container .timeline.tl-ready .tl-y {
+    display: inline;
+    margin-right: 7px;
     font-size: .64rem;
     letter-spacing: .08em;
   }
 
   #article-container .timeline.tl-ready .tl-md {
-    font-size: .9rem;
+    display: inline;
+    font-size: .88rem;
+  }
+
+  /* 圆点钉回轨道：条目内容线在 26px 处，圆心要落在 13px（-18.5 = 5.5 - 26） */
+  #article-container .timeline.tl-ready .timeline-item > .timeline-item-title .item-circle::before {
+    left: -18.5px;
+    right: auto;
+    top: 2px;
   }
 
   #article-container .timeline.tl-ready .timeline-item > .timeline-item-content {
-    padding: 14px 15px 15px 16px;
+    padding: 13px 14px 14px 15px;
     border-radius: 12px;
     font-size: .9rem;
     line-height: 1.75;
@@ -488,6 +564,7 @@
   #article-container .timeline.tl-ready .timeline-item > .timeline-item-content::before,
   #article-container .timeline.tl-ready .timeline-item > .timeline-item-title .item-circle::before,
   #article-container .timeline.tl-ready .timeline-item-content > ol > li::before,
+  #article-container .timeline.tl-ready .tl-chip-bar,
   #article-container .timeline.tl-ready a.tl-chip {
     transition: none;
   }

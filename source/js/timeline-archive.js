@@ -7,13 +7,22 @@
  *
  * 改版做四件事（都在浏览器里完成，markdown 源文件一个字没动）：
  *   1) .timeline-item.headline（"小站建设进程"）改造成头部：小标签 +
- *      标题 + 时间跨度统计 + 年份锚点胶囊；
+ *      标题 + 时间跨度统计（起止 / 历时 / 更新天数 / 记录条数 / 年份数）
+ *      + 年份锚点胶囊（胶囊只写条数，底部细条＝该年条数占全部条数的比例）；
  *   2) 每个 .timeline-item 的日期 <p>2026-10-03</p> 拆成
  *      <span class="tl-y">2026</span><span class="tl-md">10-03</span>，
  *      并给条目挂 id="tl-YYYY-MM-DD"；
- *   3) 按年份插入 .tl-year 分隔器（大号年份 + 细线 + "N 条记录"）；
+ *   3) 按年份插入 .tl-year 分隔器（大号年份 + 细线 + "M 条记录 · N 天"）；
  *   4) 最早一条（"诞生初期(部分记录缺失) 2022-08-09 ~ 2022-08-30"）不是
  *      规整日期：日期轨只放年份与起始月日，整段标题挪到卡片内侧。
+ *
+ * 两套计数别混（2026-10-08 修：原来头部把「日期卡数」直接写成了「记录条数」）：
+ *   days  = .timeline-item 的个数 = 记下一次更新的日子；2022-08-09 那条其实
+ *           是一段区间（标题里已注明「部分记录缺失」），也按 1 天算。
+ *   items = 日期卡正文里 markdown 列表的条目数，这才是真正写下的「条记录」。
+ *   span  = minD 与 maxD 的日期差（天）；跟出来的「约 X 年 Y 个月」＝天数 ÷ 30.4375
+ *           四舍五入到月，只求体感，别当精确历法看。
+ * 胶囊底部细条的分母是 items 的总和（542 条），不是 days。
  *
  * 生效范围（双保险，两道都过才动手）：
  *   a. #article-container 只包着这一条 .timeline —— 全站只有 /site/time/
@@ -55,6 +64,16 @@
     return el
   }
 
+  // 一条日期卡里的「正文条目」数：卡片正文 markdown 列表的 <li>。
+  // 结构意外（没有列表 / 不是列表）就退回 0，宁可少数不瞎猜。
+  function countEntries(el) {
+    var content = el.querySelector('.timeline-item-content')
+    if (!content) return 0
+    var top = content.querySelectorAll(':scope > ol > li, :scope > ul > li')
+    if (top.length) return top.length
+    return content.querySelectorAll('li').length
+  }
+
   function build() {
     var container = document.getElementById('article-container')
     if (!container) return
@@ -86,7 +105,7 @@
       var p = el.querySelector('.timeline-item-title .item-circle > p') || el.querySelector('.timeline-item-title p')
       var raw = p ? String(p.textContent || '').replace(/\s+/g, ' ').trim() : ''
       var info = parseTitle(raw)
-      rows.push({ el: el, p: p, raw: raw, year: info.year, md: info.md, date: info.date, annotated: info.annotated })
+      rows.push({ el: el, p: p, raw: raw, year: info.year, md: info.md, date: info.date, annotated: info.annotated, cnt: countEntries(el) })
     }
 
     // 按出现顺序（新 → 旧）分组年份
@@ -100,11 +119,37 @@
     }
     if (order.length < 2) return
 
+    // days 与 items 分开算：年份分隔器与年份胶囊两个数都要用
+    var totalItems = 0
+    for (var t = 0; t < rows.length; t++) totalItems += rows[t].cnt
+    var itemsByYear = {}
+    for (var yy in byYear) {
+      if (!Object.prototype.hasOwnProperty.call(byYear, yy)) continue
+      var sum = 0
+      for (var q = 0; q < byYear[yy].length; q++) sum += byYear[yy][q].cnt
+      itemsByYear[yy] = sum
+    }
+
     var dates = []
     for (var d = 0; d < rows.length; d++) if (rows[d].date) dates.push(rows[d].date)
     dates.sort()
     var minD = dates[0] || ''
     var maxD = dates[dates.length - 1] || ''
+
+    // 相距多少天（日期差，不是首尾各算一天的口径）+ 给人看的「约 X 年 Y 个月」
+    var spanDays = 0
+    if (minD && maxD) {
+      var t0 = Date.parse(minD + 'T00:00:00')
+      var t1 = Date.parse(maxD + 'T00:00:00')
+      if (!isNaN(t0) && !isNaN(t1) && t1 > t0) spanDays = Math.round((t1 - t0) / 86400000)
+    }
+    var spanHuman = ''
+    if (spanDays > 0) {
+      var spanMons = Math.round(spanDays / 30.4375)
+      var spanY = Math.floor(spanMons / 12)
+      var spanM = spanMons % 12
+      spanHuman = spanY > 0 ? spanY + ' 年' + (spanM > 0 ? ' ' + spanM + ' 个月' : '') : spanM + ' 个月'
+    }
 
     // 1) 条目本身：类名 / id / 日期拆分
     for (var n = 0; n < rows.length; n++) {
@@ -147,9 +192,9 @@
       var line = document.createElement('span')
       line.className = 'tl-year-line'
       line.appendChild(document.createElement('i'))
-      var cnt = document.createElement('em')
-      cnt.textContent = byYear[yr].length + ' 条记录'
-      line.appendChild(cnt)
+      var label = document.createElement('em')
+      label.textContent = itemsByYear[yr] + ' 条记录 · ' + byYear[yr].length + ' 天'
+      line.appendChild(label)
       div.appendChild(num)
       div.appendChild(line)
       tl.insertBefore(div, byYear[yr][0].el)
@@ -175,8 +220,10 @@
 
       var sub = document.createElement('p')
       sub.className = 'tl-head-sub'
-      sub.innerHTML = '从 <b>' + minD + '</b> 记到 <b>' + maxD + '</b>　·　共 <b>' + rows.length +
-        '</b> 条记录　·　横跨 <b>' + order.length + '</b> 个年份'
+      // 各就各位：起止 / 历时（天数 + 约数年月）/ 更新天数（日期卡数）/ 记录条数（正文条目数）+ 年份数
+      sub.innerHTML = '从 <b>' + minD + '</b> 记到 <b>' + maxD + '</b>　·　' +
+        (spanHuman ? '历时 <b>' + spanDays + '</b> 天（约 <b>' + spanHuman + '</b>）　·　' : '') +
+        '更新 <b>' + rows.length + '</b> 天　·　共 <b>' + totalItems + '</b> 条记录　·　横跨 <b>' + order.length + '</b> 个年份'
 
       var chips = document.createElement('nav')
       chips.className = 'tl-head-chips'
@@ -184,12 +231,28 @@
         var a = document.createElement('a')
         a.className = 'tl-chip' + (c === 0 ? ' tl-chip--new' : '')
         a.setAttribute('href', '#tl-year-' + order[c])
+        var chipYr = order[c]
+        var chipDays = byYear[chipYr].length
+        var chipItems = itemsByYear[chipYr]
+        // 细条的分母是全部条数：三条加起来正好是整页 542 条
+        var pct = totalItems ? Math.round(chipItems / totalItems * 1000) / 10 : 0
         var b = document.createElement('b')
-        b.textContent = order[c]
+        b.textContent = chipYr
         var s = document.createElement('span')
-        s.textContent = byYear[order[c]].length + ' 条'
+        s.textContent = chipItems + ' 条'
+        var track = document.createElement('i')
+        track.className = 'tl-chip-track'
+        track.setAttribute('aria-hidden', 'true')
+        var bar = document.createElement('i')
+        bar.className = 'tl-chip-bar'
+        bar.style.width = pct + '%'
+        track.appendChild(bar)
+        // 天数不再进胶囊，但别丢：悬停时给一行完整的
+        a.title = chipYr + ' 年 · 更新 ' + chipDays + ' 天 · ' + chipItems + ' 条记录（占全部 ' +
+          totalItems + ' 条的 ' + Math.round(pct) + '%）'
         a.appendChild(b)
         a.appendChild(s)
+        a.appendChild(track)
         chips.appendChild(a)
       }
 

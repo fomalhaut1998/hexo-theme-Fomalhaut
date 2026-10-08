@@ -86,6 +86,16 @@ index_generator:
   per_page: 9
   order_by: -date
 
+# Archive page setting
+## 归档页 /archives/ 的每页篇数（与首页 index_generator.per_page 互不影响；缺省时 Hexo 默认 10）
+## 卡片为 3 列布局，12 篇 = 4 行整、无残缺行
+archive_generator:
+  per_page: 12
+  yearly: true
+  monthly: true
+  daily: false
+  order_by: -date
+
 # Category & Tag
 default_category: uncategorized
 category_map:

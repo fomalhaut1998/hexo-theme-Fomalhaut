@@ -41,8 +41,14 @@ function GitCalendarRefresh() {
 }
 
 /* 每次初始化都会领一个递增的编号；旧的那次 fetch 回来时发现自己已经不是最新，就整段丢弃。
-   这样「页面刚打开就切主题色」「连点两下颜色」这类并发都不会叠出两份画布。 */
-var git_init_seq = 0;
+   这样「页面刚打开就切主题色」「连点两下颜色」这类并发都不会叠出两份画布。
+
+   【编号必须挂在 window 上，不能只用文件级 var】本站是 pjax 换页，换页时是「先跑内联脚本、
+   带 data-pjax 的 <script src> 才异步下载执行」：内联脚本里那句 GitCalendarInit 已经领了号、
+   发出了 fetch，随后本文件被重新执行 —— 文件级 var 会被重置回 0，正在路上的那次 fetch 回来
+   一比就不相等、整段丢弃，日历于是永远停在转圈（用户 2026-10-08 报的「点进网站统计页一直
+   转圈、刷新一下就好」）。挂在 window 上，重复执行不会把序号清零，守卫照样拦得住旧的请求。 */
+window.__gitInitSeq = window.__gitInitSeq || 0;
 
 /* 画布当前（或正在路上）这一份所依据的主题色值。用它来判断「要不要重画」：
    和现在一样就什么都不做 —— 页面加载时那次 setColor 正是这种情况，插手会和首次渲染撞车；
@@ -56,7 +62,7 @@ function GitCalendarInit(git_gitapiurl, git_color, git_user) {
     var git_themecolor = git_theme_palette();
     if (git_themecolor) git_color = git_themecolor;
     git_painted_theme = (getComputedStyle(document.documentElement).getPropertyValue('--theme-color') || '').trim();
-    var git_seq = ++git_init_seq;
+    var git_seq = ++window.__gitInitSeq;
     var git_canlendar = (git_user, git_gitapiurl, git_color) => {
       var git_fixed = 'fixed';
       var git_px = 'px';
@@ -260,7 +266,7 @@ function GitCalendarInit(git_gitapiurl, git_color, git_user) {
       }
 
       fetch(git_gitapiurl).then(data => data.json()).then(data => {
-        if (git_seq !== git_init_seq) { return }  // 已经被更新的一次初始化取代，丢弃这次结果
+        if (git_seq !== window.__gitInitSeq) { return }  // 已经被更新的一次初始化取代，丢弃这次结果
         if (document.getElementById('git_loading')) {
           document.getElementById('git_loading').remove()
         };
@@ -284,7 +290,7 @@ function GitCalendarInit(git_gitapiurl, git_color, git_user) {
         append_div_gitcalendar(git_container, html);
         responsiveChart()
       }).catch(function(error) {
-        if (git_seq !== git_init_seq) { return }  // 同上：别让旧的失败结果盖住新的渲染
+        if (git_seq !== window.__gitInitSeq) { return }  // 同上：别让旧的失败结果盖住新的渲染
         // —— 本站补丁（2026-10-01）——
         // 原版只在这里 console.log，加载动画 #git_loading 永远不会被摘掉，页面会一直转圈。
         // 任何失败（接口 500、返回的不是 JSON、数据形状不对）都必须收尾：摘掉转圈 + 原地给出提示。
